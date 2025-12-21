@@ -204,6 +204,17 @@ public class ShopActivity extends Activity {
                 addItem(grid, "BRAZIL", currentSkin.equals("brazil") ? "EQUIPPED" : "SELECT", Color.GREEN, "SKIN",
                                 "NONE", "brazil");
 
+                // Premium Skins
+                addItem(grid, "CYBER CORE", currentSkin.equals("cyber_core") ? "EQUIPPED" : "SELECT", Color.CYAN,
+                                "SKIN",
+                                "GEM", "cyber_core");
+                addItem(grid, "SOLAR FLARE", currentSkin.equals("solar_flare") ? "EQUIPPED" : "SELECT", Color.YELLOW,
+                                "SKIN",
+                                "GEM", "solar_flare");
+                addItem(grid, "FROST BITE", currentSkin.equals("frost_bite") ? "EQUIPPED" : "SELECT",
+                                Color.rgb(200, 240, 255), "SKIN",
+                                "GEM", "frost_bite");
+
                 // Items
                 // Removed items as requested by user
 
@@ -224,6 +235,20 @@ public class ShopActivity extends Activity {
                                 Color.rgb(255, 105, 180), "TRAIL", "GEM", "trail_pink");
                 addItem(grid, "NEON TRAIL", currentTrail.equals("neon") ? "EQUIPPED" : "SELECT", Color.CYAN, "TRAIL",
                                 "GEM", "trail_neon");
+
+                // Premium Trails
+                addItem(grid, "COSMIC TRAIL", currentTrail.equals("cosmic") ? "EQUIPPED" : "SELECT",
+                                Color.rgb(100, 100, 255), "TRAIL",
+                                "GEM", "trail_cosmic");
+                addItem(grid, "LAVA TRAIL", currentTrail.equals("lava") ? "EQUIPPED" : "SELECT", Color.rgb(255, 69, 0),
+                                "TRAIL",
+                                "GEM", "trail_lava");
+                addItem(grid, "ELECTRIC TRAIL", currentTrail.equals("electric") ? "EQUIPPED" : "SELECT", Color.CYAN,
+                                "TRAIL",
+                                "GEM", "trail_electric");
+                addItem(grid, "RAINBOW TRAIL", currentTrail.equals("rainbow") ? "EQUIPPED" : "SELECT", Color.MAGENTA,
+                                "TRAIL",
+                                "GEM", "trail_rainbow");
 
                 // Auras
                 String currentAura = prefs.getString("selectedAura", "none");

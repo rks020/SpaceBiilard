@@ -78,43 +78,54 @@ public class MainActivity extends Activity {
 
         root.addView(topPanelContainer);
 
-        // Shop Button (Only visible on main menu)
+        // Calculate center for button positioning
+        int density = (int) getResources().getDisplayMetrics().density;
+
+        // Shop Button (Bottom most)
         final NeonButton shopBtn = new NeonButton(this, "SHOP", Color.rgb(255, 60, 120));
         FrameLayout.LayoutParams shopParams = new FrameLayout.LayoutParams(
                 (int) (getResources().getDisplayMetrics().density * 180),
                 (int) (getResources().getDisplayMetrics().density * 45));
         shopParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
-        shopParams.bottomMargin = (int) (getResources().getDisplayMetrics().density * 160);
+        shopParams.bottomMargin = (int) (getResources().getDisplayMetrics().density * 250); // Moved up to fit new frame
         shopBtn.setLayoutParams(shopParams);
 
-        // Start Button
-        final NeonButton startBtn = new NeonButton(this, "START GAME", Color.CYAN);
-        FrameLayout.LayoutParams startParams = new FrameLayout.LayoutParams(
-                (int) (getResources().getDisplayMetrics().density * 180),
-                (int) (getResources().getDisplayMetrics().density * 45));
-        startParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
-        startParams.bottomMargin = (int) (getResources().getDisplayMetrics().density * 280);
-        startBtn.setLayoutParams(startParams);
-
-        // How to Play Button
+        // How to Play Button (Middle)
         final NeonButton howToBtn = new NeonButton(this, "HOW TO PLAY", Color.MAGENTA);
         FrameLayout.LayoutParams howToParams = new FrameLayout.LayoutParams(
                 (int) (getResources().getDisplayMetrics().density * 180),
                 (int) (getResources().getDisplayMetrics().density * 45));
         howToParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
-        howToParams.bottomMargin = (int) (getResources().getDisplayMetrics().density * 220);
+        howToParams.bottomMargin = (int) (getResources().getDisplayMetrics().density * 310); // +60dp gap
         howToBtn.setLayoutParams(howToParams);
 
-        // Initially visible
+        // Start Button (Top most)
+        final NeonButton startBtn = new NeonButton(this, "START GAME", Color.CYAN);
+        FrameLayout.LayoutParams startParams = new FrameLayout.LayoutParams(
+                (int) (getResources().getDisplayMetrics().density * 180),
+                (int) (getResources().getDisplayMetrics().density * 45));
+        startParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+        startParams.bottomMargin = (int) (getResources().getDisplayMetrics().density * 370); // +60dp gap
+        startBtn.setLayoutParams(startParams);
+
+        // High Score Button (Bottom most)
+        final NeonButton highScoreBtn = new NeonButton(this, "HIGH SCORE", Color.rgb(255, 215, 0));
+        FrameLayout.LayoutParams highScoreParams = new FrameLayout.LayoutParams(
+                (int) (getResources().getDisplayMetrics().density * 180),
+                (int) (getResources().getDisplayMetrics().density * 45));
+        highScoreParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+        highScoreParams.bottomMargin = (int) (getResources().getDisplayMetrics().density * 190);
+        highScoreBtn.setLayoutParams(highScoreParams);
+
         shopBtn.setVisibility(View.VISIBLE);
         startBtn.setVisibility(View.VISIBLE);
         howToBtn.setVisibility(View.VISIBLE);
+        highScoreBtn.setVisibility(View.VISIBLE);
 
-        shopBtn.setOnClickListener(new View.OnClickListener() {
+        highScoreBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ShopActivity.class);
-                startActivity(intent);
+                gameView.showHighScore();
             }
         });
 
@@ -132,12 +143,24 @@ public class MainActivity extends Activity {
             }
         });
 
+        // Listeners for default buttons already set above in some cases, but here we
+        // ensure consistency
+
+        shopBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ShopActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        root.addView(highScoreBtn);
         root.addView(shopBtn);
         root.addView(startBtn);
         root.addView(howToBtn);
 
         // Give GameView references to buttons so it can manage visibility
-        gameView.setMenuButtons(startBtn, howToBtn, shopBtn);
+        gameView.setMenuButtons(startBtn, howToBtn, shopBtn, highScoreBtn);
 
         setContentView(root);
     }
@@ -155,7 +178,7 @@ public class MainActivity extends Activity {
     }
 
     // Method to update panels from GameView
-    public void updatePanels(int time, int score, int coins, int power, String stage, int lives) {
+    public void updatePanels(int time, int score, int coins, int power, String stage, String levelInfo, int lives) {
         if (infoPanel != null) {
             infoPanel.setData("TIME:", String.valueOf(time), "SCORE:", String.valueOf(score));
             infoPanel.setCoins(String.valueOf(coins));
@@ -163,6 +186,7 @@ public class MainActivity extends Activity {
         if (powerPanel != null) {
             powerPanel.setPower(power);
             powerPanel.setStage(stage);
+            powerPanel.setLevelInfo(levelInfo);
             powerPanel.setLives(lives);
         }
     }

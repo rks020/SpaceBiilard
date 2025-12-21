@@ -223,6 +223,29 @@ public class NeonShopItem extends View {
                     canvas.drawCircle(cx - size * 0.7f + i * size * 0.7f, cy + size * 0.7f - i * size * 0.7f, 4 + i * 3,
                             p);
                 }
+            } else if (name.contains("COSMIC")) {
+                // Stars/Sparkle icon
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(Color.WHITE);
+                canvas.drawCircle(cx - size * 0.4f, cy + size * 0.4f, 4, p);
+                canvas.drawCircle(cx + size * 0.5f, cy - size * 0.3f, 5, p);
+                p.setColor(themeColor);
+                canvas.drawCircle(cx, cy, size * 0.6f, p);
+            } else if (name.contains("LAVA")) {
+                // Flame/Bubble icon
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(themeColor);
+                canvas.drawCircle(cx, cy + size * 0.3f, size * 0.7f, p);
+                canvas.drawCircle(cx - size * 0.4f, cy - size * 0.2f, size * 0.4f, p);
+                canvas.drawCircle(cx + size * 0.3f, cy - size * 0.5f, size * 0.3f, p);
+            } else if (name.contains("RAINBOW")) {
+                // Multi-color dash icon
+                int[] rb = { Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE, Color.MAGENTA };
+                p.setStyle(Paint.Style.FILL);
+                for (int i = 0; i < 5; i++) {
+                    p.setColor(rb[i]);
+                    canvas.drawCircle(cx - size + i * size * 0.5f, cy + size - i * size * 0.5f, 6, p);
+                }
             } else {
                 // Classic Laser icon
                 canvas.drawLine(cx - size, cy + size, cx + size, cy - size, p);
@@ -276,6 +299,39 @@ public class NeonShopItem extends View {
                 }
             }
             p.clearShadowLayer();
+        } else if (skinId != null && skinId.equals("cyber_core")) {
+            // Metallic with circuits icon
+            iconPaint.setColor(themeColor);
+            iconPaint.setShadowLayer(15, 0, 0, themeColor);
+            canvas.drawCircle(cx, cy, size, iconPaint);
+
+            Paint p = new Paint(iconPaint);
+            p.setStrokeWidth(3);
+            canvas.drawArc(cx - size * 0.7f, cy - size * 0.7f, cx + size * 0.7f, cy + size * 0.7f, 45, 90, false, p);
+            canvas.drawArc(cx - size * 0.7f, cy - size * 0.7f, cx + size * 0.7f, cy + size * 0.7f, 225, 90, false, p);
+            canvas.drawCircle(cx, cy, size * 0.3f, p);
+        } else if (skinId != null && skinId.equals("solar_flare")) {
+            // Solar sun icon
+            iconPaint.setColor(themeColor);
+            iconPaint.setShadowLayer(20, 0, 0, themeColor);
+            canvas.drawCircle(cx, cy, size * 0.8f, iconPaint);
+
+            // Corona lines
+            for (int i = 0; i < 12; i++) {
+                float angle = (float) (i * Math.PI / 6);
+                canvas.drawLine(cx + (float) Math.cos(angle) * size * 0.9f, cy + (float) Math.sin(angle) * size * 0.9f,
+                        cx + (float) Math.cos(angle) * size * 1.2f, cy + (float) Math.sin(angle) * size * 1.2f,
+                        iconPaint);
+            }
+        } else if (skinId != null && skinId.equals("frost_bite")) {
+            // Ice crystal icon
+            iconPaint.setColor(themeColor);
+            iconPaint.setShadowLayer(15, 0, 0, Color.WHITE);
+            canvas.drawCircle(cx, cy, size, iconPaint);
+
+            // Ice cracks
+            canvas.drawLine(cx - size * 0.5f, cy - size * 0.5f, cx, cy, iconPaint);
+            canvas.drawLine(cx + size * 0.3f, cy - size * 0.6f, cx - size * 0.1f, cy + size * 0.2f, iconPaint);
         } else if (skinId != null && !skinId.equals("default") && !skinId.equals("neon_pulse")
                 && !skinId.equals("soccer") && !skinId.startsWith("impact_")) {
             drawFlagIcon(canvas, cx, cy, size, skinId);

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -22,9 +23,10 @@ public class NeonInfoPanel extends View {
     private String line1Value = "20";
     private String line2Label = "SCORE:";
     private String line2Value = "0";
-    private String coinsValue = "0"; // Coin değeri
-
+    private String coinsValue = "0";
     private int themeColor = Color.CYAN;
+    private Paint coinPaint;
+    private Paint coinGlowPaint;
 
     public NeonInfoPanel(Context context) {
         super(context);
@@ -41,11 +43,10 @@ public class NeonInfoPanel extends View {
 
         bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         bgPaint.setStyle(Paint.Style.FILL);
-        bgPaint.setColor(Color.argb(180, 10, 10, 30));
 
         borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         borderPaint.setStyle(Paint.Style.STROKE);
-        borderPaint.setStrokeWidth(3f);
+        borderPaint.setStrokeWidth(2f);
         borderPaint.setColor(themeColor);
 
         glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -53,18 +54,18 @@ public class NeonInfoPanel extends View {
         glowPaint.setColor(themeColor);
 
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(14 * getResources().getDisplayMetrics().scaledDensity);
-        textPaint.setTypeface(Typeface.MONOSPACE);
+        textPaint.setColor(themeColor);
+        textPaint.setTextSize(11 * getResources().getDisplayMetrics().scaledDensity);
+        textPaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
 
         valuePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         valuePaint.setColor(themeColor);
-        valuePaint.setTextSize(14 * getResources().getDisplayMetrics().scaledDensity);
+        valuePaint.setTextSize(11 * getResources().getDisplayMetrics().scaledDensity);
         valuePaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
 
-        coinIconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        coinIconPaint.setStyle(Paint.Style.FILL);
-        coinIconPaint.setColor(Color.rgb(180, 100, 255)); // Purple for Coin
+        coinPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        coinGlowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        coinGlowPaint.setStyle(Paint.Style.FILL);
     }
 
     public void setData(String l1Label, String l1Value, String l2Label, String l2Value) {
@@ -84,15 +85,15 @@ public class NeonInfoPanel extends View {
         this.themeColor = color;
         borderPaint.setColor(color);
         glowPaint.setColor(color);
+        textPaint.setColor(color);
         valuePaint.setColor(color);
         invalidate();
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // Increased height for 3 lines
-        int desiredWidth = (int) (250 * getResources().getDisplayMetrics().density);
-        int desiredHeight = (int) (85 * getResources().getDisplayMetrics().density);
+        int desiredWidth = (int) (180 * getResources().getDisplayMetrics().density);
+        int desiredHeight = (int) (95 * getResources().getDisplayMetrics().density);
         setMeasuredDimension(resolveSize(desiredWidth, widthMeasureSpec),
                 resolveSize(desiredHeight, heightMeasureSpec));
     }
@@ -103,57 +104,112 @@ public class NeonInfoPanel extends View {
 
         float w = getWidth();
         float h = getHeight();
-        float cornerRadius = 20f;
+        float density = getResources().getDisplayMetrics().density;
 
-        RectF rect = new RectF(5, 5, w - 5, h - 5);
+        float margin = 5f * density;
+        float headerH = 22f * density;
 
-        // Glow
-        for (int i = 1; i <= 3; i++) {
-            glowPaint.setAlpha(60 / i);
-            glowPaint.setStrokeWidth(i * 3);
-            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, glowPaint);
-        }
+        // 1. Shadow / Outer Glow
+        glowPaint.setAlpha(30);
+        glowPaint.setStrokeWidth(10f);
+        canvas.drawRoundRect(new RectF(margin, margin, w - margin, h - margin), 12, 12, glowPaint);
 
-        // Background
-        canvas.drawRoundRect(rect, cornerRadius, cornerRadius, bgPaint);
+        // 2. Main Body (Dark Glass)
+        bgPaint.setColor(Color.argb(230, 5, 8, 25));
+        canvas.drawRoundRect(new RectF(margin, margin + headerH / 2, w - margin, h - margin), 10, 10, bgPaint);
 
-        // Border
-        canvas.drawRoundRect(rect, cornerRadius, cornerRadius, borderPaint);
+        // 3. Header Bar
+        RectF headerRect = new RectF(margin + 10 * density, margin, w - margin - 10 * density, margin + headerH);
+        bgPaint.setColor(Color.argb(255, 10, 30, 60)); // Darker, solid header
+        canvas.drawRoundRect(headerRect, 8, 8, bgPaint);
 
-        // Text Layout
-        float leftMargin = 20f;
-        float lineSpacing = h / 4; // Divide space for 3 items generally
-        float y1 = lineSpacing * 1.1f;
-        float y2 = lineSpacing * 2.1f;
-        float y3 = lineSpacing * 3.1f;
+        borderPaint.setAlpha(255);
+        borderPaint.setStrokeWidth(2f);
+        canvas.drawRoundRect(headerRect, 8, 8, borderPaint);
+
+        // Header Text
+        textPaint.setTextSize(10 * getResources().getDisplayMetrics().scaledDensity);
+        textPaint.setColor(Color.WHITE);
+        float titleW = textPaint.measureText("MISSION DATA");
+        canvas.drawText("MISSION DATA", w / 2 - titleW / 2, margin + headerH * 0.7f, textPaint);
+        textPaint.setColor(themeColor); // Restore
+
+        // 4. Detailed Borders & Sides
+        borderPaint.setAlpha(60);
+        borderPaint.setStrokeWidth(1.5f);
+        canvas.drawRoundRect(new RectF(margin, margin + headerH / 2, w - margin, h - margin), 10, 10, borderPaint);
+
+        // Decorative Side Brackets (Gamey look)
+        borderPaint.setAlpha(255);
+        borderPaint.setStrokeWidth(3f);
+        float brk = 12 * density;
+        // Top corners of body
+        canvas.drawLine(margin, margin + headerH, margin + brk, margin + headerH, borderPaint);
+        canvas.drawLine(margin, margin + headerH, margin, margin + headerH + brk, borderPaint);
+        canvas.drawLine(w - margin, margin + headerH, w - margin - brk, margin + headerH, borderPaint);
+        canvas.drawLine(w - margin, margin + headerH, w - margin, margin + headerH + brk, borderPaint);
+        // Bottom corners
+        canvas.drawLine(margin, h - margin, margin + brk, h - margin, borderPaint);
+        canvas.drawLine(margin, h - margin, margin, h - margin - brk, borderPaint);
+        canvas.drawLine(w - margin, h - margin, w - margin - brk, h - margin, borderPaint);
+        canvas.drawLine(w - margin, h - margin, w - margin, h - margin - brk, borderPaint);
+
+        // 5. Content Rendering
+        float leftContent = margin + 20f * density;
+        float startY = margin + headerH + 15 * density;
+        float spacing = (h - startY - margin) / 3;
+
+        textPaint.setTextSize(11 * getResources().getDisplayMetrics().scaledDensity);
+        valuePaint.setTextSize(11 * getResources().getDisplayMetrics().scaledDensity);
 
         // Line 1: TIME
-        canvas.drawText(line1Label, leftMargin, y1, textPaint);
-        float labelWidth = textPaint.measureText(line1Label);
-        canvas.drawText(line1Value, leftMargin + labelWidth + 10, y1, valuePaint);
+        canvas.drawText(line1Label, leftContent, startY, textPaint);
+        canvas.drawText(line1Value, leftContent + textPaint.measureText(line1Label) + 10, startY, valuePaint);
 
         // Line 2: SCORE
-        canvas.drawText(line2Label, leftMargin, y2, textPaint);
-        labelWidth = textPaint.measureText(line2Label);
-        canvas.drawText(line2Value, leftMargin + labelWidth + 10, y2, valuePaint);
+        canvas.drawText(line2Label, leftContent, startY + spacing, textPaint);
+        canvas.drawText(line2Value, leftContent + textPaint.measureText(line2Label) + 10, startY + spacing, valuePaint);
 
-        // Line 3: COINS (Icon + Text)
-        // Icon (Circle)
-        float iconRadius = 8f * getResources().getDisplayMetrics().density;
-        float iconX = leftMargin + iconRadius;
-        float iconY = y3 - iconRadius / 2;
+        // Line 3: COINS
+        float iconSize = 18 * density;
+        float iconX = leftContent;
+        float iconY = startY + (spacing * 2) - iconSize / 1.5f;
+        drawVectorCoin(canvas, iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2);
+        canvas.drawText(coinsValue, iconX + iconSize + 10, startY + spacing * 2, valuePaint);
 
-        canvas.drawCircle(iconX, iconY, iconRadius, coinIconPaint);
+        // Technical accents: small "screws" in corners
+        bgPaint.setColor(Color.argb(150, 200, 200, 200));
+        float sDist = 3 * density;
+        canvas.drawCircle(margin + sDist, h - margin - sDist, 1.5f * density, bgPaint);
+        canvas.drawCircle(w - margin - sDist, h - margin - sDist, 1.5f * density, bgPaint);
+    }
 
-        // "C" in Icon
-        Paint iconTextP = new Paint(Paint.ANTI_ALIAS_FLAG);
-        iconTextP.setColor(Color.WHITE);
-        iconTextP.setTextSize(10 * getResources().getDisplayMetrics().scaledDensity);
-        iconTextP.setTextAlign(Paint.Align.CENTER);
-        iconTextP.setTypeface(Typeface.DEFAULT_BOLD);
-        canvas.drawText("C", iconX, iconY + iconTextP.getTextSize() / 3, iconTextP);
+    private void drawVectorCoin(Canvas canvas, float cx, float cy, float radius) {
+        // Outer glow
+        coinGlowPaint.setShader(new android.graphics.RadialGradient(cx, cy, radius * 1.5f,
+                new int[] { Color.argb(100, 255, 200, 0), Color.TRANSPARENT }, null,
+                android.graphics.Shader.TileMode.CLAMP));
+        canvas.drawCircle(cx, cy, radius * 1.5f, coinGlowPaint);
 
-        // Coin Value
-        canvas.drawText("COINS: " + coinsValue, iconX + iconRadius + 15, y3, textPaint);
+        // Gold base
+        coinPaint.setStyle(Paint.Style.FILL);
+        coinPaint.setColor(Color.rgb(255, 215, 0));
+        canvas.drawCircle(cx, cy, radius, coinPaint);
+
+        // Inner rim
+        coinPaint.setStyle(Paint.Style.STROKE);
+        coinPaint.setColor(Color.rgb(255, 165, 0));
+        coinPaint.setStrokeWidth(2f);
+        canvas.drawCircle(cx, cy, radius * 0.8f, coinPaint);
+
+        // Neon 'C'
+        textPaint.setTextSize(radius * 1.2f);
+        textPaint.setColor(Color.BLACK);
+        float tw = textPaint.measureText("C");
+        canvas.drawText("C", cx - tw / 2, cy + radius * 0.4f, textPaint);
+
+        // Restore paint size
+        textPaint.setTextSize(11 * getResources().getDisplayMetrics().scaledDensity);
+        textPaint.setColor(themeColor);
     }
 }

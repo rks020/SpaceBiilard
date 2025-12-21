@@ -47,6 +47,7 @@ dimen notification_subtext_size
 dimen notification_top_pad
 dimen notification_top_pad_large_text
 drawable app_icon
+drawable coin_icon
 drawable ic_call_answer
 drawable ic_call_answer_low
 drawable ic_call_answer_video
@@ -54,6 +55,9 @@ drawable ic_call_answer_video_low
 drawable ic_call_decline
 drawable ic_call_decline_low
 drawable ic_launcher_background
+drawable life_icon
+drawable main_menu_bg
+drawable menu_background
 drawable notification_action_background
 drawable notification_bg
 drawable notification_bg_low

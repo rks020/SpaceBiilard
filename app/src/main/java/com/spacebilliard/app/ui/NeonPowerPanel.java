@@ -24,13 +24,13 @@ public class NeonPowerPanel extends View {
     private Path heartPath;
 
     private int power = 0; // 0-100
-    private String stage = "1/10";
+    private String stage = "1/5";
+    private String levelInfo = "SPACE 1 - LEVEL 1";
     private int lives = 3;
 
-    private int powerColor = Color.rgb(255, 100, 100); // Red-ish
-    private int stageColor = Color.GREEN;
-    private int livesColor = Color.CYAN;
-    private int heartColor = Color.rgb(255, 60, 120); // Pink/Red
+    private int themeColor = Color.CYAN;
+    private Paint energyCorePaint;
+    private Paint energyCoreGlowPaint;
 
     public NeonPowerPanel(Context context) {
         super(context);
@@ -47,20 +47,19 @@ public class NeonPowerPanel extends View {
 
         bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         bgPaint.setStyle(Paint.Style.FILL);
-        bgPaint.setColor(Color.argb(180, 10, 10, 30));
 
         borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         borderPaint.setStyle(Paint.Style.STROKE);
-        borderPaint.setStrokeWidth(3f);
-        borderPaint.setColor(Color.CYAN);
+        borderPaint.setStrokeWidth(2f);
+        borderPaint.setColor(themeColor);
 
         glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         glowPaint.setStyle(Paint.Style.STROKE);
-        glowPaint.setColor(Color.CYAN);
+        glowPaint.setColor(themeColor);
 
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setColor(powerColor);
-        textPaint.setTextSize(12 * getResources().getDisplayMetrics().scaledDensity);
+        textPaint.setColor(themeColor);
+        textPaint.setTextSize(11 * getResources().getDisplayMetrics().scaledDensity);
         textPaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
 
         powerBarBgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -69,22 +68,22 @@ public class NeonPowerPanel extends View {
 
         powerBarFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         powerBarFillPaint.setStyle(Paint.Style.FILL);
-        powerBarFillPaint.setColor(powerColor);
+        powerBarFillPaint.setColor(themeColor);
+        powerBarFillPaint.setShadowLayer(10, 0, 0, themeColor);
 
         stageTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        stageTextPaint.setColor(stageColor);
-        stageTextPaint.setTextSize(12 * getResources().getDisplayMetrics().scaledDensity);
+        stageTextPaint.setColor(themeColor);
+        stageTextPaint.setTextSize(11 * getResources().getDisplayMetrics().scaledDensity);
         stageTextPaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
 
         livesTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        livesTextPaint.setColor(Color.WHITE); // White text for lives number
-        livesTextPaint.setTextSize(14 * getResources().getDisplayMetrics().scaledDensity);
+        livesTextPaint.setColor(themeColor);
+        livesTextPaint.setTextSize(12 * getResources().getDisplayMetrics().scaledDensity);
         livesTextPaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
 
-        heartPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        heartPaint.setStyle(Paint.Style.FILL);
-        heartPaint.setColor(heartColor);
-        heartPaint.setShadowLayer(5, 0, 0, heartColor);
+        energyCorePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        energyCoreGlowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        energyCoreGlowPaint.setStyle(Paint.Style.FILL);
 
         heartPath = new Path();
     }
@@ -99,16 +98,32 @@ public class NeonPowerPanel extends View {
         invalidate();
     }
 
+    public void setLevelInfo(String info) {
+        this.levelInfo = info;
+        invalidate();
+    }
+
     public void setLives(int lives) {
         this.lives = lives;
         invalidate();
     }
 
+    public void setThemeColor(int color) {
+        this.themeColor = color;
+        borderPaint.setColor(color);
+        glowPaint.setColor(color);
+        textPaint.setColor(color);
+        powerBarFillPaint.setColor(color);
+        powerBarFillPaint.setShadowLayer(10, 0, 0, color);
+        stageTextPaint.setColor(color);
+        livesTextPaint.setColor(color);
+        invalidate();
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // Match height with InfoPanel (85dp)
-        int desiredWidth = (int) (200 * getResources().getDisplayMetrics().density);
-        int desiredHeight = (int) (85 * getResources().getDisplayMetrics().density);
+        int desiredWidth = (int) (180 * getResources().getDisplayMetrics().density);
+        int desiredHeight = (int) (95 * getResources().getDisplayMetrics().density);
         setMeasuredDimension(resolveSize(desiredWidth, widthMeasureSpec),
                 resolveSize(desiredHeight, heightMeasureSpec));
     }
@@ -119,68 +134,125 @@ public class NeonPowerPanel extends View {
 
         float w = getWidth();
         float h = getHeight();
-        float cornerRadius = 20f;
+        float density = getResources().getDisplayMetrics().density;
 
-        RectF rect = new RectF(5, 5, w - 5, h - 5);
+        float margin = 5f * density;
+        float headerH = 22f * density;
 
-        // Glow
-        for (int i = 1; i <= 3; i++) {
-            glowPaint.setAlpha(60 / i);
-            glowPaint.setStrokeWidth(i * 3);
-            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, glowPaint);
-        }
+        // 1. Shadow / Outer Glow
+        glowPaint.setAlpha(30);
+        glowPaint.setStrokeWidth(10f);
+        canvas.drawRoundRect(new RectF(margin, margin, w - margin, h - margin), 12, 12, glowPaint);
 
-        // Background
-        canvas.drawRoundRect(rect, cornerRadius, cornerRadius, bgPaint);
+        // 2. Main Body (Dark Glass)
+        bgPaint.setColor(Color.argb(230, 5, 8, 25));
+        canvas.drawRoundRect(new RectF(margin, margin + headerH / 2, w - margin, h - margin), 10, 10, bgPaint);
 
-        // Border
-        canvas.drawRoundRect(rect, cornerRadius, cornerRadius, borderPaint);
+        // 3. Header Bar
+        RectF headerRect = new RectF(margin + 10 * density, margin, w - margin - 10 * density, margin + headerH);
+        bgPaint.setColor(Color.argb(255, 60, 20, 20)); // Reddish dark header for Power panel
+        canvas.drawRoundRect(headerRect, 8, 8, bgPaint);
 
-        // Content Layout (3 Lines)
-        float leftMargin = 15f;
-        float lineSpacing = h / 4;
-        float y1 = lineSpacing * 1.1f; // Power
-        float y2 = lineSpacing * 2.1f; // Stage
-        float y3 = lineSpacing * 3.1f; // Lives (Heart)
+        borderPaint.setAlpha(255);
+        borderPaint.setStrokeWidth(2f);
+        canvas.drawRoundRect(headerRect, 8, 8, borderPaint);
 
-        // Line 1: POWER label and bar
-        canvas.drawText("POWER:", leftMargin, y1, textPaint);
+        // Header Text
+        textPaint.setTextSize(10 * getResources().getDisplayMetrics().scaledDensity);
+        textPaint.setColor(Color.WHITE);
+        float titleW = textPaint.measureText("SYSTEM CORE");
+        canvas.drawText("SYSTEM CORE", w / 2 - titleW / 2, margin + headerH * 0.7f, textPaint);
+        textPaint.setColor(themeColor); // Restore
 
-        String maxPercentText = "100%";
-        float percentWidth = textPaint.measureText(maxPercentText);
-        float rightMargin = 15f;
+        // 4. Detailed Borders & Sides
+        borderPaint.setAlpha(60);
+        borderPaint.setStrokeWidth(1.5f);
+        canvas.drawRoundRect(new RectF(margin, margin + headerH / 2, w - margin, h - margin), 10, 10, borderPaint);
 
-        float barX = leftMargin + textPaint.measureText("POWER:") + 10;
-        float barWidth = w - barX - percentWidth - rightMargin - 15;
-        float barHeight = 6f; // Small bar
-        float barY = y1 - barHeight + 2; // Vertically center with text approx
+        // Decorative Side Brackets
+        borderPaint.setAlpha(255);
+        borderPaint.setStrokeWidth(3f);
+        float brk = 12 * density;
+        // Top corners of body
+        canvas.drawLine(margin, margin + headerH, margin + brk, margin + headerH, borderPaint);
+        canvas.drawLine(margin, margin + headerH, margin, margin + headerH + brk, borderPaint);
+        canvas.drawLine(w - margin, margin + headerH, w - margin - brk, margin + headerH, borderPaint);
+        canvas.drawLine(w - margin, margin + headerH, w - margin, margin + headerH + brk, borderPaint);
+        // Bottom corners
+        canvas.drawLine(margin, h - margin, margin + brk, h - margin, borderPaint);
+        canvas.drawLine(margin, h - margin, margin, h - margin - brk, borderPaint);
+        canvas.drawLine(w - margin, h - margin, w - margin - brk, h - margin, borderPaint);
+        canvas.drawLine(w - margin, h - margin, w - margin, h - margin - brk, borderPaint);
 
-        RectF barBg = new RectF(barX, barY, barX + barWidth, barY + barHeight);
-        canvas.drawRoundRect(barBg, 3, 3, powerBarBgPaint);
+        // 5. Content Layout
+        float leftContent = margin + 20f * density;
+        float startY = margin + headerH + 12 * density;
+        float spacing = (h - startY - margin) / 4;
 
-        float fillWidth = (barWidth * power) / 100f;
-        RectF barFill = new RectF(barX, barY, barX + fillWidth, barY + barHeight);
-        canvas.drawRoundRect(barFill, 3, 3, powerBarFillPaint);
+        textPaint.setTextSize(10 * getResources().getDisplayMetrics().scaledDensity);
 
-        // Percentage (Aligned Right)
-        String percentText = power + "%";
-        canvas.drawText(percentText, w - rightMargin - percentWidth, y1, textPaint);
+        // Line 0: LEVEL
+        canvas.drawText(levelInfo, leftContent, startY, textPaint);
 
-        // Line 2: STAGE
-        canvas.drawText("STAGE: ", leftMargin, y2, textPaint);
-        float stageX = leftMargin + textPaint.measureText("STAGE: ");
-        canvas.drawText(stage, stageX, y2, stageTextPaint);
+        // Line 1: STAGE
+        canvas.drawText("STAGE: ", leftContent, startY + spacing, textPaint);
+        canvas.drawText(stage, leftContent + textPaint.measureText("STAGE: "), startY + spacing, stageTextPaint);
 
-        // Line 3: LIVES (Heart Icon + Number)
-        float heartSize = 14 * getResources().getDisplayMetrics().density;
-        // Center heart vertically on y3 line
-        float heartX = leftMargin + heartSize / 2;
-        float heartY = y3 - heartSize / 3; // Adjusted to align better with text baseline
+        // Line 2: POWER
+        canvas.drawText("POW:", leftContent, startY + spacing * 2, textPaint);
+        float barX = leftContent + textPaint.measureText("POW:") + 10;
+        float barW = w - barX - margin - 35 * density;
+        float barH = 5f * density;
+        float barY = (startY + spacing * 2) - barH * 0.8f;
 
-        drawHeart(canvas, heartX, heartY, heartSize);
+        // Bar Bg
+        canvas.drawRoundRect(new RectF(barX, barY, barX + barW, barY + barH), 3 * density, 3 * density,
+                powerBarBgPaint);
+        // Bar Fill
+        canvas.drawRoundRect(new RectF(barX, barY, barX + (barW * power / 100f), barY + barH), 3 * density, 3 * density,
+                powerBarFillPaint);
+        canvas.drawText(power + "%", w - margin - 30 * density, startY + spacing * 2, stageTextPaint);
 
-        // Lives Count (Aligned next to heart)
-        canvas.drawText(String.valueOf(lives), heartX + heartSize + 10, y3, livesTextPaint);
+        // Line 3: LIVES
+        float iconSize = 16 * density;
+        float iconX = leftContent;
+        // Add explicit offset to separate from POW bar
+        float livesOffsetY = 6 * density;
+        float iconY = (startY + spacing * 3) - iconSize * 0.8f + livesOffsetY;
+        drawVectorEnergyCore(canvas, iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2);
+        canvas.drawText(String.valueOf(lives), iconX + iconSize + 10, startY + spacing * 3 + livesOffsetY,
+                livesTextPaint);
+
+        // Technical accents
+        bgPaint.setColor(Color.argb(150, 200, 200, 200));
+        float sDist = 3 * density;
+        canvas.drawCircle(margin + sDist, h - margin - sDist, 1.5f * density, bgPaint);
+        canvas.drawCircle(w - margin - sDist, h - margin - sDist, 1.5f * density, bgPaint);
+    }
+
+    private void drawVectorEnergyCore(Canvas canvas, float cx, float cy, float radius) {
+        // Outer glow pulse
+        energyCoreGlowPaint.setShader(new android.graphics.RadialGradient(cx, cy, radius * 1.5f,
+                new int[] { Color.argb(120, 0, 255, 255), Color.TRANSPARENT }, null,
+                android.graphics.Shader.TileMode.CLAMP));
+        canvas.drawCircle(cx, cy, radius * 1.5f, energyCoreGlowPaint);
+
+        // Core shell
+        energyCorePaint.setStyle(Paint.Style.STROKE);
+        energyCorePaint.setStrokeWidth(2f);
+        energyCorePaint.setColor(Color.CYAN);
+        canvas.drawCircle(cx, cy, radius, energyCorePaint);
+
+        // Inner nucleus
+        energyCorePaint.setStyle(Paint.Style.FILL);
+        energyCorePaint.setColor(Color.WHITE);
+        canvas.drawCircle(cx, cy, radius * 0.4f, energyCorePaint);
+
+        // Orbital rings
+        energyCorePaint.setStyle(Paint.Style.STROKE);
+        energyCorePaint.setStrokeWidth(1f);
+        energyCorePaint.setColor(Color.argb(180, 0, 255, 255));
+        canvas.drawOval(new RectF(cx - radius, cy - radius * 0.3f, cx + radius, cy + radius * 0.3f), energyCorePaint);
     }
 
     private void drawHeart(Canvas canvas, float x, float y, float size) {
