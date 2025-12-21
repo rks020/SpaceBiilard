@@ -1,3 +1,12 @@
 {
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.import.gradle.enabled": true,
+    "java.import.gradle.wrapper.enabled": true,
+    "java.project.sourcePaths": [
+        "app/src/main/java"
+    ],
+    "java.project.referencedLibraries": [
+        "app/libs/**/*.jar"
+    ],
+    "java.errors.incompleteClasspath.severity": "ignore"
 }

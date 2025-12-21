@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.2.0" type="incidents">
+
+    <incident
+        id="ClickableViewAccessibility"
+        severity="warning"
+        message="Custom view `GameView` overrides `onTouchEvent` but not `performClick`">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/GameView.java"
+            line="1760"
+            column="20"
+            startOffset="67589"
+            endLine="1760"
+            endColumn="32"
+            endOffset="67601"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ShopActivity.java"
+            line="71"
+            column="43"
+            startOffset="2967"
+            endLine="71"
+            endColumn="75"
+            endOffset="2999"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ShopActivity.java"
+            line="125"
+            column="31"
+            startOffset="5675"
+            endLine="125"
+            endColumn="42"
+            endOffset="5686"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonInfoPanel.java"
+            line="108"
+            column="22"
+            startOffset="3450"
+            endLine="108"
+            endColumn="51"
+            endOffset="3479"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonInfoPanel.java"
+            line="149"
+            column="27"
+            startOffset="4962"
+            endLine="149"
+            endColumn="59"
+            endOffset="4994"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonPowerPanel.java"
+            line="124"
+            column="22"
+            startOffset="4178"
+            endLine="124"
+            endColumn="51"
+            endOffset="4207"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonPowerPanel.java"
+            line="154"
+            column="23"
+            startOffset="5247"
+            endLine="154"
+            endColumn="79"
+            endOffset="5303"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonPowerPanel.java"
+            line="158"
+            column="25"
+            startOffset="5443"
+            endLine="158"
+            endColumn="82"
+            endOffset="5500"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonShopItem.java"
+            line="101"
+            column="22"
+            startOffset="3085"
+            endLine="101"
+            endColumn="59"
+            endOffset="3122"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonShopItem.java"
+            line="106"
+            column="27"
+            startOffset="3313"
+            endLine="106"
+            endColumn="103"
+            endOffset="3389"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toUpperCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonShopItem.java"
+            line="140"
+            column="32"
+            startOffset="4672"
+            endLine="140"
+            endColumn="43"
+            endOffset="4683"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonShopPanel.java"
+            line="82"
+            column="26"
+            startOffset="2607"
+            endLine="82"
+            endColumn="69"
+            endOffset="2650"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonShopPanel.java"
+            line="98"
+            column="33"
+            startOffset="3158"
+            endLine="100"
+            endColumn="45"
+            endOffset="3302"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonShopPanel.java"
+            line="99"
+            column="17"
+            startOffset="3205"
+            endLine="99"
+            endColumn="68"
+            endOffset="3256"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonShopPanel.java"
+            line="109"
+            column="28"
+            startOffset="3682"
+            endLine="109"
+            endColumn="78"
+            endOffset="3732"/>
+    </incident>
+
+    <incident
+        id="DrawAllocation"
+        severity="warning"
+        message="Avoid object allocations during draw/layout operations (preallocate and reuse instead)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/spacebilliard/app/ui/NeonShopPanel.java"
+            line="113"
+            column="30"
+            startOffset="3854"
+            endLine="113"
+            endColumn="52"
+            endOffset="3876"/>
+    </incident>
+
+    <incident
+        id="OldTargetApi"
+        severity="warning"
+        message="Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details.">
+        <fix-replace
+            description="Update targetSdkVersion to 36"
+            oldString="35"
+            replacement="36"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="13"
+            column="9"
+            startOffset="255"
+            endLine="13"
+            endColumn="21"
+            endOffset="267"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-ktx than 1.12.0 is available: 1.17.0">
+        <fix-replace
+            description="Change to 1.17.0"
+            family="Update versions"
+            oldString="1.12.0"
+            replacement="1.17.0"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="38"
+            column="20"
+            startOffset="842"
+            endLine="38"
+            endColumn="51"
+            endOffset="873"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.test.ext:junit than 1.1.5 is available: 1.3.0">
+        <fix-replace
+            description="Change to 1.3.0"
+            family="Update versions"
+            oldString="1.1.5"
+            replacement="1.3.0"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="41"
+            column="31"
+            startOffset="956"
+            endLine="41"
+            endColumn="62"
+            endOffset="987"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.test.espresso:espresso-core than 3.5.1 is available: 3.7.0">
+        <fix-replace
+            description="Change to 3.7.0"
+            family="Update versions"
+            oldString="3.5.1"
+            replacement="3.7.0"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="42"
+            column="31"
+            startOffset="1019"
+            endLine="42"
+            endColumn="75"
+            endOffset="1063"/>
+    </incident>
+
+</incidents>

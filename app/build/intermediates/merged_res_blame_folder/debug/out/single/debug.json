@@ -1,46 +1,110 @@
 [
     {
-        "merged": "com.example.neoncircleball.app-merged_res-8:/raw_shield_block.mp3.flat",
-        "source": "com.example.neoncircleball.app-main-10:/raw/shield_block.mp3"
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-mdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "com.example.neoncircleball.app-merged_res-8:/raw_black_ball_explosion.mp3.flat",
-        "source": "com.example.neoncircleball.app-main-10:/raw/black_ball_explosion.mp3"
+        "merged": "com.spacebilliard.app-merged_res-8:/raw_drag_launch.mp3.flat",
+        "source": "com.spacebilliard.app-main-10:/raw/drag_launch.mp3"
     },
     {
-        "merged": "com.example.neoncircleball.app-merged_res-8:/raw_freeze.mp3.flat",
-        "source": "com.example.neoncircleball.app-main-10:/raw/freeze.mp3"
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-xxhdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "com.example.neoncircleball.app-merged_res-8:/raw_electric_ball.mp3.flat",
-        "source": "com.example.neoncircleball.app-main-10:/raw/electric_ball.mp3"
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-hdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-hdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "com.example.neoncircleball.app-merged_res-8:/raw_coin_sound.mp3.flat",
-        "source": "com.example.neoncircleball.app-main-10:/raw/coin_sound.mp3"
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-xxhdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "com.example.neoncircleball.app-merged_res-8:/raw_collision_sound.mp3.flat",
-        "source": "com.example.neoncircleball.app-main-10:/raw/collision_sound.mp3"
+        "merged": "com.spacebilliard.app-merged_res-8:/raw_coin_sound.mp3.flat",
+        "source": "com.spacebilliard.app-main-10:/raw/coin_sound.mp3"
     },
     {
-        "merged": "C:\\Users\\raufk\\.gradle\\daemon\\9.0-milestone-1\\com.example.neoncircleball.app-merged_res-8:\\layout_activity_main.xml.flat",
-        "source": "C:\\Users\\raufk\\.gradle\\daemon\\9.0-milestone-1\\com.example.neoncircleball.app-main-10:\\layout\\activity_main.xml"
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-mdpi/ic_launcher.webp"
     },
     {
-        "merged": "com.example.neoncircleball.app-merged_res-8:/raw_drag_launch.mp3.flat",
-        "source": "com.example.neoncircleball.app-main-10:/raw/drag_launch.mp3"
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-xxxhdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "com.example.neoncircleball.app-merged_res-8:/raw_game_over.mp3.flat",
-        "source": "com.example.neoncircleball.app-main-10:/raw/game_over.mp3"
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-hdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "com.example.neoncircleball.app-merged_res-8:/raw_power_boost.mp3.flat",
-        "source": "com.example.neoncircleball.app-main-10:/raw/power_boost.mp3"
+        "merged": "com.spacebilliard.app-merged_res-8:/raw_collision_sound.mp3.flat",
+        "source": "com.spacebilliard.app-main-10:/raw/collision_sound.mp3"
     },
     {
-        "merged": "com.example.neoncircleball.app-merged_res-8:/raw_guided_missile.mp3.flat",
-        "source": "com.example.neoncircleball.app-main-10:/raw/guided_missile.mp3"
+        "merged": "com.spacebilliard.app-merged_res-8:/raw_game_over.mp3.flat",
+        "source": "com.spacebilliard.app-main-10:/raw/game_over.mp3"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/raw_electric_ball.mp3.flat",
+        "source": "com.spacebilliard.app-main-10:/raw/electric_ball.mp3"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-xhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-xhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/raw_black_ball_explosion.mp3.flat",
+        "source": "com.spacebilliard.app-main-10:/raw/black_ball_explosion.mp3"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-xhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-xxxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/drawable_app_icon.png.flat",
+        "source": "com.spacebilliard.app-main-10:/drawable/app_icon.png"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.spacebilliard.app-main-10:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/raw_power_boost.mp3.flat",
+        "source": "com.spacebilliard.app-main-10:/raw/power_boost.mp3"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-xxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/raw_guided_missile.mp3.flat",
+        "source": "com.spacebilliard.app-main-10:/raw/guided_missile.mp3"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/raw_freeze.mp3.flat",
+        "source": "com.spacebilliard.app-main-10:/raw/freeze.mp3"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-xhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-hdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/raw_shield_block.mp3.flat",
+        "source": "com.spacebilliard.app-main-10:/raw/shield_block.mp3"
+    },
+    {
+        "merged": "com.spacebilliard.app-merged_res-8:/mipmap-mdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.spacebilliard.app-main-10:/mipmap-mdpi/ic_launcher_foreground.webp"
     }
 ]

@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:2:1-29:12
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:2:1-29:12
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:2:1-29:12
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:2:1-29:12
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:2:1-42:12
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:2:1-42:12
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:2:1-42:12
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:2:1-42:12
 MERGED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:17:1-30:12
 MERGED from [androidx.core:core-ktx:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\c6b6dbc8c698ec9da1f82874235780de\transformed\jetified-core-ktx-1.12.0\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.annotation:annotation-experimental:1.3.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\3dbfee5916922fadd62d062e83728464\transformed\jetified-annotation-experimental-1.3.0\AndroidManifest.xml:17:1-22:12
@@ -12,7 +12,7 @@ MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\raufk\.gradle\ca
 MERGED from [androidx.lifecycle:lifecycle-runtime:2.3.1] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\4a499144acd3cda0b95bd9e3e1eaba0d\transformed\lifecycle-runtime-2.3.1\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.arch.core:core-runtime:2.1.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\ac4e415a61d9886541cdd673403a861b\transformed\core-runtime-2.1.0\AndroidManifest.xml:17:1-24:12
 	package
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:3:5-41
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:3:5-36
 		INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml
 	android:versionName
 		INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml
@@ -29,8 +29,8 @@ ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidMani
 	android:name
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:7:22-76
 application
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:9:5-27:19
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:9:5-27:19
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:9:5-40:19
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:9:5-40:19
 MERGED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:28:5-89
 MERGED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:28:5-89
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\7adb3cf7515dee087afbebc4488930db\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
@@ -42,35 +42,57 @@ MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\ra
 	android:supportsRtl
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:14:9-35
 	android:label
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:12:9-41
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:12:9-39
 	android:roundIcon
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:13:9-62
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:13:9-54
 	android:icon
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:11:9-57
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:11:9-43
 	android:allowBackup
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:10:9-35
 	android:theme
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:15:9-67
 	android:usesCleartextTraffic
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:16:9-44
-activity#com.example.neoncircleball.MainActivity
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:18:9-26:20
+activity#com.spacebilliard.app.SplashActivity
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:18:9-27:20
+	android:screenOrientation
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:21:13-49
 	android:exported
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:20:13-36
-	android:configChanges
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:21:13-87
+	android:theme
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:22:13-71
 	android:name
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:19:13-41
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:19:13-64
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:22:13-25:29
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:23:13-26:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:23:17-69
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:24:17-69
 	android:name
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:23:25-66
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:24:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:24:17-77
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:25:17-77
 	android:name
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:24:27-74
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:25:27-74
+activity#com.spacebilliard.app.MainActivity
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:29:9-34:74
+	android:screenOrientation
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:33:13-49
+	android:exported
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:31:13-36
+	android:configChanges
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:32:13-87
+	android:theme
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:34:13-71
+	android:name
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:30:13-62
+activity#com.spacebilliard.app.ShopActivity
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:36:9-39:73
+	android:screenOrientation
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:38:13-49
+	android:theme
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:39:13-71
+	android:name
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml:37:13-62
 uses-sdk
 INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillard\app\src\main\AndroidManifest.xml
@@ -99,7 +121,7 @@ ADDED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milesto
 		ADDED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
-permission#com.example.neoncircleball.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+permission#com.spacebilliard.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
 	android:protectionLevel
 		ADDED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
@@ -109,7 +131,7 @@ uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
-uses-permission#com.example.neoncircleball.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission#com.spacebilliard.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\96a788d4b25d8546e5bf24497a2f7085\transformed\core-1.12.0\AndroidManifest.xml:26:22-94

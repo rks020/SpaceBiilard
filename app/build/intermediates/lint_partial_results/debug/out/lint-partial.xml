@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.2.0" type="partial_results">
+    <map id="UnsafeIntentLaunch">
+            <map id="unprotected">
+                <entry
+                    name="com.spacebilliard.app.MainActivity"
+                    boolean="true"/>
+            </map>
+    </map>
+    <map id="UnusedResources">
+        <location id="R.string.app_name"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="3"
+            column="13"
+            startOffset="65"
+            endLine="3"
+            endColumn="28"
+            endOffset="80"/>
+        <location id="R.color.black"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/colors.xml"
+            line="4"
+            column="12"
+            startOffset="92"
+            endLine="4"
+            endColumn="24"
+            endOffset="104"/>
+        <location id="R.color.white"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/colors.xml"
+            line="5"
+            column="12"
+            startOffset="135"
+            endLine="5"
+            endColumn="24"
+            endOffset="147"/>
+        <entry
+            name="model"
+            string="color[black(D),white(D)],raw[shield_block(U),coin_sound(U),power_boost(U),drag_launch(U),black_ball_explosion(U),game_over(U),collision_sound(U),electric_ball(U),freeze(U),guided_missile(U)],string[app_name(D)];;;;"/>
+    </map>
+
+</incidents>

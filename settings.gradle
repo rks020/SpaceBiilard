@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "NeonCircleBall"
+rootProject.name = "SpaceBilliard"
 include ':app'

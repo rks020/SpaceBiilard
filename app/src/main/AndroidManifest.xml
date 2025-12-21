@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.neoncircleball">
+    package="com.spacebilliard.app">
 
     <!-- İnternet izni (ses dosyaları için) -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -8,22 +8,35 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@android:drawable/ic_menu_gallery"
-        android:label="Neon Circle Ball"
-        android:roundIcon="@android:drawable/ic_menu_gallery"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Space Billiard"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
         android:usesCleartextTraffic="true">
         
         <activity
-            android:name=".MainActivity"
+            android:name="com.spacebilliard.app.SplashActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden">
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.spacebilliard.app.MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+        
+        <activity
+            android:name="com.spacebilliard.app.ShopActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
     </application>
 
 </manifest>
