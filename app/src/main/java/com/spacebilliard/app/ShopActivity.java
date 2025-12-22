@@ -404,14 +404,46 @@ public class ShopActivity extends Activity {
                 boolean isDefaultItem = skinId.equals("default");
 
                 if (!isDefaultItem) {
-                        if (currentCategory == 0)
-                                price = 10; // Skins
-                        else if (currentCategory == 1)
-                                price = 20; // Trails
-                        else if (currentCategory == 2)
+                        if (currentCategory == 0) { // Skins (Flags & Premium)
+                                if (skinId.equals("tr_flag")) {
+                                        price = 50;
+                                } else if (skinId.equals("cyber_core") || skinId.equals("solar_flare")
+                                                || skinId.equals("frost_bite")) {
+                                        price = 60; // Premiums
+                                } else {
+                                        // Random-like distribution for other flags (10, 20, 30)
+                                        int hash = Math.abs(skinId.hashCode());
+                                        int variant = hash % 3;
+                                        if (variant == 0)
+                                                price = 10;
+                                        else if (variant == 1)
+                                                price = 20;
+                                        else
+                                                price = 30;
+                                }
+                        } else if (currentCategory == 1) { // Trails
+                                // Base price 30, max 40 based on "newness"
+                                // Higher hash/order implies newer? No, let's map manually or loosely based on
+                                // string length/content
+                                // Or explicitly list them.
+
+                                // Explicit pricing for "newest" feeling
+                                if (skinId.equals("trail_dna") || skinId.equals("trail_sparkle")
+                                                || skinId.equals("trail_pixel"))
+                                        price = 40;
+                                else if (skinId.equals("trail_ghost") || skinId.equals("trail_bubble")
+                                                || skinId.equals("trail_rainbow"))
+                                        price = 38;
+                                else if (skinId.equals("trail_lava") || skinId.equals("trail_cosmic")
+                                                || skinId.equals("trail_electric"))
+                                        price = 35;
+                                else
+                                        price = 30; // Basic trails
+                        } else if (currentCategory == 2) {
                                 price = 5; // Sights
-                        else if (currentCategory == 3)
+                        } else if (currentCategory == 3) {
                                 price = 15; // Effects
+                        }
                 }
 
                 // Check if already owned

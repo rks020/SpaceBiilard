@@ -2756,7 +2756,12 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setTextSize(screenWidth * 0.07f);
         paint.setColor(Color.WHITE);
         canvas.drawText("Best Score: " + highScore, centerX, screenHeight * 0.45f, paint);
-        canvas.drawText("Best Level: " + highLevel, centerX, screenHeight * 0.55f, paint);
+
+        int bestSpace = ((highLevel - 1) / 10) + 1;
+        int bestLevelInSpace = ((highLevel - 1) % 10) + 1;
+        canvas.drawText("Best Level: Space " + bestSpace + " Level " + bestLevelInSpace, centerX, screenHeight * 0.55f,
+                paint);
+
         canvas.drawText("Max Combo: " + maxCombo, centerX, screenHeight * 0.65f, paint);
 
         // Close butonu
