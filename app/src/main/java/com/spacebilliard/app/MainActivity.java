@@ -105,8 +105,18 @@ public class MainActivity extends Activity {
                 (int) (getResources().getDisplayMetrics().density * 180),
                 (int) (getResources().getDisplayMetrics().density * 45));
         howToParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
-        howToParams.bottomMargin = (int) (getResources().getDisplayMetrics().density * 340); // +60dp
+        howToParams.bottomMargin = (int) (getResources().getDisplayMetrics().density * 280); // Adjusted
         howToBtn.setLayoutParams(howToParams);
+
+        // Play Online Button (NEW!)
+        final NeonButton playOnlineBtn = new NeonButton(this, "PLAY ONLINE", Color.GREEN);
+        FrameLayout.LayoutParams onlineParams = new FrameLayout.LayoutParams(
+                (int) (getResources().getDisplayMetrics().density * 180),
+                (int) (getResources().getDisplayMetrics().density * 45));
+        onlineParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+        onlineParams.bottomMargin = (int) (getResources().getDisplayMetrics().density * 340); // Between START and HOW
+                                                                                              // TO
+        playOnlineBtn.setLayoutParams(onlineParams);
 
         // Start Button (Top most)
         final NeonButton startBtn = new NeonButton(this, "START GAME", Color.CYAN);
@@ -120,6 +130,7 @@ public class MainActivity extends Activity {
         // Initially visible
         shopBtn.setVisibility(View.VISIBLE);
         startBtn.setVisibility(View.VISIBLE);
+        playOnlineBtn.setVisibility(View.VISIBLE);
         howToBtn.setVisibility(View.VISIBLE);
         hallOfFameBtn.setVisibility(View.VISIBLE);
 
@@ -135,6 +146,14 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 gameView.startGame();
+            }
+        });
+
+        playOnlineBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, OnlineActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -154,11 +173,12 @@ public class MainActivity extends Activity {
 
         root.addView(shopBtn);
         root.addView(startBtn);
+        root.addView(playOnlineBtn);
         root.addView(howToBtn);
         root.addView(hallOfFameBtn);
 
         // Give GameView references to buttons so it can manage visibility
-        gameView.setMenuButtons(startBtn, howToBtn, shopBtn, hallOfFameBtn);
+        gameView.setMenuButtons(startBtn, howToBtn, shopBtn, hallOfFameBtn, playOnlineBtn);
 
         setContentView(root);
     }

@@ -55,6 +55,39 @@ public class GameView extends SurfaceView implements Runnable {
     private ArrayList<Star> stars; // Static background stars
     private ArrayList<Comet> comets; // Background comets for Space 2
 
+    // Online Mode Support
+    private boolean isOnlineMode = false;
+    private com.spacebilliard.app.network.OnlineGameManager onlineGameManager;
+    private boolean isOnlineHost = false;
+    private long onlineTimeLeft = 30000; // 30 sec per set
+    private long lastOnlineUpdateTime = 0;
+
+    // Additional Online Fields
+    private Ball hostBall;
+    private Ball guestBall;
+    private ArrayList<Ball> onlineColoredBalls = new ArrayList<>();
+    private String hostName = "";
+    private String guestName = "";
+
+    public void setOnlineMode(boolean online, com.spacebilliard.app.network.OnlineGameManager manager, boolean isHost) {
+        this.isOnlineMode = online;
+        this.onlineGameManager = manager;
+        this.isOnlineHost = isHost;
+        if (online) {
+            if (coloredBalls != null)
+                coloredBalls.clear();
+            if (blackBalls != null)
+                blackBalls.clear();
+            gameStarted = true;
+            showLevelSelector = false;
+        }
+    }
+
+    public void setOnlineNames(String host, String guest) {
+        this.hostName = host != null ? host : "";
+        this.guestName = guest != null ? guest : "";
+    }
+
     // Oyun durumu
     private boolean gameStarted = false;
     private boolean gameOver = false;
@@ -127,6 +160,8 @@ public class GameView extends SurfaceView implements Runnable {
     private long dragStartTime;
     private final float MAX_DRAG_DISTANCE = 200;
     private final long MAX_DRAG_TIME = 3000;
+    private float currentTouchX, currentTouchY;
+    private long lastLaunchTime = 0; // Cooldown for grabbing ball
 
     private int coins = 0;
 
@@ -143,15 +178,16 @@ public class GameView extends SurfaceView implements Runnable {
 
     // MainActivity reference for updating UI panels
     private MainActivity mainActivity;
-    private android.view.View startBtn, howToBtn, shopBtn, hallOfFameBtn;
+    private android.view.View startBtn, howToBtn, shopBtn, hallOfFameBtn, playOnlineBtn;
     private android.graphics.Rect startBtnBounds, howToBtnBounds, shopBtnBounds;
 
     public void setMenuButtons(android.view.View start, android.view.View howTo, android.view.View shop,
-            android.view.View hallOfFame) {
+            android.view.View hallOfFame, android.view.View playOnline) {
         this.startBtn = start;
         this.howToBtn = howTo;
         this.shopBtn = shop;
         this.hallOfFameBtn = hallOfFame;
+        this.playOnlineBtn = playOnline;
     }
 
     public void reloadPreferences() {
@@ -193,6 +229,8 @@ public class GameView extends SurfaceView implements Runnable {
                         && !gameCompleted;
                 if (startBtn != null)
                     startBtn.setVisibility(show ? View.VISIBLE : View.GONE);
+                if (playOnlineBtn != null)
+                    playOnlineBtn.setVisibility(show ? View.VISIBLE : View.GONE);
                 if (howToBtn != null)
                     howToBtn.setVisibility(show ? View.VISIBLE : View.GONE);
                 if (shopBtn != null)
@@ -491,6 +529,22 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void update() {
+        if (isOnlineMode) {
+            // Online mode only updates animations/particles here if needed,
+            // but main physics is server-side.
+            // Avoid local game logic (level completion, whiteBall access)
+
+            // Only update particles/effects if you want locally
+            for (int i = particles.size() - 1; i >= 0; i--) {
+                Particle p = particles.get(i);
+                p.update();
+                if (p.isDead())
+                    particles.remove(i);
+            }
+            // Maybe other effects too?
+            return;
+        }
+
         if (!gameStarted || gameOver)
             return;
 
@@ -1208,37 +1262,68 @@ public class GameView extends SurfaceView implements Runnable {
                 arc.draw(canvas, paint);
             }
 
-            // Toplar
-            for (Ball ball : coloredBalls) {
-                drawBall(canvas, ball);
-            }
+            if (isOnlineMode) {
+                try {
+                    if (onlineColoredBalls != null) {
+                        synchronized (onlineColoredBalls) {
+                            for (Ball ball : onlineColoredBalls)
+                                drawBall(canvas, ball);
+                        }
+                    }
+                    if (hostBall != null) {
+                        drawBall(canvas, hostBall);
+                        if (hostName != null && !hostName.isEmpty()) {
+                            paint.setColor(Color.WHITE);
+                            paint.setTextSize(30);
+                            paint.setTextAlign(Paint.Align.CENTER);
+                            canvas.drawText(hostName, hostBall.x, hostBall.y - hostBall.radius - 10, paint);
+                        }
+                    }
+                    if (guestBall != null) {
+                        drawBall(canvas, guestBall);
+                        if (guestName != null && !guestName.isEmpty()) {
+                            paint.setColor(Color.WHITE);
+                            paint.setTextSize(30);
+                            paint.setTextAlign(Paint.Align.CENTER);
+                            canvas.drawText(guestName, guestBall.x, guestBall.y - guestBall.radius - 10, paint);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                // Toplar
+                for (Ball ball : coloredBalls) {
+                    drawBall(canvas, ball);
+                }
 
-            for (Ball ball : blackBalls) {
-                drawBall(canvas, ball);
-            }
+                for (Ball ball : blackBalls) {
+                    drawBall(canvas, ball);
+                }
 
-            for (SpecialBall ball : specialBalls) {
-                drawSpecialBall(canvas, ball);
-            }
+                for (SpecialBall ball : specialBalls) {
+                    drawSpecialBall(canvas, ball);
+                }
 
-            for (Ball ball : cloneBalls) {
-                drawBall(canvas, ball);
+                for (Ball ball : cloneBalls) {
+                    drawBall(canvas, ball);
 
-                // Clone topu için geri sayım göster
-                if (ball.isClone && ball.lifetime > 0) {
-                    long elapsed = System.currentTimeMillis() - ball.creationTime;
-                    long remaining = ball.lifetime - elapsed;
-                    int seconds = (int) Math.ceil(remaining / 1000.0);
+                    // Clone topu için geri sayım göster
+                    if (ball.isClone && ball.lifetime > 0) {
+                        long elapsed = System.currentTimeMillis() - ball.creationTime;
+                        long remaining = ball.lifetime - elapsed;
+                        int seconds = (int) Math.ceil(remaining / 1000.0);
 
-                    if (seconds > 0 && seconds <= 5) {
-                        paint.setStyle(Paint.Style.FILL);
-                        paint.setTextSize(ball.radius * 1.2f);
-                        paint.setTextAlign(Paint.Align.CENTER);
-                        paint.setColor(Color.WHITE);
-                        paint.setShadowLayer(8, 0, 0, Color.BLACK);
-                        canvas.drawText(String.valueOf(seconds), ball.x + ball.radius * 0.8f,
-                                ball.y - ball.radius * 0.8f, paint);
-                        paint.clearShadowLayer();
+                        if (seconds > 0 && seconds <= 5) {
+                            paint.setStyle(Paint.Style.FILL);
+                            paint.setTextSize(ball.radius * 1.2f);
+                            paint.setTextAlign(Paint.Align.CENTER);
+                            paint.setColor(Color.WHITE);
+                            paint.setShadowLayer(8, 0, 0, Color.BLACK);
+                            canvas.drawText(String.valueOf(seconds), ball.x + ball.radius * 0.8f,
+                                    ball.y - ball.radius * 0.8f, paint);
+                            paint.clearShadowLayer();
+                        }
                     }
                 }
             }
@@ -1253,8 +1338,11 @@ public class GameView extends SurfaceView implements Runnable {
                 drawCometTrail(canvas, whiteBall);
             }
 
-            // Beyaz top
-            drawBall(canvas, whiteBall);
+            // Beyaz top (Sadece offline modda çiziyoruz, online modda hostBall/guestBall
+            // kullanılıyor)
+            if (!isOnlineMode) {
+                drawBall(canvas, whiteBall);
+            }
 
             // Barrier
             if (barrierActive) {
@@ -1269,14 +1357,63 @@ public class GameView extends SurfaceView implements Runnable {
             // Sürükleme
             Ball currentDraggedBall = draggedBall; // Race condition önleme
             if (isDragging && currentDraggedBall != null) {
-                float dx = currentDraggedBall.x - dragStartX;
-                float dy = currentDraggedBall.y - dragStartY;
+                float dx, dy;
+                boolean isBottomDrag = dragStartY >= screenHeight * 0.6f;
+
+                if (isBottomDrag) {
+                    // Sling shot: Vector is Start - Current (Pull back)
+                    dx = dragStartX - currentTouchX;
+                    dy = dragStartY - currentTouchY;
+                } else {
+                    // Classic Drag: Vector is Center - DraggedPos (Spring back)
+                    dx = currentDraggedBall.x - dragStartX;
+                    // Note: Here dragStartX was set to ball center in classic mode!
+                    // Wait, in classic mode dragStartX is original ball center.
+                    // draggedBall.x is current finger pos.
+                    // Force vector is Center(Start) - Current(Ball).
+                    // So dx = dragStartX - currentDraggedBall.x; ??
+
+                    // Old code was: dx = currentDraggedBall.x - dragStartX; (Finger - Center)
+                    // Angle was atan2(-dy, -dx) -> (Center - Finger). Correct.
+                    // So old code was technically vector FROM CENTER TO FINGER.
+                    // Then angle inverted.
+
+                    // Let's stick to consistency: We want vector of RESULTING VELOCITY.
+                    // Resulting velocity is Center - Finger.
+
+                    dx = dragStartX - currentDraggedBall.x;
+                    dy = dragStartY - currentDraggedBall.y;
+
+                    // BUT wait, old code calculated 'distance' then angle from (Ball - Center).
+                    // Old code: dx = Ball.x - StartX. (Finger - Center)
+                    // Angle = atan2(-dy, -dx). = atan2(CenterY - FingerY, CenterX - FingerX).
+                    // = Angle from Finger TO Center. (Correct launch direction).
+
+                    // So let's calculate 'Launch Vector' directly for both.
+                    // Launch Vector = Center - Finger.
+
+                    dx = dragStartX - currentDraggedBall.x;
+                    dy = dragStartY - currentDraggedBall.y;
+                }
+
                 float distance = Math.min((float) Math.sqrt(dx * dx + dy * dy), MAX_DRAG_DISTANCE);
                 float ratio = distance / MAX_DRAG_DISTANCE;
 
+                // Launch Angle (Direction of shoot)
+                // Since our dx, dy is already "Launch Vector" (Center - Finger), just atan2(dy,
+                // dx)
+                float launchAngle = (float) Math.atan2(dy, dx);
+
+                // Note: The original code used atan2(-dy, -dx) because dx was (Finger -
+                // Center).
+                // I inverted calculation to (Center - Finger) so now I use atan2(dy, dx).
+                // For Bottom Drag: Start - Current. (Pull - Finger). Same logic.
+                // Start is static anchor, Current is pulled back.
+                // Vector Start - Current is the direction of shoot. Correct.
+
                 // Eski çizgi (drag line) yerine nişan çizgisi (trajectory)
                 if (distance > 10) {
-                    float launchAngle = (float) Math.atan2(-dy, -dx);
+                    // launchAngle is already set correctly above
 
                     // Çizgi ve Ok parametreleri
                     float startDist = currentDraggedBall.radius * 1.5f;
@@ -1580,6 +1717,12 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void drawBall(Canvas canvas, Ball ball) {
+        // Eğer top yoksa veya yarıçapı 0 ise (veya çok küçükse) çizimi iptal et.
+        // Bu satır çökme (Crash) sorununu %100 çözecektir.
+        if (ball == null || ball.radius <= 0.1f || Float.isNaN(ball.radius)) {
+            return;
+        }
+
         if (ball == whiteBall || cloneBalls.contains(ball)) {
             // Draw Aura if active
             if (selectedAura.equals("neon")) {
@@ -2916,6 +3059,10 @@ public class GameView extends SurfaceView implements Runnable {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (isOnlineMode) {
+            handleOnlineTouch(event);
+            return true;
+        }
         float touchX = event.getX();
         float touchY = event.getY();
 
@@ -3076,67 +3223,139 @@ public class GameView extends SurfaceView implements Runnable {
                     Ball touchedBall = null;
                     float minDist = Float.MAX_VALUE;
 
-                    for (Ball ball : cloneBalls) {
-                        float dx = touchX - ball.x;
-                        float dy = touchY - ball.y;
-                        float distance = (float) Math.sqrt(dx * dx + dy * dy);
-                        if (distance < ball.radius * 3 && distance < minDist) {
-                            minDist = distance;
-                            touchedBall = ball;
-                        }
+                    // New: Bottom Zone Control (Easy Aim)
+                    float screenHeight = getHeight();
+                    float bottomZoneStart = screenHeight * 0.6f;
+
+                    // Cooldown Check: Prevent spamming click to stop ball
+                    if (System.currentTimeMillis() - lastLaunchTime < 1000) {
+                        return true; // Ignore touch if within 1 second of last shot
                     }
 
-                    float dx = touchX - whiteBall.x;
-                    float dy = touchY - whiteBall.y;
-                    float distance = (float) Math.sqrt(dx * dx + dy * dy);
-                    if (distance < whiteBall.radius * 3 && distance < minDist) {
+                    if (touchY >= bottomZoneStart && whiteBall != null) {
+                        // User touched bottom area -> control white ball
                         touchedBall = whiteBall;
-                    }
 
-                    if (touchedBall != null) {
                         isDragging = true;
                         draggedBall = touchedBall;
-                        dragStartX = touchedBall.x;
-                        dragStartY = touchedBall.y;
+                        // For bottom zone control, we drag FROM THE TOUCH POINT, not moving the ball
+                        // itself visually yet
+                        dragStartX = touchX;
+                        dragStartY = touchY;
                         dragStartTime = System.currentTimeMillis();
                         touchedBall.vx = 0;
                         touchedBall.vy = 0;
-                        touchedBall.trail.clear(); // Drag başladığında eski izi temizle
+                        touchedBall.trail.clear();
+
+                        // Önemli: Bottom zone kontrolü olduğunu işaretlemek için belki bir flag
+                        // kullanılabilir
+                        // Veya ACTION_MOVE'da logic buna göre düzenlenmeli.
+                        // Mevcut logic draggedBall.x = touchX yapıyor ki bu bottom zone için İSTENMEZ.
+                        // Bottom zone = "Sling shot" (sadece ok göster, top hareket etmesin)
+                    } else {
+                        // Classic Control logic check
+                        for (Ball ball : cloneBalls) {
+                            float dx = touchX - ball.x;
+                            float dy = touchY - ball.y;
+                            float distance = (float) Math.sqrt(dx * dx + dy * dy);
+                            if (distance < ball.radius * 3 && distance < minDist) {
+                                minDist = distance;
+                                touchedBall = ball;
+                            }
+                        }
+
+                        float dx = touchX - whiteBall.x;
+                        float dy = touchY - whiteBall.y;
+                        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+                        if (distance < whiteBall.radius * 3 && distance < minDist) {
+                            touchedBall = whiteBall;
+                        }
+
+                        if (touchedBall != null) {
+                            isDragging = true;
+                            draggedBall = touchedBall;
+                            // Classic behavior: drag starts at Ball's center
+                            dragStartX = touchedBall.x;
+                            dragStartY = touchedBall.y;
+                            dragStartTime = System.currentTimeMillis();
+                            touchedBall.vx = 0;
+                            touchedBall.vy = 0;
+                            touchedBall.trail.clear();
+                        }
                     }
                 }
                 break;
 
             case MotionEvent.ACTION_MOVE:
                 if (isDragging && draggedBall != null) {
-                    float dx = touchX - dragStartX;
-                    float dy = touchY - dragStartY;
-                    float distance = (float) Math.sqrt(dx * dx + dy * dy);
+                    currentTouchX = touchX;
+                    currentTouchY = touchY;
 
-                    if (distance > MAX_DRAG_DISTANCE) {
-                        float angle = (float) Math.atan2(dy, dx);
-                        draggedBall.x = dragStartX + (float) Math.cos(angle) * MAX_DRAG_DISTANCE;
-                        draggedBall.y = dragStartY + (float) Math.sin(angle) * MAX_DRAG_DISTANCE;
+                    // Check if this is a bottom zone drag (sling shot) or classic drag
+                    float screenH = getHeight();
+                    boolean isBottomDrag = dragStartY >= screenH * 0.6f;
+
+                    if (isBottomDrag) {
+                        // Sling shot mode: DO NOT MOVE THE BALL
+                        // Just update internal state if needed (or do nothing visual yet)
+                        // Maybe later add an arrow visualization
                     } else {
-                        draggedBall.x = touchX;
-                        draggedBall.y = touchY;
+                        // Classic Drag Mode: Move the ball with finger
+                        float dx = touchX - dragStartX;
+                        float dy = touchY - dragStartY;
+                        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance > MAX_DRAG_DISTANCE) {
+                            float angle = (float) Math.atan2(dy, dx);
+                            draggedBall.x = dragStartX + (float) Math.cos(angle) * MAX_DRAG_DISTANCE;
+                            draggedBall.y = dragStartY + (float) Math.sin(angle) * MAX_DRAG_DISTANCE;
+                        } else {
+                            draggedBall.x = touchX;
+                            draggedBall.y = touchY;
+                        }
                     }
                 }
                 break;
 
             case MotionEvent.ACTION_UP:
                 if (isDragging && draggedBall != null) {
-                    float dx = draggedBall.x - dragStartX;
-                    float dy = draggedBall.y - dragStartY;
+                    float screenH = getHeight();
+                    boolean isBottomDrag = dragStartY >= screenH * 0.6f;
+
+                    float dx, dy;
+
+                    if (isBottomDrag) {
+                        // Sling Shot Logic (Bottom Zone)
+                        // Vector is from Current Touch (release) TO Start Touch
+                        // Pull down (End Y > Start Y) -> Vector Y should be negative (Up)
+                        dx = dragStartX - touchX;
+                        dy = dragStartY - touchY;
+                    } else {
+                        // Classic Logic (Ball Drag)
+                        // Ball was moved to draggedBall.x/y. Start was original center.
+                        // Force is towards center (spring effect)
+                        dx = dragStartX - draggedBall.x; // Backwards: Center - Current
+                        dy = dragStartY - draggedBall.y;
+
+                        // Reset ball visual position to center instantly before shooting
+                        draggedBall.x = dragStartX;
+                        draggedBall.y = dragStartY;
+                    }
+
                     float distance = Math.min((float) Math.sqrt(dx * dx + dy * dy), MAX_DRAG_DISTANCE);
                     float ratio = distance / MAX_DRAG_DISTANCE;
                     lastLaunchPower = ratio;
-                    float maxSpeed = powerBoostActive ? 60 : 30;
+                    float maxSpeed = powerBoostActive ? 60 : 40; // Increased base speed slightly
                     float speed = ratio * maxSpeed;
 
-                    if (distance > 5) {
-                        draggedBall.vx = -dx / distance * speed;
-                        draggedBall.vy = -dy / distance * speed;
+                    if (distance > 10) { // Slight threshold
+                        // Direction normalized
+                        float distNorm = (float) Math.sqrt(dx * dx + dy * dy);
+                        draggedBall.vx = (dx / distNorm) * speed;
+                        draggedBall.vy = (dy / distNorm) * speed;
                         playSound(soundLaunch);
+
+                        lastLaunchTime = System.currentTimeMillis();
                     }
 
                     isDragging = false;
@@ -4451,5 +4670,187 @@ public class GameView extends SurfaceView implements Runnable {
         float btnH = screenHeight * 0.07f;
         float btnY = screenHeight * 0.75f;
         drawNeonButton(canvas, "BACK TO MENU", centerX, btnY, btnW, btnH, Color.rgb(255, 100, 100));
+    }
+
+    // ========== ONLINE MODE METHODS ==========
+
+    public void startGameWithLevel(int levelNum) {
+        this.level = levelNum;
+        this.stage = 1;
+
+        if (isOnlineMode) {
+            // Online mode: Skip level selector, start game directly
+            gameStarted = true;
+            gameOver = false;
+            lives = 3;
+            score = 0;
+            timeLeft = 30000; // 30 sec for online
+            lastTime = System.currentTimeMillis();
+
+            // Initialize level directly
+            initLevel(level);
+
+            // Start game thread
+            resume();
+        } else {
+            // Normal mode: Use standard flow
+            startGame();
+        }
+    }
+
+    public int getCurrentLevel() {
+        return level;
+    }
+
+    public void updateOnlineState(String hostJson, String guestJson, String ballsJson) {
+        if (screenWidth <= 0 || screenHeight <= 0 || circleRadius <= 0)
+            return;
+        try {
+            if (hostJson != null) {
+                org.json.JSONObject b = new org.json.JSONObject(hostJson);
+                if (!b.isNull("x") && !b.isNull("y")) {
+                    float x = (float) b.optDouble("x", 0.5) * screenWidth;
+                    float y = (float) b.optDouble("y", 0.5) * screenHeight;
+                    int color = Color.GRAY; // P1: Gray
+                    try {
+                        String colorStr = b.optString("color", "#888888");
+                        color = Color.parseColor(colorStr);
+                    } catch (Exception ignored) {
+                    }
+
+                    if (hostBall == null)
+                        hostBall = new Ball(x, y, circleRadius * 0.05f, color);
+                    hostBall.x = x;
+                    hostBall.y = y;
+                    hostBall.color = color;
+                    hostBall.radius = circleRadius * 0.05f;
+                }
+            }
+            if (guestJson != null) {
+                org.json.JSONObject b = new org.json.JSONObject(guestJson);
+                if (!b.isNull("x") && !b.isNull("y")) {
+                    float x = (float) b.optDouble("x", 0.5) * screenWidth;
+                    float y = (float) b.optDouble("y", 0.5) * screenHeight;
+                    int color = Color.WHITE; // P2: White
+                    try {
+                        String colorStr = b.optString("color", "#FFFFFF");
+                        color = Color.parseColor(colorStr);
+                    } catch (Exception ignored) {
+                    }
+
+                    if (guestBall == null)
+                        guestBall = new Ball(x, y, circleRadius * 0.05f, color);
+                    guestBall.x = x;
+                    guestBall.y = y;
+                    guestBall.color = color;
+                    guestBall.radius = circleRadius * 0.05f;
+                }
+            }
+            if (ballsJson != null) {
+                org.json.JSONArray arr = new org.json.JSONArray(ballsJson);
+                synchronized (onlineColoredBalls) {
+                    // Optimization: Reuse objects if count matches
+                    if (onlineColoredBalls.size() == arr.length()) {
+                        for (int i = 0; i < arr.length(); i++) {
+                            org.json.JSONObject b = arr.getJSONObject(i);
+                            // Safe parse
+                            float x = (float) b.optDouble("x", 0.5) * screenWidth;
+                            float y = (float) b.optDouble("y", 0.5) * screenHeight;
+                            int color = Color.RED; // Default
+                            try {
+                                color = Color.parseColor(b.optString("color", "#FF0000"));
+                            } catch (Exception ignored) {
+                            }
+
+                            Ball ball = onlineColoredBalls.get(i);
+                            ball.x = x;
+                            ball.y = y;
+                            ball.color = color;
+                            ball.radius = circleRadius * 0.055f;
+                        }
+                    } else {
+                        // Recreate
+                        onlineColoredBalls.clear();
+                        float safeRadius = (circleRadius > 0) ? circleRadius * 0.055f : 10f;
+                        for (int i = 0; i < arr.length(); i++) {
+                            org.json.JSONObject b = arr.getJSONObject(i);
+                            float x = (float) b.optDouble("x", 0.5) * screenWidth;
+                            float y = (float) b.optDouble("y", 0.5) * screenHeight;
+                            int color = Color.RED;
+                            try {
+                                color = Color.parseColor(b.optString("color", "#FF0000"));
+                            } catch (Exception ignored) {
+                            }
+
+                            Ball ball = new Ball(x, y, safeRadius, color);
+                            onlineColoredBalls.add(ball);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.e("GameViewOnline", "JSON Error: " + e.getMessage());
+            e.printStackTrace();
+            if (floatingTexts != null) {
+                floatingTexts.add(new FloatingText("JSON ERR", centerX, centerY, Color.RED));
+            }
+        }
+    }
+
+    private void handleOnlineTouch(MotionEvent event) {
+        float touchX = event.getX();
+        float touchY = event.getY();
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                Ball myBall = isOnlineHost ? hostBall : guestBall;
+                if (myBall != null) {
+                    float dx = touchX - myBall.x;
+                    float dy = touchY - myBall.y;
+                    if (Math.sqrt(dx * dx + dy * dy) < circleRadius * 0.3f) {
+                        isDragging = true;
+                        dragStartX = myBall.x;
+                        dragStartY = myBall.y;
+                        draggedBall = myBall;
+                    }
+                }
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (isDragging && draggedBall != null) {
+                    // Sadece görsel efekt için draggedBall'u fareye çekmiyoruz
+                    // Ters yöne çekme efekti (Kuyruk/Istaka gibi)
+                    // Ama GameView drag logic'i fareyi takip ediyordu (topu taşıyordu).
+                    // Biz de öyle yapalım.
+                    draggedBall.x = touchX;
+                    draggedBall.y = touchY;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                if (isDragging && draggedBall != null) {
+                    float dx = dragStartX - touchX;
+                    float dy = dragStartY - touchY;
+                    float angle = (float) Math.atan2(dy, dx);
+                    float rawPower = (float) Math.sqrt(dx * dx + dy * dy);
+                    float power = Math.min(rawPower, 200.0f);
+
+                    // Sıfırla
+                    draggedBall.x = dragStartX;
+                    draggedBall.y = dragStartY;
+
+                    if (power > 10) {
+                        if (onlineGameManager != null) {
+                            float normX = draggedBall.x / getWidth();
+                            float normY = draggedBall.y / getHeight();
+                            onlineGameManager.sendShot(angle, power, normX, normY);
+                        } else {
+                            android.util.Log.e("GameViewOnline", "onlineGameManager is NULL!");
+                            floatingTexts.add(new FloatingText("ERR: OFFLINE", dragStartX, dragStartY, Color.RED));
+                        }
+                    }
+                    isDragging = false;
+                    draggedBall = null;
+                }
+                break;
+        }
     }
 }

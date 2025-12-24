@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:name="com.spacebilliard.app.OnlineApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Space Billiard"
@@ -35,6 +36,16 @@
         
         <activity
             android:name="com.spacebilliard.app.ShopActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
+        
+        <activity
+            android:name="com.spacebilliard.app.OnlineActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
+        
+        <activity
+            android:name="com.spacebilliard.app.OnlineGameActivity"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
     </application>
