@@ -7304,6 +7304,23 @@ public class GameView extends SurfaceView implements Runnable {
             return life <= 0;
         }
 
+        // Reset methods for object pooling
+        FloatingText reset(String text, float x, float y, int color) {
+            return reset(text, x, y, color, 1.0f);
+        }
+
+        FloatingText reset(String text, float x, float y, int color, float sizeScale) {
+            this.text = text;
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.sizeScale = sizeScale;
+            this.life = 60;
+            this.maxLife = 60;
+            this.floatSpeed = 3f;
+            return this;
+        }
+
         void draw(Canvas canvas, Paint paint) {
             paint.setStyle(Paint.Style.FILL);
             paint.setTextAlign(Paint.Align.CENTER);
