@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 public class OnlineGameManager {
     private static final String TAG = "OnlineGameManager";
-    private static final String SERVER_URL = "wss://3865e024b1d3.ngrok-free.app";
+    private static final String SERVER_URL = "wss://bf7c05394d78.ngrok-free.app";
 
     private WebSocket webSocket;
     private OkHttpClient client;

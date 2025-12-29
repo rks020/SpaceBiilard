@@ -282,47 +282,35 @@ class Room {
     }
 
     reflectBall(ball, circleRadius) {
-        // IMPORTANT: Aspect Ratio Correction for Boundary Check
-        const ASPECT_RATIO = 2.0;
+        // SIMPLIFIED: Match GameView.java logic exactly
+        // Distance from center (0.5, 0.5) to ball
         const dx = ball.x - 0.5;
-        const dy = (ball.y - 0.5) * ASPECT_RATIO; // Scale Y to match X visual units
-
+        const dy = ball.y - 0.5;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const ballRadius = 0.025;
 
-        // Instant bounce on contact
+        const ballRadius = 0.025; // Normalized ball radius
+
+        // Check if ball is outside boundary
         if (dist + ballRadius >= circleRadius) {
-            // Normalize direction (in the scaled space)
-            const nx = dist > 0 ? dx / dist : 1;
-            const ny = dist > 0 ? dy / dist : 0;
+            // Calculate bounce angle
+            const angle = Math.atan2(dy, dx);
 
-            // Push ball back inside FIRST (in the scaled space)
-            const overlap = (dist + ballRadius) - circleRadius + 0.001;
+            // Push ball back inside circle
+            const maxDist = circleRadius - ballRadius - 0.001; // Small margin
+            ball.x = 0.5 + Math.cos(angle) * maxDist;
+            ball.y = 0.5 + Math.sin(angle) * maxDist;
 
-            // Unscale Y when applying position correction
-            ball.x -= nx * overlap;
-            ball.y -= (ny * overlap) / ASPECT_RATIO;
+            // Reflect velocity (perfect elastic bounce)
+            const nx = Math.cos(angle); // Normal x
+            const ny = Math.sin(angle); // Normal y
 
-            // Perfect elastic reflection for all balls (removed random bounce)
             const dotProduct = ball.vx * nx + ball.vy * ny;
             ball.vx -= 2 * dotProduct * nx;
             ball.vy -= 2 * dotProduct * ny;
 
-            // Apply bounce damping (Wall friction)
+            // Apply bounce damping (wall friction)
             ball.vx *= 0.9;
             ball.vy *= 0.9;
-        }
-
-        // Final safety check - clamp to circle
-        const finalDx = ball.x - 0.5;
-        const finalDy = (ball.y - 0.5) * ASPECT_RATIO; // Use consistent Aspect Ratio
-        const finalDist = Math.sqrt(finalDx * finalDx + finalDy * finalDy);
-
-        if (finalDist + ballRadius > circleRadius) {
-            const angle = Math.atan2(finalDy, finalDx);
-            const maxDist = circleRadius - ballRadius;
-            ball.x = 0.5 + Math.cos(angle) * maxDist;
-            ball.y = 0.5 + Math.sin(angle) * maxDist / ASPECT_RATIO; // Unscale Y
         }
     }
 
