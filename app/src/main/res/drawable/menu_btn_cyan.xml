@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pressed State (Darker) -->
+    <item android:state_pressed="true">
+        <layer-list>
+             <!-- No bottom shadow to simulate being pressed down -->
+            <item android:top="4dp"> 
+                <shape>
+                    <corners android:radius="32dp" />
+                    <gradient
+                        android:angle="270"
+                        android:endColor="#06748E"
+                        android:startColor="#155D69" /> <!-- Darker Cyan -->
+                    <stroke android:width="2dp" android:color="#589ea8" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    
+    <!-- Default State -->
+    <item>
+        <layer-list>
+            <!-- Bottom Shadow -->
+            <item>
+                <shape>
+                    <corners android:radius="32dp" />
+                    <solid android:color="#0891B2" />
+                </shape>
+            </item>
+            <!-- Main Gradient Body -->
+            <item android:bottom="4dp">
+                <shape>
+                    <corners android:radius="32dp" />
+                    <gradient
+                        android:angle="270"
+                        android:endColor="#0891B2"
+                        android:startColor="#22D3EE" />
+                    <stroke android:width="2dp" android:color="#A5F3FC" />
+                </shape>
+            </item>
+            <!-- Glossy Overlay -->
+            <item android:bottom="32dp">
+                <shape>
+                    <corners android:topLeftRadius="32dp" android:topRightRadius="32dp" />
+                    <solid android:color="#33FFFFFF" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</selector>

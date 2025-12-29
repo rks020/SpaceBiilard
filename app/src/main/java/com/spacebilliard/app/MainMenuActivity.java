@@ -53,14 +53,12 @@ public class MainMenuActivity extends Activity {
         });
 
         btnHowTo.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, MainActivity.class);
-            intent.putExtra("ACTION", "SHOW_HOWTO");
+            Intent intent = new Intent(MainMenuActivity.this, HowToPlayActivity.class);
             startActivity(intent);
         });
 
         btnHallOfFame.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, MainActivity.class);
-            intent.putExtra("ACTION", "SHOW_HOF");
+            Intent intent = new Intent(MainMenuActivity.this, HallOfFameActivity.class);
             startActivity(intent);
         });
     }

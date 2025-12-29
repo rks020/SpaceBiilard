@@ -1,84 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#141428"
-    android:clickable="true"
-    android:focusable="true">
+    android:layout_height="match_parent">
 
-    <!-- Container Card -->
-    <LinearLayout
-        android:layout_width="320dp"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@drawable/bg_card"
-        android:gravity="center"
-        android:orientation="vertical"
+    <!-- Custom Animated Background -->
+    <com.spacebilliard.app.ui.StarfieldBackgroundView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Content Overlay -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:padding="24dp">
 
-        <!-- Title -->
+        <!-- Title: GAME OVER -->
         <TextView
             android:id="@+id/textTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
+            android:layout_marginTop="80dp"
             android:fontFamily="sans-serif-black"
-            android:shadowColor="#FF0000"
+            android:text="GAME OVER"
+            android:textAlignment="center"
+            android:textColor="#EF4444"
+            android:textSize="48sp"
+            android:textStyle="bold|italic"
+            android:paddingEnd="12dp"
+            android:paddingRight="12dp"
+            android:shadowColor="#EF4444"
             android:shadowDx="0"
             android:shadowDy="0"
             android:shadowRadius="30"
-            android:text="GAME OVER"
-            android:textColor="#FF0000"
-            android:textSize="36sp"
-            android:textStyle="bold" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Revive Button -->
-        <Button
-            android:id="@+id/btnRevive"
+        <View
+            android:id="@+id/titleDivider"
+            android:layout_width="120dp"
+            android:layout_height="4dp"
+            android:layout_marginTop="8dp"
+            android:background="#44EF4444"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textTitle" />
+
+        <!-- Buttons Container -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_button_rounded_green"
-            android:text="REVIVE (WATCH AD)"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/titleDivider"
+            app:layout_constraintVertical_bias="0.5">
 
-        <!-- Reboot Button -->
-        <Button
-            android:id="@+id/btnReboot"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_button_rounded_cyan"
-            android:text="REBOOT LEVEL"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            <Button
+                android:id="@+id/btnRevive"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/menu_btn_green"
+                android:text="REVIVE (WATCH AD)"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="14sp" />
 
-        <!-- Hall of Fame Button -->
-        <Button
-            android:id="@+id/btnHallOfFame"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_button_rounded_gold"
-            android:text="HALL OF FAME"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            <Button
+                android:id="@+id/btnReboot"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/menu_btn_cyan"
+                android:text="REBOOT LEVEL"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="14sp" />
 
-        <!-- Main Menu Button -->
-        <Button
-            android:id="@+id/btnMainMenu"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/bg_button_rounded_red"
-            android:text="MAIN MENU"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            <Button
+                android:id="@+id/btnHallOfFame"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/menu_btn_gold"
+                android:text="HALL OF FAME"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="14sp" />
 
-    </LinearLayout>
+            <Button
+                android:id="@+id/btnMainMenu"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/menu_btn_red"
+                android:text="MAIN MENU"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="14sp" />
 
-</RelativeLayout>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

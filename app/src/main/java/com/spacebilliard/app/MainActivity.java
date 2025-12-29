@@ -155,10 +155,15 @@ public class MainActivity extends Activity {
             String action = getIntent().getStringExtra("ACTION");
             if (action != null) {
                 if (action.equals("SHOW_HOWTO")) {
-                    gameView.showInstructions();
+                    Intent intent = new Intent(this, HowToPlayActivity.class);
+                    startActivity(intent);
+                    finish(); // Close MainActivity so we don't have it running in background unnecessarily if
+                              // coming effectively from main menu
                     return true;
                 } else if (action.equals("SHOW_HOF")) {
-                    gameView.showHighScore();
+                    Intent intent = new Intent(this, HallOfFameActivity.class);
+                    startActivity(intent);
+                    finish();
                     return true;
                 }
             }
@@ -195,8 +200,10 @@ public class MainActivity extends Activity {
                 gameView.rebootLevel();
                 hideAllPanels();
             } else if (resultCode == GameOverActivity.RESULT_HOF) {
-                gameView.showHighScore();
-                hideAllPanels();
+                Intent intent = new Intent(this, HallOfFameActivity.class);
+                startActivity(intent);
+                finish(); // Close this game session
+
             } else if (resultCode == GameOverActivity.RESULT_MAIN_MENU) {
                 gameView.resetToMainMenu();
                 finish();

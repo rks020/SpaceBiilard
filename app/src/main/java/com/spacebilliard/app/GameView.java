@@ -338,8 +338,6 @@ public class GameView extends SurfaceView implements Runnable {
     // Called when user watches rewarded ad to continue from current stage
     public void continueAfterAd() {
         if (gameOver) {
-            gameOver = false;
-
             // CRITICAL: Reset defeat flags to prevent loop
             showPlayerDefeated = false;
             showBossDefeated = false;
@@ -348,11 +346,11 @@ public class GameView extends SurfaceView implements Runnable {
             if (lives <= 0) {
                 lives = 3; // Give FULL lives back
             }
-            if (timeLeft <= 0) {
-                // Reset to level's initial time (same formula as initLevel)
-                timeLeft = 20000 + (level * 500L);
-                timeLeft = Math.min(timeLeft, 45000); // Max 45 sn
-            }
+
+            // Reset to level's initial time (same formula as initLevel) - ALWAYS on Revive
+            timeLeft = 20000 + (level * 500L);
+            timeLeft = Math.min(timeLeft, 45000); // Max 45 sn
+
             // Restore player ball
             if (whiteBall != null) {
                 whiteBall.x = centerX;
@@ -373,8 +371,11 @@ public class GameView extends SurfaceView implements Runnable {
                 floatingTexts.add(new FloatingText("BOSS RECOVERED!", centerX, centerY - 100, Color.RED));
             }
 
-            updateUIPanels();
+            // CRITICAL: Set gameOver = false BEFORE calling updateUIPanels to prevent loop
             gameStarted = true; // Ensure loop continues
+            gameOver = false; // MUST be false before updateUIPanels call
+            updateUIPanels(); // Now safe to call - won't trigger showGameOverScreen
+            lastTime = System.currentTimeMillis(); // ABSOLUTE LAST - prevent deltaTime loss during UI update
         }
     }
 
