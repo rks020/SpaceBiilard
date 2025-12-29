@@ -207,6 +207,10 @@ public class GameView extends SurfaceView implements Runnable {
     private int cachedPolygonSides = -1;
     private float cachedPolygonScale = -1f;
 
+    // PERFORMANCE: Object pools to reduce GC pressure
+    private ParticlePool particlePool;
+    private FloatingTextPool floatingTextPool;
+
     public GameView(Context context) {
         super(context);
         if (context instanceof MainActivity) {
@@ -230,6 +234,10 @@ public class GameView extends SurfaceView implements Runnable {
         electricEffects = new ArrayList<>();
         stars = new ArrayList<>();
         floatingTexts = new ArrayList<>();
+
+        // PERFORMANCE: Object pooling to reduce GC pressure
+        particlePool = new ParticlePool(this);
+        floatingTextPool = new FloatingTextPool(this);
 
         cachedXfermode = new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_ATOP);
 
@@ -6647,6 +6655,48 @@ public class GameView extends SurfaceView implements Runnable {
 
         boolean isDead() {
             return life <= 0;
+        }
+
+        // Reset methods for object pooling
+        Particle reset(float x, float y, float angle, float speed, int color) {
+            this.x = x;
+            this.y = y;
+            this.vx = (float) Math.cos(angle) * speed;
+            this.vy = (float) Math.sin(angle) * speed;
+            this.color = color;
+            this.life = 30;
+            this.maxLife = 30;
+            this.type = ParticleType.CIRCLE;
+            this.rotation = 0;
+            this.vRotation = 0;
+            return this;
+        }
+
+        Particle reset(float x, float y, float angle, float speed, int color, ParticleType type) {
+            reset(x, y, angle, speed, color);
+            this.type = type;
+            if (type == ParticleType.STAR) {
+                this.vRotation = (random.nextFloat() - 0.5f) * 0.2f;
+                this.maxLife = 40;
+                this.life = 40;
+            } else if (type == ParticleType.FLAME) {
+                this.maxLife = 20 + random.nextInt(15);
+                this.life = this.maxLife;
+                this.vx = (random.nextFloat() - 0.5f) * 2f;
+                this.vy = -random.nextFloat() * 4f - 2f;
+            } else if (type == ParticleType.CONFETTI) {
+                this.vRotation = (random.nextFloat() - 0.5f) * 0.5f;
+                this.maxLife = 50;
+                this.life = 50;
+                this.vx *= 0.8f;
+                this.vy *= 0.8f;
+            } else if (type == ParticleType.RIPPLE) {
+                this.vx = 0;
+                this.vy = 0;
+                this.maxLife = 40;
+                this.life = 40;
+            }
+            return this;
         }
 
         void draw(Canvas canvas, Paint paint) {
