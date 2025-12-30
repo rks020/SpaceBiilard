@@ -6,6 +6,11 @@
     android:clickable="true"
     android:focusable="true">
 
+    <!-- Custom Animated Background -->
+    <com.spacebilliard.app.ui.StarfieldBackgroundView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <!-- Container Card -->
     <LinearLayout
         android:layout_width="320dp"
@@ -124,27 +129,17 @@
             android:gravity="center">
 
             <!-- Reset Button -->
-            <Button
+            <com.spacebilliard.app.ui.NeonButton
                 android:id="@+id/btnReset"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_marginBottom="12dp"
-                android:background="@drawable/bg_button_rounded_red"
-                android:text="RESET STATS"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:layout_marginBottom="12dp" />
 
             <!-- Back Button -->
-            <Button
+            <com.spacebilliard.app.ui.NeonButton
                 android:id="@+id/btnBack"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/bg_button_rounded_cyan"
-                android:text="BACK"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:layout_height="50dp" />
                 
         </LinearLayout>
 

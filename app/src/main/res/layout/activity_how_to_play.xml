@@ -6,55 +6,131 @@
     android:clickable="true"
     android:focusable="true">
 
-    <!-- Container Card -->
-    <LinearLayout
-        android:layout_width="320dp"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@drawable/bg_card"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="24dp">
+    <!-- Custom Animated Background -->
+    <com.spacebilliard.app.ui.StarfieldBackgroundView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-        <!-- Title -->
-        <TextView
-            android:id="@+id/textTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:fontFamily="sans-serif-black"
-            android:shadowColor="#00FFFF"
-            android:shadowDx="0"
-            android:shadowDy="0"
-            android:shadowRadius="20"
-            android:text="HOW TO PLAY"
-            android:textColor="#00FFFF"
-            android:textSize="32sp"
-            android:textStyle="bold" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-        <!-- Instructions Text -->
-        <TextView
-            android:id="@+id/textInstructions"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
             android:gravity="center"
-            android:text="1. Drag and release to launch the ball.\n\n2. Hit all colored balls to clear the stage.\n\n3. Avoid black balls - they are dangerous!\n\n4. Collect power-ups to survive longer."
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:lineSpacingExtra="8dp" />
+            android:padding="24dp">
 
-        <!-- Got It Button -->
-        <Button
-            android:id="@+id/btnGotIt"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/bg_button_rounded_cyan"
-            android:text="GOT IT!"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            <!-- Container Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card"
+                android:orientation="vertical"
+                android:padding="24dp">
 
-    </LinearLayout>
+                <!-- Title -->
+                <TextView
+                    android:id="@+id/textTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="24dp"
+                    android:fontFamily="sans-serif-black"
+                    android:shadowColor="#00FFFF"
+                    android:shadowDx="0"
+                    android:shadowDy="0"
+                    android:shadowRadius="20"
+                    android:text="HOW TO PLAY"
+                    android:textColor="#00FFFF"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
+
+                <!-- 1. OBJECTIVE -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="OBJECTIVE"
+                    android:textColor="#AAAAAA"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Clear all colored balls to advance to the next stage. Complete 10 stages to unlock the next Space Level."
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
+
+                <!-- 2. CONTROLS -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="CONTROLS"
+                    android:textColor="#AAAAAA"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="• Drag anywhere on the screen to aim.\n• Release to launch the White Ball.\n• The further you drag, the more power you use."
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
+
+                <!-- 3. RULES -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="RULES"
+                    android:textColor="#AAAAAA"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="• Avoid Black Balls! Hitting them will cost you a life.\n• If you run out of lives, it's Game Over.\n• You have limited time per level in higher stages."
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
+
+                <!-- 4. POWER-UPS -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="POWER-UPS"
+                    android:textColor="#AAAAAA"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="32dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Collect floating icons to gain advantages:\n❤️ Extra Life\n🛡️ Shield (Protects from one black ball hit)\n⚡ Speed Boost"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
+
+                <!-- Got It Button -->
+                <com.spacebilliard.app.ui.NeonButton
+                    android:id="@+id/btnGotIt"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
 </RelativeLayout>

@@ -26,29 +26,18 @@ public class MainMenuActivity extends Activity {
 
         // Listeners for buttons
         Button btnStart = findViewById(R.id.btnStart);
-        Button btnOnline = findViewById(R.id.btnOnline);
+
         Button btnHowTo = findViewById(R.id.btnHowTo);
         Button btnHallOfFame = findViewById(R.id.btnHallOfFame);
         Button btnShop = findViewById(R.id.btnShop);
-        Button btnSettings = findViewById(R.id.btnSettings);
 
         btnStart.setOnClickListener(v -> {
             Intent intent = new Intent(MainMenuActivity.this, MainActivity.class);
             startActivity(intent);
         });
 
-        btnOnline.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, OnlineActivity.class);
-            startActivity(intent);
-        });
-
         btnShop.setOnClickListener(v -> {
             Intent intent = new Intent(MainMenuActivity.this, ShopActivity.class);
-            startActivity(intent);
-        });
-
-        btnSettings.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, SettingsActivity.class);
             startActivity(intent);
         });
 

@@ -113,6 +113,13 @@ attr buttonStyle
 attr buttonStyleSmall
 attr buttonTint
 attr buttonTintMode
+attr cardBackgroundColor
+attr cardCornerRadius
+attr cardElevation
+attr cardMaxElevation
+attr cardPreventCornerOverlap
+attr cardUseCompatPadding
+attr cardViewStyle
 attr carousel_backwardTransition
 attr carousel_emptyViewsBehavior
 attr carousel_firstView
@@ -167,6 +174,11 @@ attr contentInsetLeft
 attr contentInsetRight
 attr contentInsetStart
 attr contentInsetStartWithNavigation
+attr contentPadding
+attr contentPaddingBottom
+attr contentPaddingLeft
+attr contentPaddingRight
+attr contentPaddingTop
 attr contrast
 attr controlBackground
 attr crossfade
@@ -642,6 +654,10 @@ color button_material_dark
 color button_material_light
 color call_notification_answer_color
 color call_notification_decline_color
+color cardview_dark_background
+color cardview_light_background
+color cardview_shadow_end_color
+color cardview_shadow_start_color
 color common_google_signin_btn_text_dark
 color common_google_signin_btn_text_dark_default
 color common_google_signin_btn_text_dark_disabled
@@ -780,6 +796,9 @@ dimen abc_text_size_title_material
 dimen abc_text_size_title_material_toolbar
 dimen browser_actions_context_menu_max_width
 dimen browser_actions_context_menu_min_padding
+dimen cardview_compat_inset_shadow
+dimen cardview_default_elevation
+dimen cardview_default_radius
 dimen compat_button_inset_horizontal_material
 dimen compat_button_inset_vertical_material
 dimen compat_button_padding_horizontal_material
@@ -929,6 +948,7 @@ drawable bg_card
 drawable bg_card_loss
 drawable bg_card_win
 drawable bg_input_field
+drawable bg_menu_panel
 drawable btn_checkbox_checked_mtrl
 drawable btn_checkbox_checked_to_unchecked_mtrl_animation
 drawable btn_checkbox_unchecked_mtrl
@@ -1036,7 +1056,6 @@ id accessibility_custom_action_6
 id accessibility_custom_action_7
 id accessibility_custom_action_8
 id accessibility_custom_action_9
-id actionButtons
 id actionDown
 id actionDownUp
 id actionUp
@@ -1097,27 +1116,21 @@ id btnCancel
 id btnClose
 id btnConfirm
 id btnCreate
-id btnCreateRoom
 id btnGotIt
 id btnHallOfFame
 id btnHowTo
 id btnJoin
 id btnMainMenu
 id btnOk
-id btnOnline
 id btnReboot
-id btnRefresh
 id btnRematch
 id btnReset
 id btnRevive
-id btnSave
-id btnSettings
 id btnShop
 id btnStart
 id buttonPanel
 id cache_measures
 id callMeasure
-id cardCommander
 id carryVelocity
 id center
 id center_vertical
@@ -1167,8 +1180,6 @@ id easeIn
 id easeInOut
 id easeOut
 id east
-id editCommanderName
-id editRoomName
 id edit_query
 id edit_text_id
 id end
@@ -1183,7 +1194,6 @@ id graph_wrap
 id group_divider
 id grouping
 id groups
-id headerMissions
 id hide_ime_id
 id home
 id homeAsUp
@@ -1238,6 +1248,7 @@ id on
 id onInterceptTouchReturnSwipe
 id overshoot
 id packed
+id panelButtons
 id parent
 id parentPanel
 id parentRelative
@@ -1255,7 +1266,6 @@ id reverseSawtooth
 id right
 id right_icon
 id right_side
-id roomListContainer
 id sawtooth
 id screen
 id scrollIndicatorDown
@@ -1297,7 +1307,6 @@ id startHorizontal
 id startVertical
 id staticLayout
 id staticPostLayout
-id statsText
 id stop
 id submenuarrow
 id submit_area
@@ -1321,14 +1330,11 @@ id text2
 id textBestLevel
 id textHighScore
 id textHostName
-id textInstructions
-id textLosses
 id textMaxCombo
 id textRoomName
 id textSpacerNoButtons
 id textSpacerNoTitle
 id textTitle
-id textWins
 id time
 id title
 id titleDivider
@@ -1351,7 +1357,6 @@ id view_tree_view_model_store_owner
 id visible
 id west
 id wide
-id winLossContainer
 id withText
 id wrap
 id wrap_content
@@ -1403,8 +1408,6 @@ layout activity_game_over
 layout activity_hall_of_fame
 layout activity_how_to_play
 layout activity_main_menu
-layout activity_online
-layout activity_settings
 layout admob_empty_layout
 layout browser_actions_context_menu_page
 layout browser_actions_context_menu_row
@@ -1534,6 +1537,7 @@ style Base_AlertDialog_AppCompat_Light
 style Base_Animation_AppCompat_Dialog
 style Base_Animation_AppCompat_DropDownUp
 style Base_Animation_AppCompat_Tooltip
+style Base_CardView
 style Base_DialogWindowTitle_AppCompat
 style Base_DialogWindowTitleBackground_AppCompat
 style Base_TextAppearance_AppCompat
@@ -1685,6 +1689,9 @@ style Base_Widget_AppCompat_TextView
 style Base_Widget_AppCompat_TextView_SpinnerItem
 style Base_Widget_AppCompat_Toolbar
 style Base_Widget_AppCompat_Toolbar_Button_Navigation
+style CardView
+style CardView_Dark
+style CardView_Light
 style Platform_AppCompat
 style Platform_AppCompat_Light
 style Platform_ThemeOverlay_AppCompat
@@ -1893,6 +1900,7 @@ styleable AppCompatTextView android_textAppearance autoSizeMaxTextSize autoSizeM
 styleable AppCompatTheme android_windowIsFloating android_windowAnimationStyle actionBarDivider actionBarItemBackground actionBarPopupTheme actionBarSize actionBarSplitStyle actionBarStyle actionBarTabBarStyle actionBarTabStyle actionBarTabTextStyle actionBarTheme actionBarWidgetTheme actionButtonStyle actionDropDownStyle actionMenuTextAppearance actionMenuTextColor actionModeBackground actionModeCloseButtonStyle actionModeCloseDrawable actionModeCopyDrawable actionModeCutDrawable actionModeFindDrawable actionModePasteDrawable actionModePopupWindowStyle actionModeSelectAllDrawable actionModeShareDrawable actionModeSplitBackground actionModeStyle actionModeWebSearchDrawable actionOverflowButtonStyle actionOverflowMenuStyle activityChooserViewStyle alertDialogButtonGroupStyle alertDialogCenterButtons alertDialogStyle alertDialogTheme autoCompleteTextViewStyle borderlessButtonStyle buttonBarButtonStyle buttonBarNegativeButtonStyle buttonBarNeutralButtonStyle buttonBarPositiveButtonStyle buttonBarStyle buttonStyle buttonStyleSmall checkboxStyle checkedTextViewStyle colorAccent colorBackgroundFloating colorButtonNormal colorControlActivated colorControlHighlight colorControlNormal colorError colorPrimary colorPrimaryDark colorSwitchThumbNormal controlBackground dialogCornerRadius dialogPreferredPadding dialogTheme dividerHorizontal dividerVertical dropDownListViewStyle dropdownListPreferredItemHeight editTextBackground editTextColor editTextStyle homeAsUpIndicator imageButtonStyle listChoiceBackgroundIndicator listChoiceIndicatorMultipleAnimated listChoiceIndicatorSingleAnimated listDividerAlertDialog listMenuViewStyle listPopupWindowStyle listPreferredItemHeight listPreferredItemHeightLarge listPreferredItemHeightSmall listPreferredItemPaddingEnd listPreferredItemPaddingLeft listPreferredItemPaddingRight listPreferredItemPaddingStart panelBackground panelMenuListTheme panelMenuListWidth popupMenuStyle popupWindowStyle radioButtonStyle ratingBarStyle ratingBarStyleIndicator ratingBarStyleSmall searchViewStyle seekBarStyle selectableItemBackground selectableItemBackgroundBorderless spinnerDropDownItemStyle spinnerStyle switchStyle textAppearanceLargePopupMenu textAppearanceListItem textAppearanceListItemSecondary textAppearanceListItemSmall textAppearancePopupMenuHeader textAppearanceSearchResultSubtitle textAppearanceSearchResultTitle textAppearanceSmallPopupMenu textColorAlertDialogListItem textColorSearchUrl toolbarNavigationButtonStyle toolbarStyle tooltipForegroundColor tooltipFrameBackground viewInflaterClass windowActionBar windowActionBarOverlay windowActionModeOverlay windowFixedHeightMajor windowFixedHeightMinor windowFixedWidthMajor windowFixedWidthMinor windowMinWidthMajor windowMinWidthMinor windowNoTitle
 styleable ButtonBarLayout allowStacking
 styleable Capability queryPatterns shortcutMatchRequired
+styleable CardView android_minWidth android_minHeight cardBackgroundColor cardCornerRadius cardElevation cardMaxElevation cardPreventCornerOverlap cardUseCompatPadding contentPadding contentPaddingBottom contentPaddingLeft contentPaddingRight contentPaddingTop
 styleable Carousel carousel_backwardTransition carousel_emptyViewsBehavior carousel_firstView carousel_forwardTransition carousel_infinite carousel_nextState carousel_previousState carousel_touchUpMode carousel_touchUp_dampeningFactor carousel_touchUp_velocityThreshold
 styleable ColorStateListItem android_color android_alpha android_lStar alpha lStar
 styleable CompoundButton android_button buttonCompat buttonTint buttonTintMode

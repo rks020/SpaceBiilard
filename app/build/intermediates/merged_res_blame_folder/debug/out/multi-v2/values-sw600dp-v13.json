@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.spacebilliard.app-mergeDebugResources-25:/values-sw600dp-v13/values-sw600dp-v13.xml",
+            "outputFile": "com.spacebilliard.app-mergeDebugResources-26:/values-sw600dp-v13/values-sw600dp-v13.xml",
             "map": [
                 {
                     "source": "C:\\Users\\raufk\\.gradle\\caches\\9.0-milestone-1\\transforms\\897bd1369bc4e593d0fade74f711ecdf\\transformed\\appcompat-1.2.0\\res\\values-sw600dp-v13\\values-sw600dp-v13.xml",

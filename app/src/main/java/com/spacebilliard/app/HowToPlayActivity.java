@@ -5,7 +5,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.graphics.Color;
+
+import com.spacebilliard.app.ui.NeonButton;
 
 public class HowToPlayActivity extends Activity {
 
@@ -23,7 +27,9 @@ public class HowToPlayActivity extends Activity {
         // Prevent closing by touching outside (modal behavior)
         setFinishOnTouchOutside(false);
 
-        Button btnGotIt = findViewById(R.id.btnGotIt);
+        NeonButton btnGotIt = findViewById(R.id.btnGotIt);
+        btnGotIt.setText("GOT IT!");
+        btnGotIt.setThemeColor(Color.parseColor("#00E5FF")); // Cyan
 
         btnGotIt.setOnClickListener(v -> {
             finish();

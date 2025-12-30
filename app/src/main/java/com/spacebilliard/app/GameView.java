@@ -65,18 +65,7 @@ public class GameView extends SurfaceView implements Runnable {
     private ArrayList<ElectricEffect> electricEffects;
     private final ArrayList<Star> stars; // Static background stars
     private final ArrayList<Comet> comets; // Background comets for Space 2
-    // Online Mode Support
-    private boolean isOnlineMode = false;
-    private com.spacebilliard.app.network.OnlineGameManager onlineGameManager;
-    private boolean isOnlineHost = false;
-    private final long onlineTimeLeft = 30000; // 30 sec per set
-    private final long lastOnlineUpdateTime = 0;
-    // Additional Online Fields
-    private Ball hostBall;
-    private Ball guestBall;
-    private final ArrayList<Ball> onlineColoredBalls = new ArrayList<>();
-    private String hostName = "";
-    private String guestName = "";
+
     // Oyun durumu
     private boolean gameStarted = false;
     private boolean gameOver = false;
@@ -295,25 +284,6 @@ public class GameView extends SurfaceView implements Runnable {
             comets.add(new Comet());
         }
 
-    }
-
-    public void setOnlineMode(boolean online, com.spacebilliard.app.network.OnlineGameManager manager, boolean isHost) {
-        this.isOnlineMode = online;
-        this.onlineGameManager = manager;
-        this.isOnlineHost = isHost;
-        if (online) {
-            if (coloredBalls != null)
-                coloredBalls.clear();
-            if (blackBalls != null)
-                blackBalls.clear();
-            gameStarted = true;
-            showLevelSelector = false;
-        }
-    }
-
-    public void setOnlineNames(String host, String guest) {
-        this.hostName = host != null ? host : "";
-        this.guestName = guest != null ? guest : "";
     }
 
     // Removed setMenuButtons method as MainActivity handles buttons now
@@ -907,16 +877,6 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void update() {
-        if (isOnlineMode) {
-            // Online mode: update particles only
-            for (int i = particles.size() - 1; i >= 0; i--) {
-                Particle p = particles.get(i);
-                p.update();
-                if (p.isDead())
-                    particles.remove(i);
-            }
-            return;
-        }
 
         // Offline Logic: Lightning Sequencer
         if (pendingLightningStrikes > 0) {
@@ -2464,77 +2424,46 @@ public class GameView extends SurfaceView implements Runnable {
                 arc.draw(canvas, paint);
             }
 
-            if (isOnlineMode) {
-                try {
-                    if (onlineColoredBalls != null) {
-                        synchronized (onlineColoredBalls) {
-                            for (Ball ball : onlineColoredBalls)
-                                drawBall(canvas, ball);
-                        }
-                    }
-                    if (hostBall != null) {
-                        drawBall(canvas, hostBall);
-                        if (hostName != null && !hostName.isEmpty()) {
-                            paint.setColor(Color.WHITE);
-                            paint.setTextSize(30);
-                            paint.setTextAlign(Paint.Align.CENTER);
-                            canvas.drawText(hostName, hostBall.x, hostBall.y - hostBall.radius - 10, paint);
-                        }
-                    }
-                    if (guestBall != null) {
-                        drawBall(canvas, guestBall);
-                        if (guestName != null && !guestName.isEmpty()) {
-                            paint.setColor(Color.WHITE);
-                            paint.setTextSize(30);
-                            paint.setTextAlign(Paint.Align.CENTER);
-                            canvas.drawText(guestName, guestBall.x, guestBall.y - guestBall.radius - 10, paint);
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-                // Draw Boss
-                if (currentBoss != null) {
-                    currentBoss.draw(canvas);
-                }
+            // Draw Boss
+            if (currentBoss != null) {
+                currentBoss.draw(canvas);
+            }
 
-                // Toplar
-                for (int i = 0; i < coloredBalls.size(); i++) {
-                    Ball ball = coloredBalls.get(i);
-                    drawBall(canvas, ball);
-                }
+            // Toplar
+            for (int i = 0; i < coloredBalls.size(); i++) {
+                Ball ball = coloredBalls.get(i);
+                drawBall(canvas, ball);
+            }
 
-                for (int i = 0; i < blackBalls.size(); i++) {
-                    Ball ball = blackBalls.get(i);
-                    drawBall(canvas, ball);
-                }
+            for (int i = 0; i < blackBalls.size(); i++) {
+                Ball ball = blackBalls.get(i);
+                drawBall(canvas, ball);
+            }
 
-                for (int i = 0; i < specialBalls.size(); i++) {
-                    SpecialBall ball = specialBalls.get(i);
-                    drawSpecialBall(canvas, ball);
-                }
+            for (int i = 0; i < specialBalls.size(); i++) {
+                SpecialBall ball = specialBalls.get(i);
+                drawSpecialBall(canvas, ball);
+            }
 
-                for (int i = 0; i < cloneBalls.size(); i++) {
-                    Ball ball = cloneBalls.get(i);
-                    drawBall(canvas, ball);
+            for (int i = 0; i < cloneBalls.size(); i++) {
+                Ball ball = cloneBalls.get(i);
+                drawBall(canvas, ball);
 
-                    // Clone topu için geri sayım göster
-                    if (ball.isClone && ball.lifetime > 0) {
-                        long elapsed = System.currentTimeMillis() - ball.creationTime;
-                        long remaining = ball.lifetime - elapsed;
-                        int seconds = (int) Math.ceil(remaining / 1000.0);
+                // Clone topu için geri sayım göster
+                if (ball.isClone && ball.lifetime > 0) {
+                    long elapsed = System.currentTimeMillis() - ball.creationTime;
+                    long remaining = ball.lifetime - elapsed;
+                    int seconds = (int) Math.ceil(remaining / 1000.0);
 
-                        if (seconds > 0 && seconds <= 5) {
-                            paint.setStyle(Paint.Style.FILL);
-                            paint.setTextSize(ball.radius * 1.2f);
-                            paint.setTextAlign(Paint.Align.CENTER);
-                            paint.setColor(Color.WHITE);
-                            paint.setShadowLayer(8, 0, 0, Color.BLACK);
-                            canvas.drawText(String.valueOf(seconds), ball.x + ball.radius * 0.8f,
-                                    ball.y - ball.radius * 0.8f, paint);
-                            paint.clearShadowLayer();
-                        }
+                    if (seconds > 0 && seconds <= 5) {
+                        paint.setStyle(Paint.Style.FILL);
+                        paint.setTextSize(ball.radius * 1.2f);
+                        paint.setTextAlign(Paint.Align.CENTER);
+                        paint.setColor(Color.WHITE);
+                        paint.setShadowLayer(8, 0, 0, Color.BLACK);
+                        canvas.drawText(String.valueOf(seconds), ball.x + ball.radius * 0.8f,
+                                ball.y - ball.radius * 0.8f, paint);
+                        paint.clearShadowLayer();
                     }
                 }
             }
@@ -2557,7 +2486,7 @@ public class GameView extends SurfaceView implements Runnable {
 
             // Beyaz top (Sadece offline modda çiziyoruz, online modda hostBall/guestBall
             // kullanılıyor)
-            if (!isOnlineMode && !showPlayerDefeated) {
+            if (!showPlayerDefeated) {
                 drawBall(canvas, whiteBall);
             }
 
@@ -4647,10 +4576,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (isOnlineMode) {
-            handleOnlineTouch(event);
-            return true;
-        }
+
         float touchX = event.getX();
         float touchY = event.getY();
 
@@ -5501,8 +5427,8 @@ public class GameView extends SurfaceView implements Runnable {
                 if (lvNum % 10 == 0) {
                     paint.setTextSize(cellHeight * 0.15f);
                     paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-                    paint.setColor(Color.rgb(255, 100, 100)); // Light Red
-                    canvas.drawText("BOSS LEVEL", btnX, btnY + cellHeight * 0.35f, paint);
+                    paint.setColor(Color.RED); // Pure Red
+                    canvas.drawText("BOSS LEVEL", btnX, btnY + cellHeight * 0.42f, paint);
                 }
 
                 // Yıldızlar (Basit mantık: 3 yıldız görsel)
@@ -5514,6 +5440,14 @@ public class GameView extends SurfaceView implements Runnable {
                 paint.setColor(Color.LTGRAY);
                 paint.setTextSize(cellHeight * 0.4f);
                 canvas.drawText("🔒", btnX, btnY + cellHeight * 0.15f, paint);
+
+                // Show BOSS LEVEL text even if locked
+                if (lvNum % 10 == 0) {
+                    paint.setTextSize(cellHeight * 0.15f);
+                    paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                    paint.setColor(Color.RED); // Pure Red
+                    canvas.drawText("BOSS LEVEL", btnX, btnY + cellHeight * 0.42f, paint);
+                }
             }
         }
 
@@ -6017,180 +5951,11 @@ public class GameView extends SurfaceView implements Runnable {
         this.level = levelNum;
         this.stage = 1;
 
-        if (isOnlineMode) {
-            // Online mode: Skip level selector, start game directly
-            gameStarted = true;
-            gameOver = false;
-            lives = 3;
-            score = 0;
-            timeLeft = 30000; // 30 sec for online
-            lastTime = System.currentTimeMillis();
-
-            // Initialize level directly
-            initLevel(level);
-
-            // Start game thread
-            resume();
-        } else {
-            // Normal mode: Use standard flow
-            startGame();
-        }
+        startGame();
     }
 
     public int getCurrentLevel() {
         return level;
-    }
-
-    public void updateOnlineState(String hostJson, String guestJson, String ballsJson) {
-        if (screenWidth <= 0 || screenHeight <= 0 || circleRadius <= 0)
-            return;
-        try {
-            if (hostJson != null) {
-                org.json.JSONObject b = new org.json.JSONObject(hostJson);
-                if (!b.isNull("x") && !b.isNull("y")) {
-                    float x = (float) b.optDouble("x", 0.5) * screenWidth;
-                    float y = (float) b.optDouble("y", 0.5) * screenHeight;
-                    int color = Color.GRAY; // P1: Gray
-                    try {
-                        String colorStr = b.optString("color", "#888888");
-                        color = Color.parseColor(colorStr);
-                    } catch (Exception ignored) {
-                    }
-
-                    if (hostBall == null)
-                        hostBall = new Ball(x, y, circleRadius * 0.05f, color);
-                    hostBall.x = x;
-                    hostBall.y = y;
-                    hostBall.color = color;
-                    hostBall.radius = circleRadius * 0.05f;
-                }
-            }
-            if (guestJson != null) {
-                org.json.JSONObject b = new org.json.JSONObject(guestJson);
-                if (!b.isNull("x") && !b.isNull("y")) {
-                    float x = (float) b.optDouble("x", 0.5) * screenWidth;
-                    float y = (float) b.optDouble("y", 0.5) * screenHeight;
-                    int color = Color.WHITE; // P2: White
-                    try {
-                        String colorStr = b.optString("color", "#FFFFFF");
-                        color = Color.parseColor(colorStr);
-                    } catch (Exception ignored) {
-                    }
-
-                    if (guestBall == null)
-                        guestBall = new Ball(x, y, circleRadius * 0.05f, color);
-                    guestBall.x = x;
-                    guestBall.y = y;
-                    guestBall.color = color;
-                    guestBall.radius = circleRadius * 0.05f;
-                }
-            }
-            if (ballsJson != null) {
-                org.json.JSONArray arr = new org.json.JSONArray(ballsJson);
-                synchronized (onlineColoredBalls) {
-                    // Optimization: Reuse objects if count matches
-                    if (onlineColoredBalls.size() == arr.length()) {
-                        for (int i = 0; i < arr.length(); i++) {
-                            org.json.JSONObject b = arr.getJSONObject(i);
-                            // Safe parse
-                            float x = (float) b.optDouble("x", 0.5) * screenWidth;
-                            float y = (float) b.optDouble("y", 0.5) * screenHeight;
-                            int color = Color.RED; // Default
-                            try {
-                                color = Color.parseColor(b.optString("color", "#FF0000"));
-                            } catch (Exception ignored) {
-                            }
-
-                            Ball ball = onlineColoredBalls.get(i);
-                            ball.x = x;
-                            ball.y = y;
-                            ball.color = color;
-                            ball.radius = circleRadius * 0.055f;
-                        }
-                    } else {
-                        // Recreate
-                        onlineColoredBalls.clear();
-                        float safeRadius = (circleRadius > 0) ? circleRadius * 0.055f : 10f;
-                        for (int i = 0; i < arr.length(); i++) {
-                            org.json.JSONObject b = arr.getJSONObject(i);
-                            float x = (float) b.optDouble("x", 0.5) * screenWidth;
-                            float y = (float) b.optDouble("y", 0.5) * screenHeight;
-                            int color = Color.RED;
-                            try {
-                                color = Color.parseColor(b.optString("color", "#FF0000"));
-                            } catch (Exception ignored) {
-                            }
-
-                            Ball ball = new Ball(x, y, safeRadius, color);
-                            onlineColoredBalls.add(ball);
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            android.util.Log.e("GameViewOnline", "JSON Error: " + e.getMessage());
-            e.printStackTrace();
-            if (floatingTexts != null) {
-                floatingTexts.add(new FloatingText("JSON ERR", centerX, centerY, Color.RED));
-            }
-        }
-    }
-
-    private void handleOnlineTouch(MotionEvent event) {
-        float touchX = event.getX();
-        float touchY = event.getY();
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                Ball myBall = isOnlineHost ? hostBall : guestBall;
-                if (myBall != null) {
-                    float dx = touchX - myBall.x;
-                    float dy = touchY - myBall.y;
-                    if (Math.sqrt(dx * dx + dy * dy) < circleRadius * 0.3f) {
-                        isDragging = true;
-                        dragStartX = myBall.x;
-                        dragStartY = myBall.y;
-                        draggedBall = myBall;
-                    }
-                }
-                break;
-            case MotionEvent.ACTION_MOVE:
-                if (isDragging && draggedBall != null) {
-                    // Sadece görsel efekt için draggedBall'u fareye çekmiyoruz
-                    // Ters yöne çekme efekti (Kuyruk/Istaka gibi)
-                    // Ama GameView drag logic'i fareyi takip ediyordu (topu taşıyordu).
-                    // Biz de öyle yapalım.
-                    draggedBall.x = touchX;
-                    draggedBall.y = touchY;
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-                if (isDragging && draggedBall != null) {
-                    float dx = dragStartX - touchX;
-                    float dy = dragStartY - touchY;
-                    float angle = (float) Math.atan2(dy, dx);
-                    float rawPower = (float) Math.sqrt(dx * dx + dy * dy);
-                    float power = Math.min(rawPower, 200.0f);
-
-                    // Sıfırla
-                    draggedBall.x = dragStartX;
-                    draggedBall.y = dragStartY;
-
-                    if (power > 10) {
-                        if (onlineGameManager != null) {
-                            float normX = draggedBall.x / getWidth();
-                            float normY = draggedBall.y / getHeight();
-                            onlineGameManager.sendShot(angle, power, normX, normY);
-                        } else {
-                            android.util.Log.e("GameViewOnline", "onlineGameManager is NULL!");
-                            floatingTexts.add(new FloatingText("ERR: OFFLINE", dragStartX, dragStartY, Color.RED));
-                        }
-                    }
-                    isDragging = false;
-                    draggedBall = null;
-                }
-                break;
-        }
     }
 
     private void drawSkillButton(Canvas canvas) {

@@ -10,6 +10,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Color;
+
+import com.spacebilliard.app.ui.NeonButton;
 
 public class HallOfFameActivity extends Activity {
 
@@ -35,8 +38,13 @@ public class HallOfFameActivity extends Activity {
         textHighScore = findViewById(R.id.textHighScore);
         textMaxCombo = findViewById(R.id.textMaxCombo);
 
-        Button btnReset = findViewById(R.id.btnReset);
-        Button btnBack = findViewById(R.id.btnBack);
+        NeonButton btnReset = findViewById(R.id.btnReset);
+        btnReset.setText("RESET STATS");
+        btnReset.setThemeColor(Color.parseColor("#FF1744")); // Red
+
+        NeonButton btnBack = findViewById(R.id.btnBack);
+        btnBack.setText("BACK");
+        btnBack.setThemeColor(Color.parseColor("#00E5FF")); // Cyan
 
         loadStats();
 

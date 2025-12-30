@@ -21,11 +21,10 @@ public class NeonMainMenuPanel extends FrameLayout {
 
     // Buttons
     public NeonButton btnStart;
-    public NeonButton btnPlayOnline;
+
     public NeonButton btnHowTo;
     public NeonButton btnHallOfFame; // Hall of Fame
     public NeonButton btnShop;
-    public NeonButton btnSettings;
 
     public NeonMainMenuPanel(Context context) {
         super(context);
@@ -69,10 +68,6 @@ public class NeonMainMenuPanel extends FrameLayout {
         btnStart = new NeonButton(context, "START GAME", Color.parseColor("#00E5FF")); // Cyan
         addView(btnStart, createParams(buttonWidth, buttonHeight));
 
-        // 2. PLAY ONLINE (Green)
-        btnPlayOnline = new NeonButton(context, "PLAY ONLINE", Color.parseColor("#00C853")); // Green
-        addView(btnPlayOnline, createParams(buttonWidth, buttonHeight));
-
         // 3. HOW TO PLAY (Purple)
         btnHowTo = new NeonButton(context, "HOW TO PLAY", Color.parseColor("#AA00FF")); // Purple
         addView(btnHowTo, createParams(buttonWidth, buttonHeight));
@@ -84,10 +79,6 @@ public class NeonMainMenuPanel extends FrameLayout {
         // 5. SHOP (Red/Pink)
         btnShop = new NeonButton(context, "SHOP", Color.parseColor("#FF1744")); // Red/Pink
         addView(btnShop, createParams(buttonWidth, buttonHeight));
-
-        // 6. SETTINGS (Deep Orange)
-        btnSettings = new NeonButton(context, "SETTINGS", Color.parseColor("#FF6D00")); // Deep Orange
-        addView(btnSettings, createParams(buttonWidth, buttonHeight));
 
         refreshStats();
     }
@@ -119,11 +110,9 @@ public class NeonMainMenuPanel extends FrameLayout {
         float gap = 65 * density; // Vertical spacing
 
         btnStart.setY(startY);
-        btnPlayOnline.setY(startY + gap);
-        btnHowTo.setY(startY + gap * 2);
-        btnHallOfFame.setY(startY + gap * 3);
-        btnShop.setY(startY + gap * 4);
-        btnSettings.setY(startY + gap * 5);
+        btnHowTo.setY(startY + gap);
+        btnHallOfFame.setY(startY + gap * 2);
+        btnShop.setY(startY + gap * 3);
     }
 
     @Override

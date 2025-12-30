@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.spacebilliard.app-mergeDebugResources-25:/values-watch-v20/values-watch-v20.xml",
+            "outputFile": "com.spacebilliard.app-mergeDebugResources-26:/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
                     "source": "C:\\Users\\raufk\\.gradle\\caches\\9.0-milestone-1\\transforms\\897bd1369bc4e593d0fade74f711ecdf\\transformed\\appcompat-1.2.0\\res\\values-watch-v20\\values-watch-v20.xml",

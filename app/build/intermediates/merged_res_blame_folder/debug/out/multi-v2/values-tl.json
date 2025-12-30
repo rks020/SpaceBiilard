@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.spacebilliard.app-mergeDebugResources-25:/values-tl/values-tl.xml",
+            "outputFile": "com.spacebilliard.app-mergeDebugResources-26:/values-tl/values-tl.xml",
             "map": [
                 {
                     "source": "C:\\Users\\raufk\\.gradle\\caches\\9.0-milestone-1\\transforms\\76bd5522a9076ad76cdb75b370372134\\transformed\\jetified-play-services-ads-23.0.0\\res\\values-tl\\values.xml",
