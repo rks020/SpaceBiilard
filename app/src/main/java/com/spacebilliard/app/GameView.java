@@ -6170,50 +6170,6 @@ public class GameView extends SurfaceView implements Runnable {
         long currentTime = System.currentTimeMillis();
         boolean isOnCooldown = (currentTime - lastSkillUseTime < SKILL_COOLDOWN);
 
-        // --- PASSIVE TELEPORT SLOT UI (Draw first so it's always visible) ---
-        float slotX = 60; // Top-left aligned
-        float slotY = screenHeight * 0.25f; // Lower down (Further down requested)
-        float slotRadius = 35;
-
-        // Slot border
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(3);
-
-        int slotColor = Color.DKGRAY;
-        if (activePassivePower.equals("teleport"))
-            slotColor = Color.GREEN;
-        else if (activePassivePower.equals("split_save"))
-            slotColor = Color.MAGENTA;
-
-        paint.setColor(slotColor);
-        if (!activePassivePower.equals("none"))
-            paint.setShadowLayer(10, 0, 0, slotColor);
-
-        canvas.drawCircle(slotX, slotY, slotRadius, paint);
-        paint.clearShadowLayer();
-
-        // Icon
-        if (!activePassivePower.equals("none")) {
-            // Inner glow
-            paint.setStyle(Paint.Style.FILL);
-            paint.setColor(slotColor);
-            paint.setAlpha(50);
-            canvas.drawCircle(slotX, slotY, slotRadius * 0.8f, paint);
-            paint.setAlpha(255);
-
-            // Text
-            String letter = "";
-            if (activePassivePower.equals("teleport"))
-                letter = "TP";
-            else if (activePassivePower.equals("split_save"))
-                letter = "SS";
-
-            paint.setTextSize(40);
-            paint.setTextAlign(Paint.Align.CENTER);
-            float pTextY = slotY - ((paint.descent() + paint.ascent()) / 2);
-            canvas.drawText(letter, slotX, pTextY, paint);
-        }
-
         // Hide skill button if None and not on Cooldown
         if (activeSkill.equals("None") && !isOnCooldown)
             return;
