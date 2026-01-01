@@ -174,6 +174,12 @@ public class GameView extends SurfaceView implements Runnable {
     private final ArrayList<Ball> bossProjectiles = new ArrayList<>();
     private long lastImpactSoundTime = 0; // Throttle impact sounds
     private float playerHp = 1000, playerMaxHp = 1000;
+
+    // CRYO-STASIS Freeze Mechanic
+    private long freezeProximityStartTime = 0;
+    private boolean isFrozen = false;
+    private long frozenEndTime = 0;
+
     private int coins = 0;
     private int pendingColoredBalls = 0; // Toplar yavaş yavaş gelecek
     private boolean extraTimeActive = false; // Added missing variable
@@ -501,7 +507,9 @@ public class GameView extends SurfaceView implements Runnable {
         nebula1 = new RadialGradient(centerX, centerY, Math.max(screenWidth, screenHeight),
                 new int[] { Color.rgb(30, 10, 50), Color.rgb(5, 5, 10) }, null, Shader.TileMode.CLAMP);
 
-        initGiantMeteorGraphics();
+        // PERFORMANCE: Lazy-load meteor graphics when Space 2 is actually reached
+        // (prevents 100-300ms startup freeze)
+        // initGiantMeteorGraphics();
     }
 
     private void generateBossBackground(String bossName) {
@@ -829,14 +837,30 @@ public class GameView extends SurfaceView implements Runnable {
         timeLeft = duration;
         currentBoss = new Boss(name, hp, color);
 
-        // Boss Info Screen
-        levelInfoText = "WARNING: BOSS ENCOUNTER\n" + name;
-        if (name.equals("SOLARION"))
-            levelInfoText = "WARNING: SOLARION\nDO NOT WAIT TOO MUCH NEAR THE BOSS\nYOU WILL BURN";
-        else if (name.equals("NEBULON"))
-            levelInfoText = "BOSS: NEBULON\nHIGH DENSITY - FRICTION INCREASED";
-        else if (name.equals("GRAVITON"))
-            levelInfoText = "BOSS: GRAVITON\nPASSIVE: REGENERATES HP IF IT PULLS BALLS INTO ITSELF";
+        // Boss Info Screen - Detailed descriptions for all bosses
+        if (name.equals("VOID TITAN")) {
+            levelInfoText = "WARNING: VOID TITAN\nHOMING MISSILES\nSTAY MOBILE!";
+        } else if (name.equals("LUNAR CONSTRUCT")) {
+            levelInfoText = "BOSS: LUNAR CONSTRUCT\nSUMMONS UFO ALLIES\nDESTROY UFOs FAST";
+        } else if (name.equals("SOLARION")) {
+            levelInfoText = "WARNING: SOLARION\nSOLAR FLARES\nDON'T GET TOO CLOSE!";
+        } else if (name.equals("NEBULON")) {
+            levelInfoText = "BOSS: NEBULON\nHIGH DENSITY FIELD\nINCREASED FRICTION";
+        } else if (name.equals("GRAVITON")) {
+            levelInfoText = "BOSS: GRAVITON\nEVENT HORIZON ATTACK\nAVOID CENTER - HP REGEN";
+        } else if (name.equals("MECHA-CORE")) {
+            levelInfoText = "WARNING: MECHA-CORE\nELECTRIC PULSES\nRAPID FIRE ATTACKS";
+        } else if (name.equals("CRYO-STASIS")) {
+            levelInfoText = "BOSS: CRYO-STASIS\nICE BARRAGE\nSTAY CLOSE = FREEZE";
+        } else if (name.equals("GEO-BREAKER")) {
+            levelInfoText = "WARNING: GEO-BREAKER\nMAGMA PATCHES\nAVOID LAVA POOLS!";
+        } else if (name.equals("BIO-HAZARD")) {
+            levelInfoText = "BOSS: BIO-HAZARD\nTOXIC CLOUDS\nCONTAMINATION SPREADS";
+        } else if (name.equals("CHRONO-SHIFTER")) {
+            levelInfoText = "WARNING: CHRONO-SHIFTER\nTIME DISTORTION\nFINAL BOSS!";
+        } else {
+            levelInfoText = "WARNING: BOSS ENCOUNTER\n" + name;
+        }
 
         levelInfoEndTime = System.currentTimeMillis() + 7000;
 
@@ -1307,7 +1331,16 @@ public class GameView extends SurfaceView implements Runnable {
         if (whiteBall == null)
             return; // Safety check initialization
 
-        if (!isDragging || draggedBall != whiteBall) {
+        // FROZEN STATE: Check if freeze time expired
+        if (isFrozen) {
+            if (System.currentTimeMillis() > frozenEndTime) {
+                isFrozen = false;
+                floatingTexts.add(new FloatingText("ICE MELTED", whiteBall.x, whiteBall.y - 80, Color.WHITE));
+            }
+        }
+
+        // Player ball movement (SKIP if frozen)
+        if (!isFrozen && (!isDragging || draggedBall != whiteBall)) {
             whiteBall.x += whiteBall.vx;
             whiteBall.y += whiteBall.vy;
 
@@ -1316,6 +1349,20 @@ public class GameView extends SurfaceView implements Runnable {
 
             // Trail update
             updateBallTrail(whiteBall);
+        } else if (isFrozen) {
+            // Frozen - allow movement from knockback, but don't lock if ball has velocity
+            float speed = (float) Math.sqrt(whiteBall.vx * whiteBall.vx + whiteBall.vy * whiteBall.vy);
+            if (speed > 2.0f) {
+                // Being knocked back - allow movement
+                whiteBall.x += whiteBall.vx;
+                whiteBall.y += whiteBall.vy;
+                whiteBall.vx *= 0.95f; // Slow down knockback
+                whiteBall.vy *= 0.95f;
+            } else {
+                // Not moving - lock in place
+                whiteBall.vx = 0;
+                whiteBall.vy = 0;
+            }
         }
 
         // Clone toplar
@@ -1358,7 +1405,8 @@ public class GameView extends SurfaceView implements Runnable {
             ambience = "NEBULON"; // Space 4 Ambience
         }
 
-        if (!ambience.isEmpty() && random.nextFloat() < 0.05f) { // 5% per frame
+        if (!ambience.isEmpty() && particles.size() < 150 && random.nextFloat() < 0.01f) { // 1% per frame, capped at
+                                                                                           // 150
             float x = random.nextFloat() * screenWidth;
             float y = random.nextFloat() * screenHeight; // Spawn anywhere
             float angle = (float) (Math.PI / 2); // Upward
@@ -2034,6 +2082,43 @@ public class GameView extends SurfaceView implements Runnable {
                 float dx = p.x - whiteBall.x;
                 float dy = p.y - whiteBall.y;
                 if (Math.sqrt(dx * dx + dy * dy) < p.radius + whiteBall.radius) {
+                    // ICE SHATTER: If player is frozen, this attack shatters ice and knocks back
+                    if (isFrozen) {
+                        isFrozen = false;
+                        frozenEndTime = 0;
+
+                        // Ice shatter particle burst
+                        for (int k = 0; k < 40; k++) {
+                            float angle = random.nextFloat() * (float) (2 * Math.PI);
+                            float speed = 5 + random.nextFloat() * 8;
+                            particles.add(new Particle(
+                                    whiteBall.x, whiteBall.y,
+                                    angle, speed,
+                                    Color.rgb(150, 200, 255),
+                                    ParticleType.STAR));
+                        }
+
+                        // Massive knockback away from boss
+                        if (currentBoss != null) {
+                            float bossToPlayerX = whiteBall.x - currentBoss.x;
+                            float bossToPlayerY = whiteBall.y - currentBoss.y;
+                            float dist = (float) Math
+                                    .sqrt(bossToPlayerX * bossToPlayerX + bossToPlayerY * bossToPlayerY);
+                            if (dist > 0) {
+                                whiteBall.vx = (bossToPlayerX / dist) * 45; // Very strong knockback
+                                whiteBall.vy = (bossToPlayerY / dist) * 45;
+                            }
+                        }
+
+                        floatingTexts
+                                .add(new FloatingText("ICE SHATTERED!", whiteBall.x, whiteBall.y - 100, Color.WHITE));
+                        playSound(soundBlackExplosion);
+                        createImpactBurst(whiteBall.x, whiteBall.y, Color.CYAN);
+
+                        bossProjectiles.remove(i);
+                        continue;
+                    }
+
                     // Check for Passive Teleport Save
                     if (activePassivePower.equals("teleport")) {
                         activePassivePower = "none";
@@ -2663,7 +2748,7 @@ public class GameView extends SurfaceView implements Runnable {
                 canvas.drawColor(Color.BLACK);
             } else if (currentBoss != null && currentBoss.name.equals("LUNAR CONSTRUCT")) {
                 // Force Moon Background for Lunar Construct
-                canvas.drawColor(Color.rgb(10, 5, 20));
+                canvas.drawColor(Color.BLACK);
                 drawMoon(canvas);
                 // Comets (already updated in update() loop)
                 for (Comet c : comets) {
@@ -2675,8 +2760,8 @@ public class GameView extends SurfaceView implements Runnable {
                     case 1:
                     case 5:
                     case 8:
-                        // Space 1, 5, 8: Dark + Stars
-                        canvas.drawColor(Color.rgb(5, 5, 16));
+                        // Space 1, 5, 8: Pure black background
+                        canvas.drawColor(Color.BLACK);
                         for (Star star : stars) {
                             star.draw(canvas, paint);
                         }
@@ -2685,8 +2770,8 @@ public class GameView extends SurfaceView implements Runnable {
                     case 2:
                     case 6:
                     case 9:
-                        // Space 2, 6, 9: Dark + Moon + Comets
-                        canvas.drawColor(Color.rgb(10, 5, 20)); // Deep dark
+                        // Space 2, 6, 9: Pure black background
+                        canvas.drawColor(Color.BLACK);
                         drawMoon(canvas);
                         for (Comet c : comets) {
                             c.draw(canvas, paint); // Already updated in update()
@@ -2702,7 +2787,7 @@ public class GameView extends SurfaceView implements Runnable {
                             canvas.drawColor(Color.BLACK);
                             // NO COMETS for Space 3
                         } else {
-                            canvas.drawColor(Color.rgb(25, 5, 10)); // Reddish dark for others
+                            canvas.drawColor(Color.BLACK);
                             for (Comet c : comets) {
                                 c.draw(canvas, paint);
                             }
@@ -2713,14 +2798,13 @@ public class GameView extends SurfaceView implements Runnable {
                         // Space 7: Static Aurora (no animation)
                         drawAuroraNebula(canvas);
                         for (Star star : stars) {
-                            star.update(screenWidth, screenHeight);
                             star.draw(canvas, paint);
                         }
                         break;
 
                     default:
-                        // Fallback to stars for any space beyond 10
-                        canvas.drawColor(Color.rgb(5, 5, 16));
+                        // Fallback: Pure black
+                        canvas.drawColor(Color.BLACK);
                         for (Star star : stars) {
                             star.draw(canvas, paint);
                         }
@@ -2785,25 +2869,25 @@ public class GameView extends SurfaceView implements Runnable {
             paint.setColor(Color.WHITE);
             paint.setShadowLayer(20, 0, 0, Color.CYAN);
 
-            int space = ((level - 1) / 10) + 1;
+            // Reuse currentSpace from line 2650 (performance: avoid duplicate calculation)
 
-            if (space == 2) {
+            if (currentSpace == 2) {
                 // SPACE 2: SQUARE (Full Circle Radius)
                 float boundary = circleRadius;
                 // Modified top (0.85f) to avoid overlapping with Top UI (Home/Passive)
                 canvas.drawRect(centerX - boundary, centerY - boundary * 0.85f, centerX + boundary, centerY + boundary,
                         paint);
-            } else if (space == 3) {
+            } else if (currentSpace == 3) {
                 // SPACE 3: RECTANGLE
                 float halfW = circleRadius;
                 float halfH = circleRadius * 0.7f;
                 canvas.drawRect(centerX - halfW, centerY - halfH, centerX + halfW, centerY + halfH, paint);
-            } else if (space >= 4 && space <= 10) {
+            } else if (currentSpace >= 4 && currentSpace <= 10) {
                 // --- POLYGON SPACES ---
                 int sides = 5;
                 float scale = 1.15f;
 
-                switch (space) {
+                switch (currentSpace) {
                     case 4:
                         sides = 5;
                         scale = 1.15f;
@@ -2947,6 +3031,33 @@ public class GameView extends SurfaceView implements Runnable {
             // kullanılıyor)
             if (!showPlayerDefeated) {
                 drawBall(canvas, whiteBall);
+
+                // ICE VISUAL: Draw ice ring if frozen
+                if (isFrozen) {
+                    paint.setStyle(Paint.Style.STROKE);
+                    paint.setStrokeWidth(6);
+                    paint.setColor(Color.rgb(150, 200, 255));
+                    paint.setAlpha(200);
+
+                    // Pulsing ice rings
+                    long iceTime = System.currentTimeMillis() % 1000;
+                    float pulse = 1.0f + 0.2f * (float) Math.sin(iceTime * 0.01f);
+
+                    canvas.drawCircle(whiteBall.x, whiteBall.y, whiteBall.radius * 2.0f * pulse, paint);
+                    canvas.drawCircle(whiteBall.x, whiteBall.y, whiteBall.radius * 2.5f * pulse, paint);
+
+                    // Ice crystals
+                    for (int i = 0; i < 8; i++) {
+                        float angle = i * (float) (Math.PI / 4);
+                        float x1 = whiteBall.x + (float) Math.cos(angle) * whiteBall.radius * 2;
+                        float y1 = whiteBall.y + (float) Math.sin(angle) * whiteBall.radius * 2;
+                        float x2 = whiteBall.x + (float) Math.cos(angle) * whiteBall.radius * 3;
+                        float y2 = whiteBall.y + (float) Math.sin(angle) * whiteBall.radius * 3;
+                        canvas.drawLine(x1, y1, x2, y2, paint);
+                    }
+
+                    paint.setAlpha(255);
+                }
             }
 
             // Barrier
@@ -8046,7 +8157,7 @@ public class GameView extends SurfaceView implements Runnable {
 
             if (phase == 2) {
                 // Solar Flare Ring every 5s
-                if (now - lastStateChangeTime > 5000) {
+                if (now - lastStateChangeTime > 3000 + random.nextInt(3000)) { // Random 3-6s
                     doSolarFlare();
                     lastStateChangeTime = now;
                 }
@@ -8054,7 +8165,7 @@ public class GameView extends SurfaceView implements Runnable {
                 // Supernova - Erratic movement
                 x = hoverCenterX + (random.nextFloat() - 0.5f) * 20;
                 y = hoverCenterY + (random.nextFloat() - 0.5f) * 20;
-                if (now - lastStateChangeTime > 2000) {
+                if (now - lastStateChangeTime > 1500 + random.nextInt(1500)) { // Random 1.5-3s
                     doSupernova();
                     lastStateChangeTime = now;
                 }
@@ -8207,7 +8318,7 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                 }
 
-                if (now - lastStateChangeTime > 3000) {
+                if (now - lastStateChangeTime > 2000 + random.nextInt(2000)) { // Random 2-4s
                     shootGravityWell(); // Fires double/triple
                     shootGravityWell();
                     lastStateChangeTime = now;
@@ -8288,12 +8399,12 @@ public class GameView extends SurfaceView implements Runnable {
             }
 
             // Attacks
-            if (phase == 2 && now - lastStateChangeTime > 3000) {
+            if (phase == 2 && now - lastStateChangeTime > 2000 + random.nextInt(2000)) { // Random 2-4s
                 shootPlasmaBullet();
                 shootPlasmaBullet();
                 shootPlasmaBullet();
                 lastStateChangeTime = now;
-            } else if (phase == 3 && now - lastStateChangeTime > 2000) {
+            } else if (phase == 3 && now - lastStateChangeTime > 1000 + random.nextInt(1500)) { // Random 1-2.5s
                 // Homing Swarm
                 for (int i = 0; i < 3; i++)
                     shootPlasmaBullet();
@@ -8316,7 +8427,7 @@ public class GameView extends SurfaceView implements Runnable {
 
             if (phase >= 2) {
                 // Freezing Breath (Cone)
-                if (now - lastStateChangeTime > 4000) {
+                if (now - lastStateChangeTime > 3000 + random.nextInt(2000)) { // Random 3-5s
                     doFreezingBreath();
                     lastStateChangeTime = now;
                 }
@@ -8332,23 +8443,61 @@ public class GameView extends SurfaceView implements Runnable {
                 }
             }
 
-            // --- PASSIVE: FROST AURA (Slows player nearby) ---
-            if (whiteBall != null) {
+            // --- PROXIMITY FREEZE MECHANIC ---
+            if (whiteBall != null && !isFrozen) {
                 float dist = (float) Math.sqrt(Math.pow(x - whiteBall.x, 2) + Math.pow(y - whiteBall.y, 2));
-                if (dist < radius * 3.0f) {
-                    // Freezing field
-                    whiteBall.vx *= 0.95f; // Significant slow
-                    whiteBall.vy *= 0.95f;
-                    // Visual frost
-                    if (random.nextFloat() < 0.3f)
-                        createParticles(whiteBall.x, whiteBall.y, Color.CYAN);
+                float freezeRange = radius * 2.0f; // Reduced from 3.0f to allow closer approach
+
+                if (dist < freezeRange) {
+                    // Player is in freeze zone
+                    if (freezeProximityStartTime == 0) {
+                        // Start proximity timer
+                        freezeProximityStartTime = now;
+                        floatingTexts.add(new FloatingText("FREEZING...", whiteBall.x, whiteBall.y - 80, Color.CYAN));
+                    }
+
+                    // Check if 2 seconds passed
+                    if (now - freezeProximityStartTime > 2000) {
+                        // FREEZE PLAYER
+                        isFrozen = true;
+                        frozenEndTime = now + 2000; // Frozen for 2 seconds
+                        whiteBall.vx = 0;
+                        whiteBall.vy = 0;
+
+                        // Ice encasement effect
+                        for (int i = 0; i < 30; i++) {
+                            float angle = i * (2f * (float) Math.PI / 30);
+                            particles.add(new Particle(
+                                    whiteBall.x + (float) Math.cos(angle) * whiteBall.radius * 2,
+                                    whiteBall.y + (float) Math.sin(angle) * whiteBall.radius * 2,
+                                    angle, 0.5f, Color.CYAN, ParticleType.STAR));
+                        }
+                        floatingTexts.add(
+                                new FloatingText("FROZEN!", whiteBall.x, whiteBall.y - 100, Color.rgb(100, 200, 255)));
+                        playSound(soundFreeze);
+                        freezeProximityStartTime = 0; // Reset
+                    } else {
+                        // Still freezing - slow player
+                        whiteBall.vx *= 0.90f;
+                        whiteBall.vy *= 0.90f;
+
+                        // Visual frost buildup
+                        if (random.nextFloat() < 0.4f) {
+                            createParticles(whiteBall.x, whiteBall.y, Color.CYAN);
+                        }
+                    }
+                } else {
+                    // Out of range - reset timer
+                    if (freezeProximityStartTime != 0) {
+                        freezeProximityStartTime = 0;
+                    }
                 }
             }
         }
 
         private void updateGeoBreaker(long now) {
             // Heavy Stomps: Moves in jumps
-            if (now - lastStateChangeTime > 2000) {
+            if (now - lastStateChangeTime > 1500 + random.nextInt(1500)) { // Random 1.5-3s
                 // Jump to new location
                 float angle = random.nextFloat() * 6.28f;
                 float dist = random.nextFloat() * (circleRadius * 0.5f);
@@ -8414,7 +8563,7 @@ public class GameView extends SurfaceView implements Runnable {
             else if (hp < maxHp * 0.7)
                 phase = 2;
 
-            if (phase >= 2 && now - lastStateChangeTime > 6000) {
+            if (phase >= 2 && now - lastStateChangeTime > 4000 + random.nextInt(3000)) { // Random 4-7s
                 // Toxic Pool (Cluster of blobs)
                 for (int i = 0; i < 5; i++)
                     shootAcidBlob();
@@ -8434,7 +8583,7 @@ public class GameView extends SurfaceView implements Runnable {
 
         private void updateChronoShifter(long now) {
             // Ticks: Teleports short distances every second (Tick-Tock)
-            if (now - lastStateChangeTime > 1000) {
+            if (now - lastStateChangeTime > 800 + random.nextInt(700)) { // Random 0.8-1.5s
                 float angle = (float) Math.atan2(y - centerY, x - centerX);
                 angle += (Math.PI / 6); // Move 30 degrees (1 hour on clock)
                 float dist = circleRadius * 0.6f;
@@ -8653,7 +8802,7 @@ public class GameView extends SurfaceView implements Runnable {
         private void updateVoidTitan(long now) {
             // State Machine Checks (Only if in Idle State 0)
             if (state == 0) {
-                if (now - lastStateChangeTime > 3000) { // 3 seconds idle wait
+                if (now - lastStateChangeTime > 2000 + random.nextInt(2000)) { // Random 2-4s delay
                     // Select next state based on HP
                     if (hp <= maxHp / 2) {
                         // HP <= 50%: Randomly choose Dash (1) or Burst (2)
