@@ -627,11 +627,15 @@ public class GameView extends SurfaceView implements Runnable {
 
         // Level Info Screen logic - ONLY SHOW ON STAGE 1 & START OF SPACE (Level 1, 11,
         // 21...)
-        if (stage == 1 && (lv % 10 == 1)) {
-            levelInfoText = "LEVEL " + lv;
-
-            levelInfoEndTime = System.currentTimeMillis() + 6000;
-        }
+        /*
+         * DISABLED REQ:
+         * "her spacein ilk bölümünde ponel çıkıyor level 61 71 gibi onları kaldır tamamen"
+         * if (stage == 1 && (lv % 10 == 1)) {
+         * levelInfoText = "LEVEL " + lv;
+         * 
+         * levelInfoEndTime = System.currentTimeMillis() + 6000;
+         * }
+         */
         // Zorluk Ayarı
         lives = 3;
         // Level 6'dan sonra süre artar, ama level arttıkça top sayısı da artar
@@ -2237,7 +2241,7 @@ public class GameView extends SurfaceView implements Runnable {
                     break; // Hexagon
                 case 6:
                     sides = 3;
-                    scale = 1.6f;
+                    scale = 1.3f;
                     break; // Triangle
                 case 7:
                     sides = 8;
@@ -2810,7 +2814,7 @@ public class GameView extends SurfaceView implements Runnable {
                         break;
                     case 6:
                         sides = 3;
-                        scale = 1.6f;
+                        scale = 1.3f; // Reduced from 1.6f to fit screen
                         break;
                     case 7:
                         sides = 8;
@@ -4772,6 +4776,7 @@ public class GameView extends SurfaceView implements Runnable {
         if (gameStarted && !gameOver) {
             drawSkillButton(canvas);
             drawInventory(canvas);
+            drawPassiveSlot(canvas, screenWidth * 0.1f);
             drawInGameMenuIcon(canvas); // Added Home Button
         }
         // Başlık... (Mevcut kod aşağıda kalacak, sadece if bloğunu değiştiriyorum)

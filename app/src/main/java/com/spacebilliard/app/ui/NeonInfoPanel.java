@@ -27,6 +27,7 @@ public class NeonInfoPanel extends View {
     private int themeColor = Color.CYAN;
     private Paint coinPaint;
     private Paint coinGlowPaint;
+    private java.util.List<String> wrappedLines = new java.util.ArrayList<>();
 
     public NeonInfoPanel(Context context) {
         super(context);
@@ -74,13 +75,43 @@ public class NeonInfoPanel extends View {
         this.line2Label = l2Label;
         this.line2Value = l2Value;
 
-        // Check for low time (assuming l1Value is integer seconds)
-        try {
-            int time = Integer.parseInt(l1Value);
-            isTimeLow = time <= 10;
-        } catch (NumberFormatException e) {
-            isTimeLow = false;
+        wrappedLines.clear();
+
+        // Check if this is a Boss Info / Warning (contains newlines or is long)
+        if (l1Label.contains("\n") || l1Label.length() > 20) {
+            // Multiline Mode: Parse and wrap
+            String fullText = l1Label;
+            // First split by explicit newlines
+            String[] lines = fullText.split("\n");
+
+            float availableWidth = (getWidth() > 0 ? getWidth() : 360) - (60); // Approx width minus padding
+
+            for (String rawLine : lines) {
+                // Word wrap
+                String[] words = rawLine.split(" ");
+                StringBuilder currentLine = new StringBuilder();
+
+                for (String word : words) {
+                    float width = textPaint.measureText(currentLine.toString() + word);
+                    if (width < availableWidth) {
+                        currentLine.append(word).append(" ");
+                    } else {
+                        wrappedLines.add(currentLine.toString());
+                        currentLine = new StringBuilder(word).append(" ");
+                    }
+                }
+                wrappedLines.add(currentLine.toString());
+            }
+        } else {
+            // Normal Mode: Check time
+            try {
+                int time = Integer.parseInt(l1Value);
+                isTimeLow = time <= 10;
+            } catch (NumberFormatException e) {
+                isTimeLow = false;
+            }
         }
+
         invalidate();
     }
 
@@ -213,30 +244,49 @@ public class NeonInfoPanel extends View {
         textPaint.setTextSize(baseTextSize);
         valuePaint.setTextSize(baseTextSize);
 
-        // Line 1: TIME
-        // Time Pulse Animation
-        if (isTimeLow) {
-            long now = System.currentTimeMillis();
-            // Pulse between 1.0 and 1.5 every 500ms
-            float phase = (now % 500) / 500f;
-            timeTextScale = 1.0f + 0.5f * (float) Math.sin(phase * Math.PI);
-            valuePaint.setColor(Color.RED); // Warning color
-            invalidate(); // Keep animating
+        if (!wrappedLines.isEmpty()) {
+            // MULTILINE MODE (Boss Info)
+            float y = startY;
+            for (String line : wrappedLines) {
+                // Check for "WARNING" or "BOSS" to highlight
+                if (line.contains("WARNING") || line.contains("BOSS")) {
+                    valuePaint.setColor(Color.RED);
+                    canvas.drawText(line, leftContent, y, valuePaint);
+                    valuePaint.setColor(themeColor);
+                } else {
+                    canvas.drawText(line, leftContent, y, textPaint);
+                }
+                y += baseTextSize * 1.4f;
+            }
         } else {
-            timeTextScale = 1.0f;
-            valuePaint.setColor(themeColor);
+            // NORMAL MODE (Time & Score)
+
+            // Line 1: TIME
+            // Time Pulse Animation
+            if (isTimeLow) {
+                long now = System.currentTimeMillis();
+                // Pulse between 1.0 and 1.5 every 500ms
+                float phase = (now % 500) / 500f;
+                timeTextScale = 1.0f + 0.5f * (float) Math.sin(phase * Math.PI);
+                valuePaint.setColor(Color.RED); // Warning color
+                invalidate(); // Keep animating
+            } else {
+                timeTextScale = 1.0f;
+                valuePaint.setColor(themeColor);
+            }
+
+            canvas.drawText(line1Label, leftContent, startY, textPaint);
+
+            valuePaint.setTextSize(baseTextSize * timeTextScale);
+            canvas.drawText(line1Value, leftContent + textPaint.measureText(line1Label) + 10, startY, valuePaint);
+            valuePaint.setTextSize(baseTextSize); // Restore
+            valuePaint.setColor(themeColor); // Restore
+
+            // Line 2: SCORE
+            canvas.drawText(line2Label, leftContent, startY + spacing, textPaint);
+            canvas.drawText(line2Value, leftContent + textPaint.measureText(line2Label) + 10, startY + spacing,
+                    valuePaint);
         }
-
-        canvas.drawText(line1Label, leftContent, startY, textPaint);
-
-        valuePaint.setTextSize(baseTextSize * timeTextScale);
-        canvas.drawText(line1Value, leftContent + textPaint.measureText(line1Label) + 10, startY, valuePaint);
-        valuePaint.setTextSize(baseTextSize); // Restore
-        valuePaint.setColor(themeColor); // Restore
-
-        // Line 2: SCORE
-        canvas.drawText(line2Label, leftContent, startY + spacing, textPaint);
-        canvas.drawText(line2Value, leftContent + textPaint.measureText(line2Label) + 10, startY + spacing, valuePaint);
 
         // Line 3: COINS
         float iconSize = 18 * density;
