@@ -1325,8 +1325,10 @@ int id pooling_container_listener_holder_tag 0x7f080102
 int id position 0x7f080103
 int id postLayout 0x7f080104
 int id progress 0x7f080105
+int id progressBar 0x7f08017f
 int id progress_circular 0x7f080106
 int id progress_horizontal 0x7f080107
+int id questCard 0x7f080180
 int id radio 0x7f080108
 int id ratio 0x7f080109
 int id rectangles 0x7f08010a
@@ -1334,6 +1336,7 @@ int id reverseSawtooth 0x7f08010b
 int id right 0x7f08010c
 int id right_icon 0x7f08010d
 int id right_side 0x7f08010e
+int id rvQuests 0x7f080181
 int id sawtooth 0x7f08010f
 int id screen 0x7f080110
 int id scrollIndicatorDown 0x7f080111
@@ -1418,6 +1421,13 @@ int id topPanel 0x7f08015d
 int id transitionToEnd 0x7f08015e
 int id transitionToStart 0x7f08015f
 int id triangle 0x7f080160
+int id tvCoinReward 0x7f080182
+int id tvCompleted 0x7f080183
+int id tvProgress 0x7f080184
+int id tvQuestCount 0x7f080185
+int id tvQuestDescription 0x7f080186
+int id tvQuestTitle 0x7f080187
+int id tvTitle 0x7f080188
 int id txtBilliards 0x7f08017d
 int id txtBossLabel 0x7f080161
 int id txtLevelNum 0x7f080162
@@ -1489,6 +1499,7 @@ int layout activity_hall_of_fame 0x7f0b001d
 int layout activity_how_to_play 0x7f0b001e
 int layout activity_level_select 0x7f0b001f
 int layout activity_main_menu 0x7f0b0020
+int layout activity_quests 0x7f0b0038
 int layout admob_empty_layout 0x7f0b0021
 int layout browser_actions_context_menu_page 0x7f0b0022
 int layout browser_actions_context_menu_row 0x7f0b0023
@@ -1508,6 +1519,7 @@ int layout notification_template_icon_group 0x7f0b0030
 int layout notification_template_part_chronometer 0x7f0b0031
 int layout notification_template_part_time 0x7f0b0032
 int layout offline_ads_dialog 0x7f0b0033
+int layout quest_card 0x7f0b0039
 int layout select_dialog_item_material 0x7f0b0034
 int layout select_dialog_multichoice_material 0x7f0b0035
 int layout select_dialog_singlechoice_material 0x7f0b0036

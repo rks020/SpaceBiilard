@@ -196,6 +196,7 @@ public class GameView extends SurfaceView implements Runnable {
     private boolean soundLoaded = false;
     // MainActivity reference for updating UI panels
     private MainActivity mainActivity;
+    private QuestManager questManager;
     // Removed old button references
     private android.graphics.Rect startBtnBounds, howToBtnBounds, shopBtnBounds;
     private String selectedSkin = "default";
@@ -266,6 +267,9 @@ public class GameView extends SurfaceView implements Runnable {
         maxUnlockedLevel = 500; // TEST MODE: Unlock all levels
         // Coinleri yükle
         coins = prefs.getInt("coins", 0);
+
+        // Initialize Quest Manager
+        questManager = QuestManager.getInstance(context);
 
         // SoundPool Başlatma
         AudioAttributes audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME)
@@ -938,6 +942,12 @@ public class GameView extends SurfaceView implements Runnable {
             createImpactBurst(b.x, b.y, b.color);
             score += 5;
             coloredBalls.remove(b);
+            // Quest progress: Destroyer I (Quest 1)
+            if (questManager != null) {
+                android.util.Log.d("QUEST_DEBUG", "Colored ball destroyed - incrementing quest 1 and 5");
+                questManager.incrementQuestProgress(1, 1); // Destroy 100 colored balls
+                questManager.incrementQuestProgress(5, 1); // Destroy 200 balls total
+            }
             playSound(soundBlackExplosion);
         }
     }
@@ -2480,6 +2490,12 @@ public class GameView extends SurfaceView implements Runnable {
 
                     createImpactBurst(ball.x, ball.y, ball.color);
                     coloredBalls.remove(i);
+                    // QUEST TRACKING - MAIN GAMEPLAY COLORED BALL DESTRUCTION!
+                    if (questManager != null) {
+                        android.util.Log.d("QUEST_DEBUG", "BALL HIT! Colored ball destroyed in main collision!");
+                        questManager.incrementQuestProgress(1, 1); // Destroy 100 colored balls
+                        questManager.incrementQuestProgress(5, 1); // Destroy 200 balls total
+                    }
                     playSound(soundCollision);
 
                     if (coloredBalls.isEmpty() && pendingColoredBalls == 0 && currentBoss == null
@@ -5407,15 +5423,21 @@ public class GameView extends SurfaceView implements Runnable {
                         }
 
                         if (touchedBall != null) {
-                            isDragging = true;
-                            draggedBall = touchedBall;
-                            // Classic behavior: drag starts at Ball's center
-                            dragStartX = touchedBall.x;
-                            dragStartY = touchedBall.y;
-                            dragStartTime = System.currentTimeMillis();
-                            touchedBall.vx = 0;
-                            touchedBall.vy = 0;
-                            touchedBall.trail.clear();
+                            // Prevent dragging if frozen
+                            if (touchedBall == whiteBall && isFrozen) {
+                                floatingTexts
+                                        .add(new FloatingText("FROZEN!", whiteBall.x, whiteBall.y - 60, Color.CYAN));
+                            } else {
+                                isDragging = true;
+                                draggedBall = touchedBall;
+                                // Classic behavior: drag starts at Ball's center
+                                dragStartX = touchedBall.x;
+                                dragStartY = touchedBall.y;
+                                dragStartTime = System.currentTimeMillis();
+                                touchedBall.vx = 0;
+                                touchedBall.vy = 0;
+                                touchedBall.trail.clear();
+                            }
                         }
                     }
                 }
@@ -5436,6 +5458,12 @@ public class GameView extends SurfaceView implements Runnable {
                         // Maybe later add an arrow visualization
                     } else {
                         // Classic Drag Mode: Move the ball with finger
+                        // But prevent if frozen
+                        if (draggedBall == whiteBall && isFrozen) {
+                            // Don't move frozen ball
+                            return true;
+                        }
+
                         float dx = touchX - dragStartX;
                         float dy = touchY - dragStartY;
                         float distance = (float) Math.sqrt(dx * dx + dy * dy);
@@ -5454,6 +5482,13 @@ public class GameView extends SurfaceView implements Runnable {
 
             case MotionEvent.ACTION_UP:
                 if (isDragging && draggedBall != null) {
+                    // Prevent launch if frozen
+                    if (draggedBall == whiteBall && isFrozen) {
+                        isDragging = false;
+                        draggedBall = null;
+                        return true;
+                    }
+
                     float screenH = getHeight();
                     boolean isBottomDrag = dragStartY >= screenH * 0.6f;
 
@@ -8446,7 +8481,7 @@ public class GameView extends SurfaceView implements Runnable {
             // --- PROXIMITY FREEZE MECHANIC ---
             if (whiteBall != null && !isFrozen) {
                 float dist = (float) Math.sqrt(Math.pow(x - whiteBall.x, 2) + Math.pow(y - whiteBall.y, 2));
-                float freezeRange = radius * 2.0f; // Reduced from 3.0f to allow closer approach
+                float freezeRange = radius * 3.0f; // Proximity freeze range
 
                 if (dist < freezeRange) {
                     // Player is in freeze zone
@@ -9626,6 +9661,13 @@ public class GameView extends SurfaceView implements Runnable {
                                 }
 
                                 // Remove destroyed balls
+                                // Quest tracking for batch destruction
+                                if (questManager != null && toDestroy.size() > 0) {
+                                    android.util.Log.d("QUEST_DEBUG",
+                                            "Teleport destroyed " + toDestroy.size() + " colored balls!");
+                                    questManager.incrementQuestProgress(1, toDestroy.size());
+                                    questManager.incrementQuestProgress(5, toDestroy.size());
+                                }
                                 coloredBalls.removeAll(toDestroy);
 
                                 // If we hit 3 or no more balls, leave

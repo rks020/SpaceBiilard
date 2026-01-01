@@ -93,8 +93,8 @@ public class MainMenuActivity extends Activity {
         });
 
         findViewById(R.id.btnBottomQuests).setOnClickListener(v -> {
-            // TODO: Quests screen
-            android.widget.Toast.makeText(this, "Quests - Coming Soon", android.widget.Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainMenuActivity.this, QuestsActivity.class);
+            startActivity(intent);
         });
 
         findViewById(R.id.btnBottomSpecial).setOnClickListener(v -> {

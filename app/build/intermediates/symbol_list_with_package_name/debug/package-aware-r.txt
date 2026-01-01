@@ -1326,8 +1326,10 @@ id pooling_container_listener_holder_tag
 id position
 id postLayout
 id progress
+id progressBar
 id progress_circular
 id progress_horizontal
+id questCard
 id radio
 id ratio
 id rectangles
@@ -1335,6 +1337,7 @@ id reverseSawtooth
 id right
 id right_icon
 id right_side
+id rvQuests
 id sawtooth
 id screen
 id scrollIndicatorDown
@@ -1419,6 +1422,13 @@ id topPanel
 id transitionToEnd
 id transitionToStart
 id triangle
+id tvCoinReward
+id tvCompleted
+id tvProgress
+id tvQuestCount
+id tvQuestDescription
+id tvQuestTitle
+id tvTitle
 id txtBilliards
 id txtBossLabel
 id txtLevelNum
@@ -1490,6 +1500,7 @@ layout activity_hall_of_fame
 layout activity_how_to_play
 layout activity_level_select
 layout activity_main_menu
+layout activity_quests
 layout admob_empty_layout
 layout browser_actions_context_menu_page
 layout browser_actions_context_menu_row
@@ -1509,6 +1520,7 @@ layout notification_template_icon_group
 layout notification_template_part_chronometer
 layout notification_template_part_time
 layout offline_ads_dialog
+layout quest_card
 layout select_dialog_item_material
 layout select_dialog_multichoice_material
 layout select_dialog_singlechoice_material

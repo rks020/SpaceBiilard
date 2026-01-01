@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-78:12
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-78:12
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-78:12
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-78:12
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-83:12
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-83:12
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-83:12
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-83:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\7cdb198f3bbe2cfd8ce8e30c829e0e84\transformed\constraintlayout-2.1.4\AndroidManifest.xml:2:1-11:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\100b7bbbcef832003b847d88be1c7553\transformed\jetified-appcompat-resources-1.6.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.appcompat:appcompat:1.6.1] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\5d64804f8051a0b2addf541cd0664b64\transformed\appcompat-1.6.1\AndroidManifest.xml:17:1-22:12
@@ -93,8 +93,8 @@ MERGED from [androidx.work:work-runtime:2.7.0] C:\Users\raufk\.gradle\caches\9.0
 	android:name
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:7:22-76
 application
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:9:5-76:19
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:9:5-76:19
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:9:5-81:19
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:9:5-81:19
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\7cdb198f3bbe2cfd8ce8e30c829e0e84\transformed\constraintlayout-2.1.4\AndroidManifest.xml:9:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\7cdb198f3bbe2cfd8ce8e30c829e0e84\transformed\constraintlayout-2.1.4\AndroidManifest.xml:9:5-20
 MERGED from [com.google.android.gms:play-services-ads-lite:23.0.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\2f2376e76b0ce388815ae6a890163e13\transformed\jetified-play-services-ads-lite-23.0.0\AndroidManifest.xml:53:5-93:19
@@ -239,6 +239,14 @@ ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\Andro
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:75:13-71
 	android:name
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:73:13-69
+activity#com.spacebilliard.app.QuestsActivity
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:77:9-80:65
+	android:screenOrientation
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:79:13-49
+	android:theme
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:80:13-63
+	android:name
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:78:13-64
 uses-sdk
 INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml
