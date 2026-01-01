@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-83:12
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-83:12
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-83:12
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-83:12
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-88:12
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-88:12
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-88:12
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:2:1-88:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\7cdb198f3bbe2cfd8ce8e30c829e0e84\transformed\constraintlayout-2.1.4\AndroidManifest.xml:2:1-11:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\100b7bbbcef832003b847d88be1c7553\transformed\jetified-appcompat-resources-1.6.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.appcompat:appcompat:1.6.1] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\5d64804f8051a0b2addf541cd0664b64\transformed\appcompat-1.6.1\AndroidManifest.xml:17:1-22:12
@@ -93,8 +93,8 @@ MERGED from [androidx.work:work-runtime:2.7.0] C:\Users\raufk\.gradle\caches\9.0
 	android:name
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:7:22-76
 application
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:9:5-81:19
-INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:9:5-81:19
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:9:5-86:19
+INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:9:5-86:19
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\7cdb198f3bbe2cfd8ce8e30c829e0e84\transformed\constraintlayout-2.1.4\AndroidManifest.xml:9:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\7cdb198f3bbe2cfd8ce8e30c829e0e84\transformed\constraintlayout-2.1.4\AndroidManifest.xml:9:5-20
 MERGED from [com.google.android.gms:play-services-ads-lite:23.0.0] C:\Users\raufk\.gradle\caches\9.0-milestone-1\transforms\2f2376e76b0ce388815ae6a890163e13\transformed\jetified-play-services-ads-lite-23.0.0\AndroidManifest.xml:53:5-93:19
@@ -199,54 +199,62 @@ ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\Andro
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:44:13-71
 	android:name
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:42:13-62
+activity#com.spacebilliard.app.UpgradesActivity
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:46:9-49:73
+	android:screenOrientation
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:48:13-49
+	android:theme
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:49:13-71
+	android:name
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:47:13-66
 activity#com.spacebilliard.app.MainMenuActivity
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:50:9-53:73
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:55:9-58:73
 	android:screenOrientation
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:52:13-49
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:57:13-49
 	android:theme
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:53:13-71
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:58:13-71
 	android:name
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:51:13-66
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:56:13-66
 activity#com.spacebilliard.app.GameOverActivity
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:57:9-60:85
-	android:screenOrientation
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:59:13-49
-	android:theme
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:60:13-83
-	android:name
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:58:13-66
-activity#com.spacebilliard.app.HowToPlayActivity
 ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:62:9-65:85
 	android:screenOrientation
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:64:13-49
 	android:theme
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:65:13-83
 	android:name
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:63:13-67
-activity#com.spacebilliard.app.HallOfFameActivity
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:63:13-66
+activity#com.spacebilliard.app.HowToPlayActivity
 ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:67:9-70:85
 	android:screenOrientation
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:69:13-49
 	android:theme
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:70:13-83
 	android:name
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:68:13-68
-activity#com.spacebilliard.app.LevelSelectActivity
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:72:9-75:73
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:68:13-67
+activity#com.spacebilliard.app.HallOfFameActivity
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:72:9-75:85
 	android:screenOrientation
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:74:13-49
 	android:theme
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:75:13-71
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:75:13-83
 	android:name
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:73:13-69
-activity#com.spacebilliard.app.QuestsActivity
-ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:77:9-80:65
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:73:13-68
+activity#com.spacebilliard.app.LevelSelectActivity
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:77:9-80:73
 	android:screenOrientation
 		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:79:13-49
 	android:theme
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:80:13-63
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:80:13-71
 	android:name
-		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:78:13-64
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:78:13-69
+activity#com.spacebilliard.app.QuestsActivity
+ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:82:9-85:65
+	android:screenOrientation
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:84:13-49
+	android:theme
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:85:13-63
+	android:name
+		ADDED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml:83:13-64
 uses-sdk
 INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\raufk\OneDrive\Desktop\SpaceBillardOnline\app\src\main\AndroidManifest.xml

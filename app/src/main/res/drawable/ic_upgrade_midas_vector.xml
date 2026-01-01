@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Glowing Circle Background -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M50,0 A50,50 0 1,1 50,100 A50,50 0 1,1 50,0 Z" />
+    
+    <path
+        android:strokeWidth="2"
+        android:strokeColor="#FFC107"
+        android:fillColor="#00000000"
+        android:pathData="M50,2 A48,48 0 1,1 50,98 A48,48 0 1,1 50,2 Z" />
+
+    <!-- Diamond / Coin Sparkle -->
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M50,25 L65,50 L50,75 L35,50 Z" />
+    
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1"
+        android:pathData="M50,25 L65,50 L50,75 L35,50 Z" />
+</vector>

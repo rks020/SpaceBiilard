@@ -280,6 +280,13 @@ public class GameView extends SurfaceView implements Runnable {
         maxUnlockedLevel = 500; // TEST MODE: Unlock all levels
         // Coinleri yükle
         coins = prefs.getInt("coins", 0);
+        // TEST MODE: Grant 10,000 coins for testing
+        if (coins < 10000) {
+            coins = 10000;
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt("coins", coins);
+            editor.apply();
+        }
 
         // Initialize Quest Manager
         questManager = QuestManager.getInstance(context);
@@ -325,7 +332,36 @@ public class GameView extends SurfaceView implements Runnable {
 
     // Removed setMenuButtons method as MainActivity handles buttons now
 
+    // Upgrades
+    private int upgradeAim = 1;
+    private int upgradeEnergy = 1;
+    private int upgradeLuck = 1;
+    private int upgradeShield = 1;
+    // New Upgrades
+    private int upgradeNova = 1;
+    private int upgradeHunter = 1;
+    private int upgradeImpulse = 1;
+    private int upgradeMidas = 1;
+    // New Advanced Upgrades
+    private int upgradeRailgun = 0; // Starts at 0 (Unlocked via Shop)
+    private int upgradeVampire = 0;
+
+    private void loadUpgrades() {
+        SharedPreferences prefs = getContext().getSharedPreferences("SpaceBilliard", Context.MODE_PRIVATE);
+        upgradeAim = prefs.getInt("upgrade_aim", 1);
+        upgradeEnergy = prefs.getInt("upgrade_energy", 1);
+        upgradeLuck = prefs.getInt("upgrade_luck", 1);
+        upgradeShield = prefs.getInt("upgrade_shield", 1);
+        upgradeNova = prefs.getInt("upgrade_nova", 1);
+        upgradeHunter = prefs.getInt("upgrade_hunter", 1);
+        upgradeImpulse = prefs.getInt("upgrade_impulse", 1);
+        upgradeMidas = prefs.getInt("upgrade_midas", 1);
+        upgradeRailgun = prefs.getInt("upgrade_railgun", 0);
+        upgradeVampire = prefs.getInt("upgrade_vampire", 0);
+    }
+
     public void reloadPreferences() {
+        loadUpgrades();
         SharedPreferences prefs = getContext().getSharedPreferences("SpaceBilliard", Context.MODE_PRIVATE);
         selectedSkin = prefs.getString("selectedSkin", "default");
         selectedTrail = prefs.getString("selectedTrail", "none");
@@ -500,6 +536,14 @@ public class GameView extends SurfaceView implements Runnable {
         centerX = w / 2f;
         centerY = h / 2f;
         circleRadius = minSize * 0.47f;
+
+        circleRadius = minSize * 0.47f;
+
+        // Skill Button Positions
+        float density = getResources().getDisplayMetrics().density;
+        skillBtnRadius = 35 * density;
+        skillBtnX = screenWidth - 50 * density;
+        skillBtnY = screenHeight - 120 * density;
 
         // Beyaz topu başlat
         if (whiteBall == null) {
@@ -700,7 +744,14 @@ public class GameView extends SurfaceView implements Runnable {
         originalWhiteBallRadius = whiteBall.radius; // Initialize default radius
 
         blackHoleActive = false;
-        barrierActive = false;
+        // Shield Battery Upgrade
+        if (upgradeShield > 1 && random.nextInt(100) < (upgradeShield * 10)) {
+            barrierActive = true;
+            barrierEndTime = System.currentTimeMillis() + 10000; // Start with 10s shield
+            floatingTexts.add(new FloatingText("AUTO SHIELD!", centerX, centerY - 200, Color.CYAN));
+        } else {
+            barrierActive = false;
+        }
         freezeActive = false;
         ghostModeActive = false;
         powerBoostActive = false;
@@ -1216,7 +1267,7 @@ public class GameView extends SurfaceView implements Runnable {
 
             // Award 5 coins for stage completion
             int oldCoins = coins;
-            coins += 5;
+            coins += (5 + (upgradeLuck - 1)); // Upgrade: +1 coin per level
             // Quest 31-32: Collect coins
             if (questManager != null) {
                 questManager.incrementQuestProgress(31, 5);
@@ -1420,6 +1471,14 @@ public class GameView extends SurfaceView implements Runnable {
 
             // Trail update
             updateBallTrail(whiteBall);
+
+            // Quest 3: Multi-Hit Logic (Check when ball stops)
+            if (ballsHitThisShot > 0 && Math.abs(whiteBall.vx) < 0.1 && Math.abs(whiteBall.vy) < 0.1) {
+                if (ballsHitThisShot >= 2 && questManager != null) {
+                    questManager.incrementQuestProgress(3, 1);
+                }
+                ballsHitThisShot = 0;
+            }
         } else if (isFrozen) {
             // Frozen - allow movement from knockback, but don't lock if ball has velocity
             float speed = (float) Math.sqrt(whiteBall.vx * whiteBall.vx + whiteBall.vy * whiteBall.vy);
@@ -1795,7 +1854,7 @@ public class GameView extends SurfaceView implements Runnable {
                 blackHoleEndTime = System.currentTimeMillis() + 2000;
                 break;
             case "extraTime":
-                timeLeft += 5000;
+                timeLeft += (long) (5000 * (1.0f + (upgradeEnergy - 1) * 0.1f));
                 break;
             case "powerBoost":
                 powerBoostActive = true;
@@ -1803,7 +1862,7 @@ public class GameView extends SurfaceView implements Runnable {
                 break;
             case "barrier":
                 barrierActive = true;
-                barrierEndTime = System.currentTimeMillis() + 5000;
+                barrierEndTime = System.currentTimeMillis() + (long) (5000 * (1.0f + (upgradeEnergy - 1) * 0.1f));
                 playSound(soundShield);
                 // Quest 9: Shielded (20 barrier uses)
                 if (questManager != null) {
@@ -1816,13 +1875,13 @@ public class GameView extends SurfaceView implements Runnable {
                 break;
             case "magma":
                 magmaTrailActive = true;
-                magmaTrailEndTime = System.currentTimeMillis() + 10000;
+                magmaTrailEndTime = System.currentTimeMillis() + (long) (10000 * (1.0f + (upgradeEnergy - 1) * 0.1f));
                 playSound(soundPower); // Using power sound
                 break;
             case "electric":
                 triggerElectric();
                 playSound(soundElectric);
-                electricModeEndTime = System.currentTimeMillis() + 10000; // 10 Seconds Electric Mode
+                electricModeEndTime = System.currentTimeMillis() + (long) (10000 * (1.0f + (upgradeEnergy - 1) * 0.1f)); // Upgradeable
                 // Quest 7: Electric Storm (10 electric uses)
                 if (questManager != null) {
                     questManager.incrementQuestProgress(7, 1);
@@ -1836,7 +1895,7 @@ public class GameView extends SurfaceView implements Runnable {
                 break;
             case "freeze":
                 freezeActive = true;
-                freezeEndTime = System.currentTimeMillis() + 5000;
+                freezeEndTime = System.currentTimeMillis() + (long) (5000 * (1.0f + (upgradeEnergy - 1) * 0.1f));
                 // Quest 8: Ice Age (5 freeze uses)
                 if (questManager != null) {
                     questManager.incrementQuestProgress(8, 1);
@@ -2295,14 +2354,26 @@ public class GameView extends SurfaceView implements Runnable {
 
                     if (barrierActive) {
                         createImpactBurst(p.x, p.y, Color.CYAN); // Block effect
-                        bossProjectiles.remove(i);
                         playSound(soundShield);
+                        // Vampire Core Healing
+                        if (upgradeVampire > 0) {
+                            int heal = 2 * upgradeVampire; // 2 HP per level
+                            playerHp = Math.min(playerHp + heal, playerMaxHp);
+                            floatingTexts.add(new FloatingText("+" + heal, whiteBall.x, whiteBall.y, Color.GREEN));
+                        }
+                        bossProjectiles.remove(i);
                         continue;
                     }
 
                     // VORTEX IMMUNITY: If a vortex is actively swirling, player is safe
                     if (activeVortex != null) {
                         createImpactBurst(p.x, p.y, Color.CYAN); // Block effect
+                        // Vampire Core Healing
+                        if (upgradeVampire > 0) {
+                            int heal = 2 * upgradeVampire;
+                            playerHp = Math.min(playerHp + heal, playerMaxHp);
+                            floatingTexts.add(new FloatingText("+" + heal, whiteBall.x, whiteBall.y, Color.GREEN));
+                        }
                         bossProjectiles.remove(i);
                         // Optional: Play a sound or show text?
                         continue;
@@ -2350,7 +2421,7 @@ public class GameView extends SurfaceView implements Runnable {
         // --- WALL COLLISIONS (Geometric Shapes) ---
         // Must run even during drag to keep balls inside new shapes
         int space = ((level - 1) / 10) + 1; // Corrected from 50 to 10 to match draw() logic
-        float damping = 0.9f;
+        float damping = 0.9f + (upgradeImpulse > 1 ? (upgradeImpulse - 1) * 0.02f : 0);
 
         ArrayList<Ball> allBalls = new ArrayList<>();
         if (whiteBall != null)
@@ -2512,25 +2583,27 @@ public class GameView extends SurfaceView implements Runnable {
                     } else {
                         long now = System.currentTimeMillis();
                         if (now < electricModeEndTime) {
-                            currentBoss.hp -= 40;
+                            int dmg = 40 + (upgradeHunter - 1) * 2;
+                            currentBoss.hp -= dmg;
                             // Quest 18: Heavy Hitter (5000 damage)
                             if (questManager != null) {
                                 questManager.incrementQuestProgress(18, 40);
                             }
-                            floatingTexts.add(new FloatingText("-40", wBall.x, wBall.y - 50, Color.CYAN));
+                            floatingTexts.add(new FloatingText("-" + dmg, wBall.x, wBall.y - 50, Color.CYAN));
                             electricEffects.add(new ElectricEffect(wBall.x, wBall.y, currentBoss.x, currentBoss.y, 0));
                             createImpactBurst(wBall.x, wBall.y, Color.CYAN);
                             createParticles(wBall.x, wBall.y, Color.CYAN);
                             playSound(soundBlackExplosion);
                         } else {
-                            currentBoss.hp -= 25;
+                            int dmg = 25 + (upgradeHunter - 1) * 2;
+                            currentBoss.hp -= dmg;
                             // Quest 18: Heavy Hitter
                             if (questManager != null) {
                                 questManager.incrementQuestProgress(18, 25);
                             }
                             createParticles(wBall.x, wBall.y, currentBoss.color);
                             playSound(soundCollision);
-                            floatingTexts.add(new FloatingText("-25", wBall.x, wBall.y - 50, Color.WHITE));
+                            floatingTexts.add(new FloatingText("-" + dmg, wBall.x, wBall.y - 50, Color.WHITE));
                         }
                     }
 
@@ -2602,6 +2675,13 @@ public class GameView extends SurfaceView implements Runnable {
 
                     createImpactBurst(ball.x, ball.y, ball.color);
                     coloredBalls.remove(i);
+                    // Midas Chip Logic
+                    if (upgradeMidas > 1) {
+                        if (Math.random() < (upgradeMidas - 1) * 0.05f) {
+                            coins++;
+                            floatingTexts.add(new FloatingText("+1 💰", ball.x, ball.y, Color.YELLOW));
+                        }
+                    }
                     ballsHitThisShot++; // Quest 3: Count balls hit
                     // QUEST TRACKING - MAIN GAMEPLAY COLORED BALL DESTRUCTION!
                     if (questManager != null) {
@@ -2621,7 +2701,7 @@ public class GameView extends SurfaceView implements Runnable {
                         blackBalls.clear();
                     }
 
-                    // Physics bounce roughly
+                    // Physics bounce
                     float dx = wBall.x - ball.x;
                     float dy = wBall.y - ball.y;
                     float angle = (float) Math.atan2(dy, dx);
@@ -2753,7 +2833,9 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                 }
             }
+
         }
+
     }
 
     private void createFlame(float x, float y) {
@@ -2777,10 +2859,13 @@ public class GameView extends SurfaceView implements Runnable {
             questManager.incrementQuestProgress(10, 1);
         }
         // Always add some base particles
-        int particleCount = 6;
+        // Nova Upgrade: Larger explosion radius (speed) and more particles
+        float novaSpeedMult = 1.0f + (upgradeNova > 1 ? (upgradeNova - 1) * 0.25f : 0);
+        int particleCount = 6 + (upgradeNova > 1 ? (upgradeNova - 1) * 2 : 0);
+
         for (int i = 0; i < particleCount; i++) {
             float angle = random.nextFloat() * (float) (2 * Math.PI);
-            float speed = random.nextFloat() * 6 + 2;
+            float speed = (random.nextFloat() * 6 + 2) * novaSpeedMult;
             particles.add(new Particle(x, y, angle, speed, color, ParticleType.CIRCLE));
         }
 
@@ -5446,6 +5531,7 @@ public class GameView extends SurfaceView implements Runnable {
                         return true;
                     }
                 } else {
+                    int action = event.getAction();
                     // Check In-Game Menu Icon touch only when game is running and not paused/over
                     float density = getResources().getDisplayMetrics().density;
                     float iconSize = screenWidth * 0.1f;
@@ -5475,7 +5561,6 @@ public class GameView extends SurfaceView implements Runnable {
                                 playSound(soundPower);
                             }
                         }
-                        return true;
                     }
 
                     // Inventory Check
@@ -5492,12 +5577,11 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                 }
 
+                // Classic Ball Touch Logic
                 if (gameStarted && !gameOver) {
-                    // Hangi topa dokunuldu?
                     Ball touchedBall = null;
                     float minDist = Float.MAX_VALUE;
 
-                    // New: Bottom Zone Control (Easy Aim)
                     float screenHeight = getHeight();
                     float bottomZoneStart = screenHeight * 0.6f;
 
@@ -5646,6 +5730,7 @@ public class GameView extends SurfaceView implements Runnable {
                         float distNorm = (float) Math.sqrt(dx * dx + dy * dy);
                         draggedBall.vx = (dx / distNorm) * speed;
                         draggedBall.vy = (dy / distNorm) * speed;
+
                         playSound(soundLaunch);
 
                         lastLaunchTime = System.currentTimeMillis();
@@ -5662,10 +5747,10 @@ public class GameView extends SurfaceView implements Runnable {
                     comboCounter = 0;
                 }
                 break;
+
         }
 
         return true;
-
     }
 
     public void pause() {
@@ -5687,6 +5772,9 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void drawInGameMenuIcon(Canvas canvas) {
+        // Railgun Button removed (Moved to Top-Left Slot)
+
+        // Draw Home Button
         float density = getResources().getDisplayMetrics().density;
         float iconSize = screenWidth * 0.1f;
         float x = screenWidth - iconSize * 0.8f;
@@ -5726,7 +5814,7 @@ public class GameView extends SurfaceView implements Runnable {
     private void drawTrajectory(Canvas canvas, float launchAngle, float ratio, Ball currentDraggedBall) {
         // Çizgi ve Ok parametreleri
         float startDist = currentDraggedBall.radius * 1.5f;
-        float lineLen = 250 * ratio; // Shortened from 400
+        float lineLen = (250 + (upgradeAim - 1) * 8) * ratio; // Scaling: Max ~130% of base (250 -> 322)
 
         float startX = currentDraggedBall.x + (float) Math.cos(launchAngle) * startDist;
         float startY = currentDraggedBall.y + (float) Math.sin(launchAngle) * startDist;
@@ -8653,6 +8741,9 @@ public class GameView extends SurfaceView implements Runnable {
                         // Visual frost buildup
                         if (random.nextFloat() < 0.4f) {
                             createParticles(whiteBall.x, whiteBall.y, Color.CYAN);
+                        } else {
+                            // Normal collisions
+                            // Bounce logic...
                         }
                     }
                 } else {

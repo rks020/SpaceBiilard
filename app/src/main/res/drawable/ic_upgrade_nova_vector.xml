@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Glowing Circle Background -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M50,0 A50,50 0 1,1 50,100 A50,50 0 1,1 50,0 Z" />
+    
+    <path
+        android:strokeWidth="2"
+        android:strokeColor="#FF5722"
+        android:fillColor="#00000000"
+        android:pathData="M50,2 A48,48 0 1,1 50,98 A48,48 0 1,1 50,2 Z" />
+
+    <!-- Nova Explosion -->
+    <path
+        android:fillColor="#FF5722"
+        android:pathData="M50,20 L60,40 L80,50 L60,60 L50,80 L40,60 L20,50 L40,40 Z" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1"
+        android:fillColor="#00000000"
+        android:pathData="M50,30 L55,45 L70,50 L55,55 L50,70 L45,55 L30,50 L45,45 Z" />
+</vector>

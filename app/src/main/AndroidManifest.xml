@@ -42,6 +42,11 @@
             android:name="com.spacebilliard.app.ShopActivity"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
+
+        <activity
+            android:name="com.spacebilliard.app.UpgradesActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
         
 
         

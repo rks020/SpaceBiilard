@@ -88,8 +88,8 @@ public class MainMenuActivity extends Activity {
         });
 
         findViewById(R.id.btnBottomUpgrades).setOnClickListener(v -> {
-            // TODO: Upgrades screen
-            android.widget.Toast.makeText(this, "Upgrades - Coming Soon", android.widget.Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainMenuActivity.this, UpgradesActivity.class);
+            startActivity(intent);
         });
 
         findViewById(R.id.btnBottomQuests).setOnClickListener(v -> {
