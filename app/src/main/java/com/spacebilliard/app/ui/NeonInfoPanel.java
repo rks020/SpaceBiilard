@@ -18,11 +18,11 @@ public class NeonInfoPanel extends View {
     private Paint textPaint;
     private Paint valuePaint;
 
-    private String line1Label = "TIME:";
-    private String line1Value = "20";
-    private String line2Label = "SCORE:";
-    private String line2Value = "0";
-    private String coinsValue = "0";
+    private StringBuilder line1Label = new StringBuilder("TIME:");
+    private StringBuilder line1Value = new StringBuilder("20");
+    private StringBuilder line2Label = new StringBuilder("SCORE:");
+    private StringBuilder line2Value = new StringBuilder("0");
+    private StringBuilder coinsValue = new StringBuilder("0");
     private int themeColor = Color.CYAN;
 
     private java.util.List<String> wrappedLines = new java.util.ArrayList<>();
@@ -65,10 +65,10 @@ public class NeonInfoPanel extends View {
     }
 
     public void setData(String l1Label, String l1Value, String l2Label, String l2Value) {
-        this.line1Label = l1Label;
-        this.line1Value = l1Value;
-        this.line2Label = l2Label;
-        this.line2Value = l2Value;
+        updateSB(this.line1Label, l1Label);
+        updateSB(this.line1Value, l1Value);
+        updateSB(this.line2Label, l2Label);
+        updateSB(this.line2Value, l2Value);
 
         wrappedLines.clear();
 
@@ -119,10 +119,10 @@ public class NeonInfoPanel extends View {
     private final float MAX_COIN_SCALE = 1.5f;
 
     public void setCoins(String coins) {
-        if (!this.coinsValue.equals(coins)) {
+        if (!contentEquals(this.coinsValue, coins)) {
             // Value changed, trigger animation if increasing
             try {
-                int oldVal = Integer.parseInt(this.coinsValue);
+                int oldVal = Integer.parseInt(this.coinsValue.toString());
                 int newVal = Integer.parseInt(coins);
                 if (newVal > oldVal) {
                     isAnimatingCoin = true;
@@ -134,7 +134,7 @@ public class NeonInfoPanel extends View {
                 animationStartTime = System.currentTimeMillis();
             }
         }
-        this.coinsValue = coins;
+        updateSB(this.coinsValue, coins);
         invalidate();
     }
 
@@ -270,16 +270,18 @@ public class NeonInfoPanel extends View {
                 valuePaint.setColor(themeColor);
             }
 
-            canvas.drawText(line1Label, leftContent, startY, textPaint);
+            canvas.drawText(line1Label, 0, line1Label.length(), leftContent, startY, textPaint);
 
             valuePaint.setTextSize(baseTextSize * timeTextScale);
-            canvas.drawText(line1Value, leftContent + textPaint.measureText(line1Label) + 10, startY, valuePaint);
+            float label1W = textPaint.measureText(line1Label, 0, line1Label.length());
+            canvas.drawText(line1Value, 0, line1Value.length(), leftContent + label1W + 10, startY, valuePaint);
             valuePaint.setTextSize(baseTextSize); // Restore
             valuePaint.setColor(themeColor); // Restore
 
             // Line 2: SCORE
-            canvas.drawText(line2Label, leftContent, startY + spacing, textPaint);
-            canvas.drawText(line2Value, leftContent + textPaint.measureText(line2Label) + 10, startY + spacing,
+            canvas.drawText(line2Label, 0, line2Label.length(), leftContent, startY + spacing, textPaint);
+            float label2W = textPaint.measureText(line2Label, 0, line2Label.length());
+            canvas.drawText(line2Value, 0, line2Value.length(), leftContent + label2W + 10, startY + spacing,
                     valuePaint);
         }
 
@@ -301,7 +303,7 @@ public class NeonInfoPanel extends View {
             valuePaint.setColor(themeColor);
         }
 
-        canvas.drawText(coinsValue, iconX + 24 * density, startY + spacing * 2, valuePaint);
+        canvas.drawText(coinsValue, 0, coinsValue.length(), iconX + 24 * density, startY + spacing * 2, valuePaint);
 
         // Reset Paint
         valuePaint.setTextSize(baseTextSize);
@@ -314,4 +316,24 @@ public class NeonInfoPanel extends View {
         canvas.drawCircle(w - margin - sDist, h - margin - sDist, 1.5f * density, bgPaint);
     }
 
+    // Helper to update StringBuilder without creating new objects
+    private void updateSB(StringBuilder sb, String text) {
+        if (text == null)
+            return;
+        sb.setLength(0);
+        sb.append(text);
+    }
+
+    // Helper to compare StringBuilder with String
+    private boolean contentEquals(StringBuilder sb, String text) {
+        if (sb == null || text == null)
+            return false;
+        if (sb.length() != text.length())
+            return false;
+        for (int i = 0; i < sb.length(); i++) {
+            if (sb.charAt(i) != text.charAt(i))
+                return false;
+        }
+        return true;
+    }
 }

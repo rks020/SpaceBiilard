@@ -256,6 +256,13 @@ public class GameView extends SurfaceView implements Runnable {
     private ParticlePool particlePool;
     private FloatingTextPool floatingTextPool;
 
+    // Reusable Paths for performance
+    private android.graphics.Path brazilDiamondPath = new android.graphics.Path();
+    private android.graphics.Path southAfricaYPath = new android.graphics.Path();
+    private android.graphics.Path southAfricaTriPath = new android.graphics.Path();
+    private android.graphics.Path australiaStarPath = new android.graphics.Path();
+    private Typeface montserratFont;
+
     public GameView(Context context) {
         super(context);
         if (context instanceof MainActivity) {
@@ -266,6 +273,13 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setAntiAlias(true);
         random = new Random();
         shakeRandom = new Random();
+
+        // Pre-load font for tutorial
+        try {
+            montserratFont = androidx.core.content.res.ResourcesCompat.getFont(context, R.font.montserrat_black);
+        } catch (Exception e) {
+            montserratFont = Typeface.create(Typeface.DEFAULT, Typeface.BOLD);
+        }
 
         cloneBalls = new ArrayList<>();
         coloredBalls = new ArrayList<>();
@@ -495,7 +509,7 @@ public class GameView extends SurfaceView implements Runnable {
                 currentBoss.x = centerX;
                 currentBoss.y = centerY - circleRadius * 0.6f;
 
-                floatingTexts.add(new FloatingText("BOSS RECOVERED!", centerX, centerY - 100, Color.RED));
+                floatingTexts.add(floatingTextPool.obtain("BOSS RECOVERED!", centerX, centerY - 100, Color.RED));
             }
 
             // CRITICAL: Set gameOver = false BEFORE calling updateUIPanels to prevent loop
@@ -802,7 +816,7 @@ public class GameView extends SurfaceView implements Runnable {
         if (upgradeShield > 1 && random.nextInt(100) < (upgradeShield * 10)) {
             barrierActive = true;
             barrierEndTime = System.currentTimeMillis() + 10000; // Start with 10s shield
-            floatingTexts.add(new FloatingText("AUTO SHIELD!", centerX, centerY - 200, Color.CYAN));
+            floatingTexts.add(floatingTextPool.obtain("AUTO SHIELD!", centerX, centerY - 200, Color.CYAN));
         } else {
             barrierActive = false;
         }
@@ -1046,7 +1060,7 @@ public class GameView extends SurfaceView implements Runnable {
             electricEffects.add(new ElectricEffect(currentBoss.x, -200, currentBoss.x, currentBoss.y, 1));
             createImpactBurst(currentBoss.x, currentBoss.y, Color.RED);
             currentBoss.hp -= 50;
-            floatingTexts.add(new FloatingText("-50", currentBoss.x, currentBoss.y - 50, Color.RED));
+            floatingTexts.add(floatingTextPool.obtain("-50", currentBoss.x, currentBoss.y - 50, Color.RED));
             playSound(soundBlackExplosion);
         } else if (blackBalls.size() > 0) {
             Ball b = blackBalls.get(0); // Always target first available
@@ -1160,7 +1174,7 @@ public class GameView extends SurfaceView implements Runnable {
                 }
 
                 // Show a floating text for reward
-                floatingTexts.add(new FloatingText("+100 COINS!", centerX, centerY, Color.YELLOW));
+                floatingTexts.add(floatingTextPool.obtain("+100 COINS!", centerX, centerY, Color.YELLOW));
                 playSound(soundPower);
 
                 levelCompleted = true;
@@ -1258,7 +1272,7 @@ public class GameView extends SurfaceView implements Runnable {
                 int g = random.nextInt(140);
                 int b = 0;
                 // Use simple particle constructor
-                particles.add(new Particle(x, y, angle, speed, Color.rgb(r, g, b)));
+                particles.add(particlePool.obtain(x, y, angle, speed, Color.rgb(r, g, b)));
             }
         }
 
@@ -1354,7 +1368,7 @@ public class GameView extends SurfaceView implements Runnable {
                 immuneEndTime = System.currentTimeMillis() + 2000; // 2s Immunity
                 createImpactBurst(whiteBall.x, whiteBall.y, Color.GREEN);
                 playSound(soundTeleport);
-                floatingTexts.add(new FloatingText("SAVED!", whiteBall.x, whiteBall.y - 100, Color.GREEN));
+                floatingTexts.add(floatingTextPool.obtain("SAVED!", whiteBall.x, whiteBall.y - 100, Color.GREEN));
             }
         }
 
@@ -1410,7 +1424,7 @@ public class GameView extends SurfaceView implements Runnable {
                 for (int i = 0; i < 30; i++) {
                     float angle = random.nextFloat() * (float) (2 * Math.PI);
                     float speed = random.nextFloat() * 8 + 4;
-                    particles.add(new Particle(centerX, centerY, angle, speed, Color.rgb(255, 215, 0)));
+                    particles.add(particlePool.obtain(centerX, centerY, angle, speed, Color.rgb(255, 215, 0)));
                 }
             }
         }
@@ -1483,7 +1497,7 @@ public class GameView extends SurfaceView implements Runnable {
                 }
 
                 // Show "LEVEL COMPLETE" text
-                floatingTexts.add(new FloatingText("LEVEL COMPLETE!", centerX, centerY - 100, Color.GREEN));
+                floatingTexts.add(floatingTextPool.obtain("LEVEL COMPLETE!", centerX, centerY - 100, Color.GREEN));
                 playSound(soundPower); // Victory sound
 
                 level++; // Go to next level
@@ -1529,7 +1543,8 @@ public class GameView extends SurfaceView implements Runnable {
 
                     // Show "LEVEL UNLOCKED" text
                     floatingTexts
-                            .add(new FloatingText("LEVEL " + level + " UNLOCKED!", centerX, centerY + 50, Color.CYAN));
+                            .add(floatingTextPool.obtain("LEVEL " + level + " UNLOCKED!", centerX, centerY + 50,
+                                    Color.CYAN));
                 }
             } else {
                 // Intermediate stage completed (stages 1-4), show stage cleared text
@@ -1540,7 +1555,8 @@ public class GameView extends SurfaceView implements Runnable {
                         "💵 Coin Status: coins=" + coins + ", lastCoinLevel=" + lastCoinAwardedLevel
                                 + ", lastCoinStage=" + lastCoinAwardedStage);
                 floatingTexts
-                        .add(new FloatingText("STAGE " + completedStage + " CLEARED!", centerX, centerY, Color.YELLOW));
+                        .add(floatingTextPool.obtain("STAGE " + completedStage + " CLEARED!", centerX, centerY,
+                                Color.YELLOW));
                 playSound(soundCoin); // Lighter sound for stage clear
             }
             // else: Just continue to next stage within same level
@@ -1603,7 +1619,7 @@ public class GameView extends SurfaceView implements Runnable {
         if (isFrozen) {
             if (System.currentTimeMillis() > frozenEndTime) {
                 isFrozen = false;
-                floatingTexts.add(new FloatingText("ICE MELTED", whiteBall.x, whiteBall.y - 80, Color.WHITE));
+                floatingTexts.add(floatingTextPool.obtain("ICE MELTED", whiteBall.x, whiteBall.y - 80, Color.WHITE));
             }
         }
 
@@ -1689,22 +1705,22 @@ public class GameView extends SurfaceView implements Runnable {
             float speed = 2 + random.nextFloat() * 3;
 
             if (ambience.equals("SOLARION")) {
-                particles.add(new Particle(x, y, angle, speed, Color.rgb(255, 100 + random.nextInt(100), 0),
+                particles.add(particlePool.obtain(x, y, angle, speed, Color.rgb(255, 100 + random.nextInt(100), 0),
                         ParticleType.FLAME));
             } else if (ambience.equals("NEBULON")) {
-                particles.add(new Particle(x, y, angle, speed, Color.rgb(138, 43, 226), ParticleType.CIRCLE));
+                particles.add(particlePool.obtain(x, y, angle, speed, Color.rgb(138, 43, 226), ParticleType.CIRCLE));
             } else if (ambience.equals("GRAVITON")) {
-                particles.add(new Particle(x, y, angle, speed, Color.rgb(50, 0, 200), ParticleType.STAR));
+                particles.add(particlePool.obtain(x, y, angle, speed, Color.rgb(50, 0, 200), ParticleType.STAR));
             } else if (ambience.equals("MECHA-CORE")) {
-                particles.add(new Particle(x, y, angle, speed, Color.CYAN, ParticleType.CIRCLE));
+                particles.add(particlePool.obtain(x, y, angle, speed, Color.CYAN, ParticleType.CIRCLE));
             } else if (ambience.equals("CRYO-STASIS")) {
-                particles.add(new Particle(x, y, angle, speed, Color.rgb(200, 230, 255), ParticleType.STAR));
+                particles.add(particlePool.obtain(x, y, angle, speed, Color.rgb(200, 230, 255), ParticleType.STAR));
             } else if (ambience.equals("GEO-BREAKER")) {
-                particles.add(new Particle(x, y, angle, speed, Color.rgb(139, 69, 19), ParticleType.CIRCLE));
+                particles.add(particlePool.obtain(x, y, angle, speed, Color.rgb(139, 69, 19), ParticleType.CIRCLE));
             } else if (ambience.equals("BIO-HAZARD")) {
-                particles.add(new Particle(x, y, angle, speed, Color.rgb(50, 205, 50), ParticleType.CIRCLE));
+                particles.add(particlePool.obtain(x, y, angle, speed, Color.rgb(50, 205, 50), ParticleType.CIRCLE));
             } else if (ambience.equals("CHRONO-SHIFTER")) {
-                particles.add(new Particle(x, y, angle, speed, Color.rgb(255, 215, 0), ParticleType.STAR));
+                particles.add(particlePool.obtain(x, y, angle, speed, Color.rgb(255, 215, 0), ParticleType.STAR));
             }
         }
 
@@ -1776,6 +1792,7 @@ public class GameView extends SurfaceView implements Runnable {
             Particle p = particles.get(i);
             p.update();
             if (p.isDead()) {
+                particlePool.free(p);
                 // Swap & pop pattern for O(1) removal instead of O(n)
                 int lastIdx = particles.size() - 1;
                 if (i != lastIdx) {
@@ -1803,6 +1820,7 @@ public class GameView extends SurfaceView implements Runnable {
             FloatingText ft = floatingTexts.get(i);
             ft.update();
             if (ft.isDead()) {
+                floatingTextPool.free(ft);
                 // Swap & pop pattern for O(1) removal
                 int lastIdx = floatingTexts.size() - 1;
                 if (i != lastIdx) {
@@ -1986,7 +2004,7 @@ public class GameView extends SurfaceView implements Runnable {
             }
             inventory.add(type);
             playSound(soundCoin);
-            floatingTexts.add(new FloatingText("COLLECTED!", targetBall.x, targetBall.y, Color.GREEN, 0.5f));
+            floatingTexts.add(floatingTextPool.obtain("COLLECTED!", targetBall.x, targetBall.y, Color.GREEN, 0.5f));
 
             // Quest 50: Arsenal Master - Hold 3 power-ups simultaneously
             if (questManager != null && inventory.size() >= 3) {
@@ -2086,12 +2104,14 @@ public class GameView extends SurfaceView implements Runnable {
                 if (!activePassivePower.equals("teleport")) {
                     activePassivePower = "teleport";
                     playSound(soundPower);
-                    floatingTexts.add(new FloatingText("PASSIVE READY!", targetBall.x, targetBall.y, Color.GREEN));
+                    floatingTexts
+                            .add(floatingTextPool.obtain("PASSIVE READY!", targetBall.x, targetBall.y, Color.GREEN));
                     createParticles(targetBall.x, targetBall.y, Color.GREEN);
                 } else {
                     // Already charged
                     playSound(soundCoin);
-                    floatingTexts.add(new FloatingText("ALREADY CHARGED", targetBall.x, targetBall.y, Color.LTGRAY));
+                    floatingTexts
+                            .add(floatingTextPool.obtain("ALREADY CHARGED", targetBall.x, targetBall.y, Color.LTGRAY));
                 }
                 break;
             case "split_save":
@@ -2099,12 +2119,14 @@ public class GameView extends SurfaceView implements Runnable {
                 if (!activePassivePower.equals("split_save")) {
                     activePassivePower = "split_save";
                     playSound(soundPower);
-                    floatingTexts.add(new FloatingText("SPLIT READY!", targetBall.x, targetBall.y, Color.MAGENTA));
+                    floatingTexts
+                            .add(floatingTextPool.obtain("SPLIT READY!", targetBall.x, targetBall.y, Color.MAGENTA));
                     createParticles(targetBall.x, targetBall.y, Color.MAGENTA);
                 } else {
                     // Already charged
                     playSound(soundCoin);
-                    floatingTexts.add(new FloatingText("ALREADY CHARGED", targetBall.x, targetBall.y, Color.LTGRAY));
+                    floatingTexts
+                            .add(floatingTextPool.obtain("ALREADY CHARGED", targetBall.x, targetBall.y, Color.LTGRAY));
                 }
                 break;
             case "vortex":
@@ -2112,12 +2134,13 @@ public class GameView extends SurfaceView implements Runnable {
                 if (!activePassivePower.equals("vortex")) {
                     activePassivePower = "vortex";
                     playSound(soundPower);
-                    floatingTexts.add(new FloatingText("VORTEX READY!", targetBall.x, targetBall.y, Color.CYAN));
+                    floatingTexts.add(floatingTextPool.obtain("VORTEX READY!", targetBall.x, targetBall.y, Color.CYAN));
                     createParticles(targetBall.x, targetBall.y, Color.CYAN);
                 } else {
                     // Already charged
                     playSound(soundCoin);
-                    floatingTexts.add(new FloatingText("ALREADY CHARGED", targetBall.x, targetBall.y, Color.LTGRAY));
+                    floatingTexts
+                            .add(floatingTextPool.obtain("ALREADY CHARGED", targetBall.x, targetBall.y, Color.LTGRAY));
                 }
                 break;
             case "lightning":
@@ -2182,7 +2205,7 @@ public class GameView extends SurfaceView implements Runnable {
                                 // Deal damage to boss
                                 currentBoss.hp -= 15;
                                 createImpactBurst(proj.x, proj.y, Color.CYAN);
-                                floatingTexts.add(new FloatingText("-15 BOSS!", proj.x, proj.y, Color.CYAN));
+                                floatingTexts.add(floatingTextPool.obtain("-15 BOSS!", proj.x, proj.y, Color.CYAN));
                             }
                         }
                     }
@@ -2213,15 +2236,17 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                     bossProjectiles.clear();
                     floatingTexts.add(
-                            new FloatingText("ALCHEMIZED!", targetBall.x, targetBall.y - 50, Color.rgb(255, 215, 0)));
+                            floatingTextPool.obtain("ALCHEMIZED!", targetBall.x, targetBall.y - 50,
+                                    Color.rgb(255, 215, 0)));
                 }
 
-                floatingTexts.add(new FloatingText("ALCHEMY!", targetBall.x, targetBall.y, Color.rgb(255, 215, 0)));
+                floatingTexts
+                        .add(floatingTextPool.obtain("ALCHEMY!", targetBall.x, targetBall.y, Color.rgb(255, 215, 0)));
                 break;
             case "ufo":
                 activeUfo = new Ufo();
                 playSound(soundPower);
-                floatingTexts.add(new FloatingText("UFO ARRIVED!", targetBall.x, targetBall.y, Color.GREEN));
+                floatingTexts.add(floatingTextPool.obtain("UFO ARRIVED!", targetBall.x, targetBall.y, Color.GREEN));
                 break;
 
             case "swarm":
@@ -2274,7 +2299,7 @@ public class GameView extends SurfaceView implements Runnable {
 
             // SMOKE TRAIL (User Request)
             if (random.nextInt(3) == 0) { // Frequent smoke
-                particles.add(new Particle(missile.x, missile.y, (float) (random.nextFloat() * 2 * Math.PI), 2,
+                particles.add(particlePool.obtain(missile.x, missile.y, (float) (random.nextFloat() * 2 * Math.PI), 2,
                         Color.DKGRAY));
             }
 
@@ -2411,7 +2436,7 @@ public class GameView extends SurfaceView implements Runnable {
                         for (int k = 0; k < 40; k++) {
                             float angle = random.nextFloat() * (float) (2 * Math.PI);
                             float speed = 5 + random.nextFloat() * 8;
-                            particles.add(new Particle(
+                            particles.add(particlePool.obtain(
                                     whiteBall.x, whiteBall.y,
                                     angle, speed,
                                     Color.rgb(150, 200, 255),
@@ -2431,7 +2456,8 @@ public class GameView extends SurfaceView implements Runnable {
                         }
 
                         floatingTexts
-                                .add(new FloatingText("ICE SHATTERED!", whiteBall.x, whiteBall.y - 100, Color.WHITE));
+                                .add(floatingTextPool.obtain("ICE SHATTERED!", whiteBall.x, whiteBall.y - 100,
+                                        Color.WHITE));
                         playSound(soundBlackExplosion);
                         createImpactBurst(whiteBall.x, whiteBall.y, Color.CYAN);
 
@@ -2447,7 +2473,8 @@ public class GameView extends SurfaceView implements Runnable {
                         createImpactBurst(whiteBall.x, whiteBall.y, Color.GREEN);
                         for (int particleIdx = 0; particleIdx < 20; particleIdx++) {
                             particles.add(
-                                    new Particle(whiteBall.x, whiteBall.y, random.nextFloat() * (float) (2 * Math.PI),
+                                    particlePool.obtain(whiteBall.x, whiteBall.y,
+                                            random.nextFloat() * (float) (2 * Math.PI),
                                             random.nextFloat() * 8 + 4, Color.GREEN));
                         }
 
@@ -2461,7 +2488,8 @@ public class GameView extends SurfaceView implements Runnable {
 
                         createImpactBurst(whiteBall.x, whiteBall.y, Color.GREEN);
                         playSound(soundShield);
-                        floatingTexts.add(new FloatingText("SAVED!", whiteBall.x, whiteBall.y - 100, Color.GREEN));
+                        floatingTexts
+                                .add(floatingTextPool.obtain("SAVED!", whiteBall.x, whiteBall.y - 100, Color.GREEN));
                         immuneEndTime = System.currentTimeMillis() + 3000;
 
                         bossProjectiles.remove(i);
@@ -2473,7 +2501,7 @@ public class GameView extends SurfaceView implements Runnable {
 
                         createImpactBurst(whiteBall.x, whiteBall.y, Color.MAGENTA);
                         playSound(soundPower);
-                        floatingTexts.add(new FloatingText("SPLIT SAVE!", centerX, centerY, Color.MAGENTA));
+                        floatingTexts.add(floatingTextPool.obtain("SPLIT SAVE!", centerX, centerY, Color.MAGENTA));
 
                         // Spawn 3 Mini Clones
                         for (int k = 0; k < 3; k++) {
@@ -2508,10 +2536,11 @@ public class GameView extends SurfaceView implements Runnable {
                         for (int pIdx = 0; pIdx < 30; pIdx++) {
                             float pAngle = random.nextFloat() * (float) (2 * Math.PI);
                             float pSpeed = random.nextFloat() * 10 + 5;
-                            particles.add(new Particle(whiteBall.x, whiteBall.y, pAngle, pSpeed, Color.CYAN));
+                            particles.add(particlePool.obtain(whiteBall.x, whiteBall.y, pAngle, pSpeed, Color.CYAN));
                         }
                         playSound(soundPower);
-                        floatingTexts.add(new FloatingText("VORTEX!", whiteBall.x, whiteBall.y - 50, Color.CYAN));
+                        floatingTexts
+                                .add(floatingTextPool.obtain("VORTEX!", whiteBall.x, whiteBall.y - 50, Color.CYAN));
 
                         // Give immunity during vortex
                         immuneEndTime = System.currentTimeMillis() + 2500;
@@ -2527,7 +2556,8 @@ public class GameView extends SurfaceView implements Runnable {
                         if (upgradeVampire > 0) {
                             int heal = 2 * upgradeVampire; // 2 HP per level
                             playerHp = Math.min(playerHp + heal, playerMaxHp);
-                            floatingTexts.add(new FloatingText("+" + heal, whiteBall.x, whiteBall.y, Color.GREEN));
+                            floatingTexts
+                                    .add(floatingTextPool.obtain("+" + heal, whiteBall.x, whiteBall.y, Color.GREEN));
                         }
                         bossProjectiles.remove(i);
                         continue;
@@ -2540,7 +2570,8 @@ public class GameView extends SurfaceView implements Runnable {
                         if (upgradeVampire > 0) {
                             int heal = 2 * upgradeVampire;
                             playerHp = Math.min(playerHp + heal, playerMaxHp);
-                            floatingTexts.add(new FloatingText("+" + heal, whiteBall.x, whiteBall.y, Color.GREEN));
+                            floatingTexts
+                                    .add(floatingTextPool.obtain("+" + heal, whiteBall.x, whiteBall.y, Color.GREEN));
                         }
                         bossProjectiles.remove(i);
                         // Optional: Play a sound or show text?
@@ -2746,19 +2777,21 @@ public class GameView extends SurfaceView implements Runnable {
                     if (bossShielded) {
                         playSound(soundShield);
                         createImpactBurst(wBall.x, wBall.y, Color.CYAN);
-                        floatingTexts.add(new FloatingText("BLOCKED", wBall.x, wBall.y - 50, Color.CYAN));
+                        floatingTexts.add(floatingTextPool.obtain("BLOCKED", wBall.x, wBall.y - 50, Color.CYAN));
 
                         if (currentBoss.dashing && !currentBoss.charging && wBall == whiteBall) {
                             if (barrierActive || ghostModeActive) {
                                 if (barrierActive) {
                                     barrierActive = false;
-                                    floatingTexts.add(new FloatingText("BARRIER BROKEN!", whiteBall.x, whiteBall.y + 50,
-                                            Color.YELLOW));
+                                    floatingTexts.add(
+                                            floatingTextPool.obtain("BARRIER BROKEN!", whiteBall.x, whiteBall.y + 50,
+                                                    Color.YELLOW));
                                     playSound(soundCollision);
                                 }
                             } else {
                                 playerHp -= 40;
-                                floatingTexts.add(new FloatingText("-40", whiteBall.x, whiteBall.y - 50, Color.RED));
+                                floatingTexts
+                                        .add(floatingTextPool.obtain("-40", whiteBall.x, whiteBall.y - 50, Color.RED));
                                 createImpactBurst(whiteBall.x, whiteBall.y, Color.RED);
                                 cameraShakeX = 30;
                                 shakeEndTime = System.currentTimeMillis() + 400;
@@ -2774,7 +2807,7 @@ public class GameView extends SurfaceView implements Runnable {
                             if (questManager != null) {
                                 questManager.incrementQuestProgress(18, 40);
                             }
-                            floatingTexts.add(new FloatingText("-" + dmg, wBall.x, wBall.y - 50, Color.CYAN));
+                            floatingTexts.add(floatingTextPool.obtain("-" + dmg, wBall.x, wBall.y - 50, Color.CYAN));
                             electricEffects.add(new ElectricEffect(wBall.x, wBall.y, currentBoss.x, currentBoss.y, 0));
                             createImpactBurst(wBall.x, wBall.y, Color.CYAN);
                             createParticles(wBall.x, wBall.y, Color.CYAN);
@@ -2788,7 +2821,7 @@ public class GameView extends SurfaceView implements Runnable {
                             }
                             createParticles(wBall.x, wBall.y, currentBoss.color);
                             playSound(soundCollision);
-                            floatingTexts.add(new FloatingText("-" + dmg, wBall.x, wBall.y - 50, Color.WHITE));
+                            floatingTexts.add(floatingTextPool.obtain("-" + dmg, wBall.x, wBall.y - 50, Color.WHITE));
                         }
                     }
 
@@ -2859,7 +2892,7 @@ public class GameView extends SurfaceView implements Runnable {
                             questManager.incrementQuestProgress(41, 1);
                         }
                         if (comboHits >= 3) {
-                            floatingTexts.add(new FloatingText("COMBO x" + (comboHits), centerX,
+                            floatingTexts.add(floatingTextPool.obtain("COMBO x" + (comboHits), centerX,
                                     centerY - screenHeight * 0.15f, Color.rgb(255, 215, 0)));
                         }
                     } else {
@@ -2879,14 +2912,14 @@ public class GameView extends SurfaceView implements Runnable {
                     if (upgradeMidas > 1) {
                         if (Math.random() < (upgradeMidas - 1) * 0.05f) {
                             coins++;
-                            floatingTexts.add(new FloatingText("+1 💰", ball.x, ball.y, Color.YELLOW));
+                            floatingTexts.add(floatingTextPool.obtain("+1 💰", ball.x, ball.y, Color.YELLOW));
                         }
                     }
                     // Vampire Core Healing (Boss Fight Only)
                     if (upgradeVampire > 0 && currentBoss != null) {
                         int heal = 2 * upgradeVampire;
                         playerHp = Math.min(playerHp + heal, playerMaxHp);
-                        floatingTexts.add(new FloatingText("+" + heal, wBall.x, wBall.y, Color.GREEN));
+                        floatingTexts.add(floatingTextPool.obtain("+" + heal, wBall.x, wBall.y, Color.GREEN));
                     }
                     ballsHitThisShot++; // Quest 3: Count balls hit
                     // QUEST TRACKING - MAIN GAMEPLAY COLORED BALL DESTRUCTION!
@@ -2948,7 +2981,7 @@ public class GameView extends SurfaceView implements Runnable {
                         for (int p = 0; p < 30; p++) {
                             float pAngle = random.nextFloat() * (float) (2 * Math.PI);
                             float pSpeed = random.nextFloat() * 10 + 5;
-                            particles.add(new Particle(wBall.x, wBall.y, pAngle, pSpeed, Color.GREEN));
+                            particles.add(particlePool.obtain(wBall.x, wBall.y, pAngle, pSpeed, Color.GREEN));
                         }
 
                         // Stop movement immediately
@@ -2961,7 +2994,7 @@ public class GameView extends SurfaceView implements Runnable {
 
                         createImpactBurst(wBall.x, wBall.y, Color.MAGENTA);
                         playSound(soundPower);
-                        floatingTexts.add(new FloatingText("SPLIT SAVE!", centerX, centerY, Color.MAGENTA));
+                        floatingTexts.add(floatingTextPool.obtain("SPLIT SAVE!", centerX, centerY, Color.MAGENTA));
 
                         // Spawn 3 Mini Clones
                         for (int k = 0; k < 3; k++) {
@@ -2995,10 +3028,10 @@ public class GameView extends SurfaceView implements Runnable {
                         for (int pIdx = 0; pIdx < 30; pIdx++) {
                             float pAngle = random.nextFloat() * (float) (2 * Math.PI);
                             float pSpeed = random.nextFloat() * 10 + 5;
-                            particles.add(new Particle(wBall.x, wBall.y, pAngle, pSpeed, Color.CYAN));
+                            particles.add(particlePool.obtain(wBall.x, wBall.y, pAngle, pSpeed, Color.CYAN));
                         }
                         playSound(soundPower);
-                        floatingTexts.add(new FloatingText("VORTEX!", wBall.x, wBall.y - 50, Color.CYAN));
+                        floatingTexts.add(floatingTextPool.obtain("VORTEX!", wBall.x, wBall.y - 50, Color.CYAN));
 
                         // Give immunity during vortex
                         immuneEndTime = System.currentTimeMillis() + 2500;
@@ -3047,7 +3080,7 @@ public class GameView extends SurfaceView implements Runnable {
     private void createFlame(float x, float y) {
         // Spawn 1-2 flame particles each frame for continuous effect
         for (int i = 0; i < 2; i++) {
-            particles.add(new Particle(x, y, 0, 0, Color.YELLOW, ParticleType.FLAME));
+            particles.add(particlePool.obtain(x, y, 0, 0, Color.YELLOW, ParticleType.FLAME));
         }
     }
 
@@ -3055,7 +3088,7 @@ public class GameView extends SurfaceView implements Runnable {
         for (int i = 0; i < 10; i++) { // Reduced from 15 to 10 for performance
             float angle = random.nextFloat() * (float) (2 * Math.PI);
             float speed = random.nextFloat() * 5 + 2;
-            particles.add(new Particle(x, y, angle, speed, color));
+            particles.add(particlePool.obtain(x, y, angle, speed, color));
         }
     }
 
@@ -3080,7 +3113,7 @@ public class GameView extends SurfaceView implements Runnable {
                 particleColor = Color.rgb(shade, shade, shade);
             }
 
-            particles.add(new Particle(x, y, angle, speed, particleColor, ParticleType.CIRCLE));
+            particles.add(particlePool.obtain(x, y, angle, speed, particleColor, ParticleType.CIRCLE));
         }
 
         switch (selectedImpact) {
@@ -3088,7 +3121,7 @@ public class GameView extends SurfaceView implements Runnable {
                 for (int i = 0; i < 15; i++) {
                     float angle = random.nextFloat() * (float) (2 * Math.PI);
                     float speed = random.nextFloat() * 8 + 3;
-                    particles.add(new Particle(x, y, angle, speed, Color.GREEN, ParticleType.PIXEL));
+                    particles.add(particlePool.obtain(x, y, angle, speed, Color.GREEN, ParticleType.PIXEL));
                 }
                 break;
             case "vortex":
@@ -3098,14 +3131,15 @@ public class GameView extends SurfaceView implements Runnable {
                     // Spiraling logic handled in update? particle currently just moves linear.
                     // We'll simulate vortex look by sheer number and color
                     int pColor = Color.rgb(100 + random.nextInt(155), 0, 255);
-                    particles.add(new Particle(x, y, angle, speed, pColor, ParticleType.CIRCLE));
+                    particles.add(particlePool.obtain(x, y, angle, speed, pColor, ParticleType.CIRCLE));
                 }
                 break;
             case "sparks":
                 for (int i = 0; i < 20; i++) {
                     float angle = random.nextFloat() * (float) (2 * Math.PI);
                     float speed = random.nextFloat() * 15 + 10; // Fast
-                    particles.add(new Particle(x, y, angle, speed, Color.YELLOW, ParticleType.STAR)); // Reusing Star
+                    particles.add(particlePool.obtain(x, y, angle, speed, Color.YELLOW, ParticleType.STAR)); // Reusing
+                                                                                                             // Star
                     // for spark look
                 }
                 break;
@@ -3113,14 +3147,14 @@ public class GameView extends SurfaceView implements Runnable {
                 for (int i = 0; i < 8; i++) {
                     float angle = random.nextFloat() * (float) (2 * Math.PI);
                     float speed = random.nextFloat() * 4 + 2;
-                    particles.add(new Particle(x, y, angle, speed, Color.RED, ParticleType.HEART));
+                    particles.add(particlePool.obtain(x, y, angle, speed, Color.RED, ParticleType.HEART));
                 }
                 break;
             case "skull":
                 for (int i = 0; i < 5; i++) {
                     float angle = random.nextFloat() * (float) (2 * Math.PI);
                     float speed = random.nextFloat() * 3 + 1;
-                    particles.add(new Particle(x, y, angle, speed, Color.LTGRAY, ParticleType.SKULL));
+                    particles.add(particlePool.obtain(x, y, angle, speed, Color.LTGRAY, ParticleType.SKULL));
                 }
                 break;
             case "music":
@@ -3128,7 +3162,7 @@ public class GameView extends SurfaceView implements Runnable {
                 for (int i = 0; i < 8; i++) {
                     float angle = random.nextFloat() * (float) (2 * Math.PI);
                     float speed = random.nextFloat() * 5 + 3;
-                    particles.add(new Particle(x, y, angle, speed, noteColors[i % 4], ParticleType.NOTE));
+                    particles.add(particlePool.obtain(x, y, angle, speed, noteColors[i % 4], ParticleType.NOTE));
                 }
                 break;
             case "lightning":
@@ -3143,14 +3177,14 @@ public class GameView extends SurfaceView implements Runnable {
                     float angle = random.nextFloat() * (float) (2 * Math.PI);
                     float speed = random.nextFloat() * 5 + 3;
                     int confettiColor = Color.rgb(random.nextInt(256), random.nextInt(256), random.nextInt(256));
-                    particles.add(new Particle(x, y, angle, speed, confettiColor, ParticleType.CONFETTI));
+                    particles.add(particlePool.obtain(x, y, angle, speed, confettiColor, ParticleType.CONFETTI));
                 }
                 break;
             case "ghost":
                 for (int i = 0; i < 5; i++) {
                     float angle = random.nextFloat() * (float) (2 * Math.PI);
                     float speed = random.nextFloat() * 2 + 1;
-                    particles.add(new Particle(x, y, angle, speed, Color.WHITE, ParticleType.GHOST));
+                    particles.add(particlePool.obtain(x, y, angle, speed, Color.WHITE, ParticleType.GHOST));
                 }
                 break;
             // "shockwave" uses default circles above
@@ -5076,118 +5110,49 @@ public class GameView extends SurfaceView implements Runnable {
                 paint.setColor(Color.RED);
                 canvas.drawCircle(bx, by, r * 0.3f, paint); // Leaf representation
                 break;
+
             case "brazil":
                 paint.setColor(Color.rgb(0, 153, 51));
                 canvas.drawCircle(bx, by, r, paint);
                 paint.setColor(Color.YELLOW);
-                android.graphics.Path diamond = new android.graphics.Path();
-                diamond.moveTo(bx, by - r * 0.8f);
-                diamond.lineTo(bx + r * 0.8f, by);
-                diamond.lineTo(bx, by + r * 0.8f);
-                diamond.lineTo(bx - r * 0.8f, by);
-                diamond.close();
-                canvas.drawPath(diamond, paint);
+
+                brazilDiamondPath.reset();
+                brazilDiamondPath.moveTo(bx, by - r * 0.8f);
+                brazilDiamondPath.lineTo(bx + r * 0.8f, by);
+                brazilDiamondPath.lineTo(bx, by + r * 0.8f);
+                brazilDiamondPath.lineTo(bx - r * 0.8f, by);
+                brazilDiamondPath.close();
+
+                canvas.drawPath(brazilDiamondPath, paint);
                 paint.setColor(Color.rgb(0, 39, 118));
                 canvas.drawCircle(bx, by, r * 0.35f, paint);
                 break;
-            case "japan":
-                paint.setColor(Color.WHITE);
-                canvas.drawCircle(bx, by, r, paint);
-                paint.setColor(Color.RED);
-                canvas.drawCircle(bx, by, r * 0.4f, paint);
-                break;
-            case "korea":
-                paint.setColor(Color.WHITE);
-                canvas.drawCircle(bx, by, r, paint);
-                paint.setColor(Color.RED);
-                canvas.drawArc(bx - r * 0.5f, by - r * 0.5f, bx + r * 0.5f, by + r * 0.5f, -90, 180, true, paint);
-                paint.setColor(Color.BLUE);
-                canvas.drawArc(bx - r * 0.5f, by - r * 0.5f, bx + r * 0.5f, by + r * 0.5f, 90, 180, true, paint);
-                break;
-            case "china":
-                paint.setColor(Color.RED);
-                canvas.drawCircle(bx, by, r, paint);
-                paint.setColor(Color.YELLOW);
-                drawStarPath(canvas, bx - r * 0.2f, by - r * 0.2f, r * 0.25f);
-                break;
-            case "russia":
-                drawHorizStripes(canvas, bx, by, r, Color.WHITE, Color.BLUE, Color.RED);
-                break;
-            case "india":
-                drawHorizStripes(canvas, bx, by, r, Color.rgb(255, 153, 51), Color.WHITE, Color.rgb(19, 136, 8));
-                paint.setColor(Color.BLUE);
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setStrokeWidth(2);
-                canvas.drawCircle(bx, by, r * 0.15f, paint);
-                break;
-            case "mexico":
-                drawVertStripes(canvas, bx, by, r, Color.rgb(0, 104, 71), Color.WHITE, Color.RED);
-                paint.setColor(Color.rgb(139, 69, 19));
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(bx, by, r * 0.15f, paint);
-                break;
-            case "argentina":
-                drawHorizStripes(canvas, bx, by, r, Color.rgb(117, 170, 219), Color.WHITE, Color.rgb(117, 170, 219));
-                paint.setColor(Color.YELLOW);
-                canvas.drawCircle(bx, by, r * 0.15f, paint);
-                break;
-            case "azerbaijan":
-                drawHorizStripes(canvas, bx, by, r, Color.rgb(0, 181, 226), Color.RED, Color.GREEN);
-                paint.setColor(Color.WHITE);
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(bx, by, r * 0.12f, paint);
-                break;
-            case "ukraine":
-                drawHorizStripes(canvas, bx, by, r, Color.rgb(0, 87, 183), Color.rgb(255, 215, 0));
-                break;
-            case "egypt":
-                drawHorizStripes(canvas, bx, by, r, Color.RED, Color.WHITE, Color.BLACK);
-                paint.setColor(Color.rgb(192, 147, 0)); // Gold
-                canvas.drawCircle(bx, by, r * 0.15f, paint);
-                break;
-            case "australia":
-                paint.setColor(Color.rgb(0, 0, 139)); // Blue
-                canvas.drawCircle(bx, by, r, paint);
-                // Union Jack (simplified)
-                paint.setColor(Color.RED);
-                canvas.drawRect(bx - r, by - r, bx, by, paint); // Red base for corner
-                paint.setColor(Color.WHITE);
-                canvas.drawLine(bx - r, by - r, bx, by, paint); // Cross
-                canvas.drawLine(bx - r, by, bx, by - r, paint);
-                // Stars
-                paint.setColor(Color.WHITE);
-                drawStarPath(canvas, bx, by + r * 0.6f, r * 0.2f); // Commonwealth
-                drawStarPath(canvas, bx + r * 0.6f, by, r * 0.15f); // Southern Cross main
-                break;
+
+            // ... inside drawSouthAfrica ...
             case "south_africa":
                 paint.setColor(Color.WHITE);
-                canvas.drawCircle(bx, by, r, paint); // White base for borders
+                canvas.drawCircle(bx, by, r, paint);
 
                 // Green Y
                 paint.setColor(Color.rgb(0, 122, 77));
-                android.graphics.Path yPath = new android.graphics.Path();
-                yPath.moveTo(bx - r, by - r * 0.2f);
-                yPath.lineTo(bx, by);
-                yPath.lineTo(bx + r, by);
-                yPath.lineTo(bx + r, by - 0.2f); // Thickness hack
-                // Actually simple shapes:
-                canvas.drawRect(bx, by - r * 0.15f, bx + r, by + r * 0.15f, paint); // Middle bar
-                // Triangles for Y arms? Complex. Let's simplify:
-                // Green Horizontal
+
+                // Using rects for bars as before, simplified
                 canvas.drawRect(bx - r, by - r * 0.15f, bx + r, by + r * 0.15f, paint);
+
                 // Black Triangle Left
                 paint.setColor(Color.BLACK);
-                android.graphics.Path tri = new android.graphics.Path();
-                tri.moveTo(bx - r, by - r * 0.5f);
-                tri.lineTo(bx - r * 0.3f, by);
-                tri.lineTo(bx - r, by + r * 0.5f);
-                tri.close();
-                canvas.drawPath(tri, paint);
+                southAfricaTriPath.reset();
+                southAfricaTriPath.moveTo(bx - r, by - r * 0.5f);
+                southAfricaTriPath.lineTo(bx - r * 0.3f, by);
+                southAfricaTriPath.lineTo(bx - r, by + r * 0.5f);
+                southAfricaTriPath.close();
+                canvas.drawPath(southAfricaTriPath, paint);
+
                 // Yellow Border
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setStrokeWidth(5);
                 paint.setColor(Color.YELLOW);
-                canvas.drawPath(tri, paint);
+                canvas.drawPath(southAfricaTriPath, paint);
                 paint.setStyle(Paint.Style.FILL);
 
                 // Red Top
@@ -5197,7 +5162,8 @@ public class GameView extends SurfaceView implements Runnable {
                 paint.setColor(Color.BLUE);
                 canvas.drawRect(bx - r, by + r * 0.25f, bx + r, by + r, paint);
                 break;
-            case "saudi_arabia":
+            case "saudi_arabia": // Optimizing this too if needed, though it used lines before
+                // ... same as before but careful with allocs ...
                 paint.setColor(Color.rgb(0, 100, 0)); // Green
                 canvas.drawCircle(bx, by, r, paint);
                 paint.setColor(Color.WHITE);
@@ -5208,6 +5174,7 @@ public class GameView extends SurfaceView implements Runnable {
                 canvas.drawLine(bx - r * 0.4f, by - r * 0.1f, bx + r * 0.4f, by - r * 0.1f, paint);
                 canvas.drawCircle(bx, by - r * 0.2f, 2, paint);
                 break;
+
             case "pakistan":
                 paint.setColor(Color.rgb(0, 64, 26)); // Dark Green
                 canvas.drawCircle(bx, by, r, paint);
@@ -5678,18 +5645,17 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setTextSize(30); // Slightly larger for emphasis
         paint.setShadowLayer(10, 0, 0, Color.BLACK);
 
-        // Use Montserrat Black font
-        try {
-            Typeface montserrat = androidx.core.content.res.ResourcesCompat.getFont(getContext(),
-                    R.font.montserrat_black);
-            if (montserrat != null) {
-                paint.setTypeface(montserrat);
-            } else {
-                paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        // Use Montserrat Black font (reused)
+        if (montserratFont == null) {
+            // Lazy load if somehow missing or for safety
+            try {
+                montserratFont = androidx.core.content.res.ResourcesCompat.getFont(getContext(),
+                        R.font.montserrat_black);
+            } catch (Exception e) {
+                montserratFont = Typeface.create(Typeface.DEFAULT, Typeface.BOLD);
             }
-        } catch (Exception e) {
-            paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         }
+        paint.setTypeface(montserratFont != null ? montserratFont : Typeface.DEFAULT_BOLD);
 
         canvas.drawText("Drag to Shoot!", dragX, dragY + handIcon.getHeight() + 60, paint);
 
@@ -5847,7 +5813,8 @@ public class GameView extends SurfaceView implements Runnable {
                                 ghostModeActive = true;
                                 ghostModeEndTime = currentTime + 5000;
                                 floatingTexts
-                                        .add(new FloatingText("GHOST MODE!", whiteBall.x, whiteBall.y, Color.CYAN));
+                                        .add(floatingTextPool.obtain("GHOST MODE!", whiteBall.x, whiteBall.y,
+                                                Color.CYAN));
                                 playSound(soundPower);
                             }
                         }
@@ -5923,7 +5890,8 @@ public class GameView extends SurfaceView implements Runnable {
                             // Prevent dragging if frozen
                             if (touchedBall == whiteBall && isFrozen) {
                                 floatingTexts
-                                        .add(new FloatingText("FROZEN!", whiteBall.x, whiteBall.y - 60, Color.CYAN));
+                                        .add(floatingTextPool.obtain("FROZEN!", whiteBall.x, whiteBall.y - 60,
+                                                Color.CYAN));
                             } else {
                                 isDragging = true;
                                 draggedBall = touchedBall;
@@ -8017,7 +7985,8 @@ public class GameView extends SurfaceView implements Runnable {
                 float hitDist = radius + currentBoss.radius;
                 if (distSq < hitDist * hitDist) {
                     currentBoss.hp -= 30;
-                    floatingTexts.add(new FloatingText("-30", currentBoss.x, currentBoss.y, Color.rgb(255, 165, 0)));
+                    floatingTexts
+                            .add(floatingTextPool.obtain("-30", currentBoss.x, currentBoss.y, Color.rgb(255, 165, 0)));
                     bossHit = true;
                 }
             }
@@ -8703,7 +8672,8 @@ public class GameView extends SurfaceView implements Runnable {
                         playerHp -= 8;
                         createParticles(whiteBall.x, whiteBall.y, Color.rgb(255, 100, 0));
                         floatingTexts
-                                .add(new FloatingText("BURN", whiteBall.x, whiteBall.y - 20, Color.rgb(255, 69, 0)));
+                                .add(floatingTextPool.obtain("BURN", whiteBall.x, whiteBall.y - 20,
+                                        Color.rgb(255, 69, 0)));
                     }
                 }
             }
@@ -8872,7 +8842,8 @@ public class GameView extends SurfaceView implements Runnable {
                             if (now % 20 == 0) { // Fast Damage tick (approx 3/sec)
                                 playerHp -= 15; // Increased damage
                                 createParticles(whiteBall.x, whiteBall.y, Color.RED);
-                                floatingTexts.add(new FloatingText("-15", whiteBall.x, whiteBall.y - 50, Color.RED));
+                                floatingTexts
+                                        .add(floatingTextPool.obtain("-15", whiteBall.x, whiteBall.y - 50, Color.RED));
                             }
                         }
                     }
@@ -8900,7 +8871,7 @@ public class GameView extends SurfaceView implements Runnable {
                         if (hp < maxHp) {
                             int healAmount = 50;
                             hp = Math.min(hp + healAmount, maxHp);
-                            floatingTexts.add(new FloatingText("+" + healAmount, x, y - 50, Color.GREEN)); // Heal
+                            floatingTexts.add(floatingTextPool.obtain("+" + healAmount, x, y - 50, Color.GREEN)); // Heal
                             // Visual
                         }
                         continue;
@@ -9013,7 +8984,8 @@ public class GameView extends SurfaceView implements Runnable {
                     if (freezeProximityStartTime == 0) {
                         // Start proximity timer
                         freezeProximityStartTime = now;
-                        floatingTexts.add(new FloatingText("FREEZING...", whiteBall.x, whiteBall.y - 80, Color.CYAN));
+                        floatingTexts
+                                .add(floatingTextPool.obtain("FREEZING...", whiteBall.x, whiteBall.y - 80, Color.CYAN));
                     }
 
                     // Check if 2 seconds passed
@@ -9027,13 +8999,14 @@ public class GameView extends SurfaceView implements Runnable {
                         // Ice encasement effect
                         for (int i = 0; i < 30; i++) {
                             float angle = i * (2f * (float) Math.PI / 30);
-                            particles.add(new Particle(
+                            particles.add(particlePool.obtain(
                                     whiteBall.x + (float) Math.cos(angle) * whiteBall.radius * 2,
                                     whiteBall.y + (float) Math.sin(angle) * whiteBall.radius * 2,
                                     angle, 0.5f, Color.CYAN, ParticleType.STAR));
                         }
                         floatingTexts.add(
-                                new FloatingText("FROZEN!", whiteBall.x, whiteBall.y - 100, Color.rgb(100, 200, 255)));
+                                floatingTextPool.obtain("FROZEN!", whiteBall.x, whiteBall.y - 100,
+                                        Color.rgb(100, 200, 255)));
                         playSound(soundFreeze);
                         freezeProximityStartTime = 0; // Reset
                     } else {
@@ -10233,7 +10206,7 @@ public class GameView extends SurfaceView implements Runnable {
             playSound(soundElectric);
 
             // Visual feedback (Red Text)
-            floatingTexts.add(new FloatingText("UFO LASER!", x, y - 40, Color.RED));
+            floatingTexts.add(floatingTextPool.obtain("UFO LASER!", x, y - 40, Color.RED));
         }
 
         void fireLaserAtColoredBalls() {
