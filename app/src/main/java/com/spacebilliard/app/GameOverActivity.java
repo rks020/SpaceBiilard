@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 
 public class GameOverActivity extends Activity {
 
@@ -23,35 +22,29 @@ public class GameOverActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        setContentView(R.layout.activity_game_over);
+        // Use our custom modern panel
+        com.spacebilliard.app.ui.NeonGameOverPanel panel = new com.spacebilliard.app.ui.NeonGameOverPanel(this);
+        setContentView(panel);
 
         // Prevent closing by touching outside (modal behavior)
         setFinishOnTouchOutside(false);
 
-        Button btnRevive = findViewById(R.id.btnRevive);
-        Button btnReboot = findViewById(R.id.btnReboot);
-        Button btnHallOfFame = findViewById(R.id.btnHallOfFame);
-        Button btnMainMenu = findViewById(R.id.btnMainMenu);
-
-        btnRevive.setOnClickListener(v -> {
+        // Attach listeners to panel buttons
+        panel.btnRevive.setOnClickListener(v -> {
             setResult(RESULT_REVIVE);
             finish();
             overridePendingTransition(0, 0); // No animation
         });
 
-        btnReboot.setOnClickListener(v -> {
+        panel.btnReboot.setOnClickListener(v -> {
             setResult(RESULT_REBOOT);
             finish();
             overridePendingTransition(0, 0);
         });
 
-        btnHallOfFame.setOnClickListener(v -> {
-            setResult(RESULT_HOF);
-            finish();
-            overridePendingTransition(0, 0);
-        });
+        // Hall of Fame button is removed from panel
 
-        btnMainMenu.setOnClickListener(v -> {
+        panel.btnMainMenu.setOnClickListener(v -> {
             setResult(RESULT_MAIN_MENU);
             finish();
             overridePendingTransition(0, 0);

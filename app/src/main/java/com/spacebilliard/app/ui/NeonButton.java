@@ -34,11 +34,24 @@ public class NeonButton extends View {
         init();
     }
 
+    private boolean showAdBadge = false;
+    private boolean hasStartIcon = false;
+
     public NeonButton(Context context, String text, int color) {
         super(context);
         this.text = text;
         this.themeColor = color;
         init();
+    }
+
+    public void setShowAdBadge(boolean show) {
+        this.showAdBadge = show;
+        invalidate();
+    }
+
+    public void setHasStartIcon(boolean has) {
+        this.hasStartIcon = has;
+        invalidate();
     }
 
     private void init() {
@@ -145,7 +158,7 @@ public class NeonButton extends View {
                 bounds.right - 3 * density, bounds.bottom - 3 * density);
         canvas.drawRoundRect(innerBorder, radius * 0.8f, radius * 0.8f, borderPaint);
 
-        // 7. Text
+        // 7. Text & Icons
         textPaint.setColor(Color.WHITE);
         textPaint.setTextSize(h * 0.4f);
         textPaint.setShadowLayer(8, 0, isPressed ? 1 : 2, Color.argb(150, 0, 0, 0));
@@ -155,8 +168,96 @@ public class NeonButton extends View {
         if (isPressed)
             textY += 2 * density;
 
-        canvas.drawText(text, w / 2, textY, textPaint);
+        float textWidth = textPaint.measureText(text);
+        float centerX = w / 2;
+
+        // Adjust center if icons present
+        // If start icon is present, shift text slightly right
+        if (hasStartIcon) {
+            centerX += 10 * density;
+        }
+        // If ad badge is present, shift text slightly left
+        if (showAdBadge) {
+            centerX -= 15 * density;
+        }
+
+        canvas.drawText(text, centerX, textY, textPaint);
         textPaint.clearShadowLayer();
+
+        // Draw Start Icon (Triangle)
+        if (hasStartIcon) {
+            Paint iconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            iconPaint.setColor(Color.WHITE);
+            iconPaint.setStyle(Paint.Style.FILL);
+            iconPaint.setShadowLayer(5, 0, 0, Color.BLACK);
+
+            android.graphics.Path path = new android.graphics.Path();
+            float iconH = h * 0.35f;
+            float iconW = iconH * 0.8f;
+            float iconX = centerX - textWidth / 2 - iconW - 10 * density;
+            float iconY = h / 2;
+
+            if (isPressed)
+                iconY += 2 * density;
+
+            path.moveTo(iconX, iconY - iconH / 2);
+            path.lineTo(iconX + iconW, iconY);
+            path.lineTo(iconX, iconY + iconH / 2);
+            path.close();
+
+            canvas.drawPath(path, iconPaint);
+        }
+
+        // Draw AD Badge
+        if (showAdBadge) {
+            float badgeH = h * 0.5f;
+            float badgeW = badgeH * 2.2f;
+            float badgeRight = w - 12 * density;
+            float badgeTop = h / 2 - badgeH / 2;
+
+            if (isPressed)
+                badgeTop += 2 * density;
+
+            RectF badgeRect = new RectF(badgeRight - badgeW, badgeTop, badgeRight, badgeTop + badgeH);
+
+            // Badge Background
+            Paint badgeBg = new Paint(Paint.ANTI_ALIAS_FLAG);
+            badgeBg.setColor(Color.argb(80, 0, 0, 0)); // Dark semi-transparent
+            canvas.drawRoundRect(badgeRect, badgeH / 2, badgeH / 2, badgeBg);
+
+            // Badge Border
+            Paint badgeBorder = new Paint(Paint.ANTI_ALIAS_FLAG);
+            badgeBorder.setStyle(Paint.Style.STROKE);
+            badgeBorder.setColor(Color.argb(150, 255, 255, 255));
+            badgeBorder.setStrokeWidth(2f);
+            canvas.drawRoundRect(badgeRect, badgeH / 2, badgeH / 2, badgeBorder);
+
+            // "AD" Text
+            textPaint.setTextSize(badgeH * 0.6f);
+            textPaint.setTextAlign(Paint.Align.LEFT);
+            float badgeTextY = badgeTop + badgeH / 2 - (textPaint.descent() + textPaint.ascent()) / 2;
+            canvas.drawText("AD", badgeRect.left + 8 * density, badgeTextY, textPaint);
+
+            // Small Play Icon in Badge
+            Paint smallPlayPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            smallPlayPaint.setColor(Color.YELLOW); // Gold/Yellow play button
+            smallPlayPaint.setStyle(Paint.Style.FILL);
+
+            android.graphics.Path p = new android.graphics.Path();
+            float pSize = badgeH * 0.4f;
+            float pX = badgeRect.right - pSize - 6 * density;
+            float pY = badgeTop + badgeH / 2;
+
+            p.moveTo(pX, pY - pSize / 2);
+            p.lineTo(pX + pSize * 0.8f, pY);
+            p.lineTo(pX, pY + pSize / 2);
+            p.close();
+
+            canvas.drawPath(p, smallPlayPaint);
+
+            // Reset text alignment
+            textPaint.setTextAlign(Paint.Align.CENTER);
+        }
     }
 
     private int lightenColor(int color, float factor) {
