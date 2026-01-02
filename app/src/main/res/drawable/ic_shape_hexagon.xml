@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="50dp"
+    android:height="50dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Hexagon Border -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:pathData="M50,5 L90,27.5 L90,72.5 L50,95 L10,72.5 L10,27.5 Z" />
+
+    <!-- Inner Hexagon Fill (Slightly Transparent) -->
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M50,10 L85,30 L85,70 L50,90 L15,70 L15,30 Z" />
+        
+</vector>

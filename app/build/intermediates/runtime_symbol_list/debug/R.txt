@@ -1015,6 +1015,7 @@ int drawable common_google_signin_btn_text_light 0x7f07008c
 int drawable common_google_signin_btn_text_light_focused 0x7f07008d
 int drawable common_google_signin_btn_text_light_normal 0x7f07008e
 int drawable common_google_signin_btn_text_light_normal_background 0x7f07008f
+int drawable custom_progress_bar_horizontal 0x7f0700d1
 int drawable gamepad 0x7f070090
 int drawable googleg_disabled_color_18 0x7f070091
 int drawable googleg_standard_color_18 0x7f070092
@@ -1031,6 +1032,7 @@ int drawable ic_launcher_background 0x7f07009c
 int drawable ic_lock 0x7f07009d
 int drawable ic_play 0x7f07009e
 int drawable ic_quests 0x7f07009f
+int drawable ic_shape_hexagon 0x7f0700d2
 int drawable ic_shop 0x7f0700a0
 int drawable ic_special 0x7f0700a1
 int drawable ic_star_small 0x7f0700a2
@@ -1300,6 +1302,7 @@ int id image 0x7f0900d4
 int id imgIcon 0x7f0900d5
 int id imgJupiter 0x7f0900d6
 int id imgLock 0x7f0900d7
+int id imgQuestIconBg 0x7f09019f
 int id immediateStop 0x7f0900d8
 int id included 0x7f0900d9
 int id info 0x7f0900da
@@ -1459,6 +1462,7 @@ int id tvCompleted 0x7f090173
 int id tvProgress 0x7f090174
 int id tvQuestCount 0x7f090175
 int id tvQuestDescription 0x7f090176
+int id tvQuestId 0x7f0901a0
 int id tvQuestTitle 0x7f090177
 int id txtBilliards 0x7f090179
 int id txtBossLabel 0x7f09017a
