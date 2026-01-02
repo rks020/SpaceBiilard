@@ -32,6 +32,7 @@ public class ShopActivity extends Activity {
         private TextView descriptionText;
         private TextView coinText; // Coin balance display
         private NeonButton btnSkins, btnTrails, btnSights, btnEffects;
+        private QuestManager questManager;
 
         // Selected item for purchase
         private String selectedItemId = null;
@@ -45,6 +46,9 @@ public class ShopActivity extends Activity {
                 requestWindowFeature(Window.FEATURE_NO_TITLE);
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+                // Initialize Quest Manager
+                questManager = QuestManager.getInstance(this);
 
                 // 1. Root Container with Space Background
                 FrameLayout root = new FrameLayout(this);
@@ -785,6 +789,22 @@ public class ShopActivity extends Activity {
                         // Update coin display
                         if (coinText != null) {
                                 coinText.setText("💰 " + (currentCoins - selectedItemPrice));
+                        }
+
+                        // QUEST TRACKING - Shop Purchases
+                        if (questManager != null) {
+                                // Quest 33: Shopaholic - Buy 20 items from shop
+                                questManager.incrementQuestProgress(33, 1);
+
+                                // Quest 34: Fashionista - Unlock 40 different skins
+                                if (currentCategory == 0) { // Skins category
+                                        questManager.incrementQuestProgress(34, 1);
+                                }
+
+                                // Quest 35: Trail Collector - Buy all trail effects (8 trails)
+                                if (selectedItemId != null && selectedItemId.startsWith("trail_")) {
+                                        questManager.incrementQuestProgress(35, 1);
+                                }
                         }
 
                         // Equip the item

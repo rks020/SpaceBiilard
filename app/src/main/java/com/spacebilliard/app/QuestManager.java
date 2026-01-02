@@ -28,16 +28,16 @@ public class QuestManager {
         allQuests = new ArrayList<>();
 
         // COMBAT QUESTS (1-10)
-        allQuests.add(new Quest(1, "Destroyer I", "Destroy 400 colored balls", 400, 50, Quest.QuestType.COMBAT));
-        allQuests.add(new Quest(2, "Dark Matter", "Destroy 200 black balls", 200, 75, Quest.QuestType.COMBAT));
+        allQuests.add(new Quest(1, "Destroyer I", "Destroy 1000 colored balls", 1000, 50, Quest.QuestType.COMBAT));
+        allQuests.add(new Quest(2, "Dark Matter", "Destroy 500 black balls", 500, 75, Quest.QuestType.COMBAT));
         allQuests.add(new Quest(3, "Multi-Hit", "Hit 10 balls with one shot", 10, 100, Quest.QuestType.COMBAT));
         allQuests.add(new Quest(4, "Combo Master", "Get 180 combo hits", 180, 60, Quest.QuestType.COMBAT));
-        allQuests.add(new Quest(5, "Destroyer II", "Destroy 1200 balls total", 1200, 100, Quest.QuestType.COMBAT));
-        allQuests.add(new Quest(6, "Special Hunter", "Hit 20 special balls", 20, 80, Quest.QuestType.COMBAT));
+        allQuests.add(new Quest(5, "Destroyer II", "Destroy 2000 balls total", 2000, 100, Quest.QuestType.COMBAT));
+        allQuests.add(new Quest(6, "Special Hunter", "Hit 700 special balls", 700, 80, Quest.QuestType.COMBAT));
         allQuests.add(new Quest(7, "Electric Storm", "Use Electric skill 40 times", 40, 70, Quest.QuestType.COMBAT));
         allQuests.add(new Quest(8, "Ice Age", "Activate Freeze 20 times", 20, 60, Quest.QuestType.COMBAT));
         allQuests.add(new Quest(9, "Shielded", "Use Barrier skill 80 times", 80, 90, Quest.QuestType.COMBAT));
-        allQuests.add(new Quest(10, "Demolition", "Create 200 explosions", 200, 85, Quest.QuestType.COMBAT));
+        allQuests.add(new Quest(10, "Demolition", "Create 400 explosions", 400, 85, Quest.QuestType.COMBAT));
 
         // BOSS QUESTS (11-20)
         allQuests.add(new Quest(11, "Void Victor", "Defeat VOID TITAN", 1, 150, Quest.QuestType.BOSS));

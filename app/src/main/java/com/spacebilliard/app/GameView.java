@@ -714,6 +714,7 @@ public class GameView extends SurfaceView implements Runnable {
         timeLeft = Math.min(timeLeft, 45000); // Max 45 sn
 
         lastTime = System.currentTimeMillis();
+        levelStartTime = lastTime; // Quest 36: Endurance tracking
         comboCounter = 0;
 
         coloredBalls.clear();
@@ -1134,8 +1135,62 @@ public class GameView extends SurfaceView implements Runnable {
         deltaTime = Math.min(deltaTime, 50); // Clamp to 50ms max to prevent physics explosions during GC
         lastTime = currentTime;
 
+        // QUEST TRACKING - Survival/Time-Based Quests
+        if (questManager != null && currentBoss == null) {
+            // Quest 36: Endurance - Survive 20 minutes in one level
+            if (levelStartTime > 0) {
+                long levelDuration = (currentTime - levelStartTime) / 1000; // seconds
+                if (levelDuration >= 1200) { // 20 minutes = 1200 seconds
+                    questManager.incrementQuestProgress(36, 1);
+                    levelStartTime = 0; // Reset to prevent re-trigger
+                }
+            }
+
+            // Quest 37: Marathon - Play for 120 minutes total
+            if (deltaTime > 0) {
+                totalPlayTimeSeconds += deltaTime / 1000;
+                if (totalPlayTimeSeconds % 60 == 0) { // Update every minute
+                    questManager.updateQuestProgress(37, (int) totalPlayTimeSeconds);
+                }
+            }
+
+            // Quest 38: Untouchable - No damage for 8 minutes
+            if (lastDamageTime > 0) {
+                long noDamageDuration = (currentTime - lastDamageTime) / 1000; // seconds
+                if (noDamageDuration >= 480) { // 8 minutes = 480 seconds
+                    questManager.incrementQuestProgress(38, 1);
+                    lastDamageTime = 0; // Reset to prevent re-trigger
+                }
+            } else if (lastDamageTime == 0 && levelStartTime > 0) {
+                // Initialize no-damage timer at level start
+                lastDamageTime = levelStartTime;
+            }
+
+            // Quest 39: Edge of Death - Survive with 1 HP for 120s
+            if (playerHp <= 1 && playerHp > 0) {
+                if (timeAtLowHp == 0) {
+                    timeAtLowHp = currentTime; // Start tracking
+                } else {
+                    long lowHpDuration = (currentTime - timeAtLowHp) / 1000; // seconds
+                    if (lowHpDuration >= 120) { // 120 seconds
+                        questManager.incrementQuestProgress(39, 1);
+                        timeAtLowHp = 0; // Reset to prevent re-trigger
+                    }
+                }
+            } else {
+                timeAtLowHp = 0; // Reset if HP increases
+            }
+        }
+
         // Zaman
         timeLeft -= deltaTime;
+
+        // Quest 40: Last Second - Complete with 0 seconds remaining
+        if (timeLeft <= 1000 && timeLeft > 0 && coloredBalls.isEmpty() && pendingColoredBalls == 0) {
+            if (questManager != null) {
+                questManager.incrementQuestProgress(40, 1);
+            }
+        }
 
         // Space 3 Background Effect: Rising Flames
         int currentEffectsSpace = ((level - 1) / 10) + 1;
