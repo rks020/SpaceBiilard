@@ -98,6 +98,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     // New sounds
     private int soundRetroLaser, soundLaserGun;
+    private int soundThunder;
     // UI durumu
     private boolean showInstructions = false;
     private boolean showHighScore = false;
@@ -368,6 +369,7 @@ public class GameView extends SurfaceView implements Runnable {
             soundRetroLaser = soundPool.load(context, R.raw.retro_laser, 1);
             soundLaserGun = soundPool.load(context, R.raw.laser_gun, 1);
             soundTeleport = soundPool.load(context, R.raw.retro_laser, 1); // Fallback
+            soundThunder = soundPool.load(context, R.raw.thunder, 1);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1068,7 +1070,7 @@ public class GameView extends SurfaceView implements Runnable {
             createImpactBurst(currentBoss.x, currentBoss.y, Color.RED);
             currentBoss.hp -= 50;
             floatingTexts.add(floatingTextPool.obtain("-50", currentBoss.x, currentBoss.y - 50, Color.RED));
-            playSound(soundBlackExplosion);
+            playSound(soundThunder);
         } else if (blackBalls.size() > 0) {
             Ball b = blackBalls.get(0); // Always target first available
             electricEffects.add(new ElectricEffect(b.x, -200, b.x, b.y, 1));
@@ -1079,7 +1081,7 @@ public class GameView extends SurfaceView implements Runnable {
                 questManager.incrementQuestProgress(2, 1);
                 questManager.incrementQuestProgress(5, 1);
             }
-            playSound(soundBlackExplosion);
+            playSound(soundThunder);
         } else if (coloredBalls.size() > 0) {
             Ball b = coloredBalls.get(random.nextInt(coloredBalls.size()));
             electricEffects.add(new ElectricEffect(b.x, -200, b.x, b.y, 1));
@@ -1093,7 +1095,7 @@ public class GameView extends SurfaceView implements Runnable {
                 questManager.incrementQuestProgress(1, 1); // Destroy 100 colored balls
                 questManager.incrementQuestProgress(5, 1); // Destroy 200 balls total
             }
-            playSound(soundBlackExplosion);
+            playSound(soundThunder);
         }
     }
 
@@ -2056,6 +2058,7 @@ public class GameView extends SurfaceView implements Runnable {
             case "blackhole":
                 blackHoleActive = true;
                 blackHoleEndTime = System.currentTimeMillis() + 2000;
+                playSound(soundBlackExplosion);
                 break;
             case "extraTime":
                 timeLeft += (long) (5000 * (1.0f + (upgradeEnergy - 1) * 0.1f));
