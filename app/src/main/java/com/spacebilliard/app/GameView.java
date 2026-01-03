@@ -261,6 +261,7 @@ public class GameView extends SurfaceView implements Runnable {
     private android.graphics.Path southAfricaYPath = new android.graphics.Path();
     private android.graphics.Path southAfricaTriPath = new android.graphics.Path();
     private android.graphics.Path australiaStarPath = new android.graphics.Path();
+    private android.graphics.Path cachedTrailPath = new android.graphics.Path(); // PERF: Trail drawing
     private Typeface montserratFont;
 
     public GameView(Context context) {
@@ -4786,8 +4787,8 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setShadowLayer(10, 0, 0, Color.RED);
 
         if (ball.trail.size() > 2) {
-            Path pulse = new Path();
-            pulse.moveTo(ball.trail.get(0).x, ball.trail.get(0).y);
+            cachedTrailPath.reset(); // Reuse instead of new Path()
+            cachedTrailPath.moveTo(ball.trail.get(0).x, ball.trail.get(0).y);
 
             for (int i = 1; i < ball.trail.size(); i++) {
                 TrailPoint p = ball.trail.get(i);
@@ -4798,9 +4799,9 @@ public class GameView extends SurfaceView implements Runnable {
                 else if (i % 5 == 3)
                     offset = 15;
 
-                pulse.lineTo(p.x, p.y + offset);
+                cachedTrailPath.lineTo(p.x, p.y + offset);
             }
-            canvas.drawPath(pulse, paint);
+            canvas.drawPath(cachedTrailPath, paint);
         }
         paint.clearShadowLayer();
     }
