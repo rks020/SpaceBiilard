@@ -1600,8 +1600,10 @@ raw playerballhit
 raw power_boost
 raw retro_laser
 raw shield_block
+raw teleport
 raw thunder
 raw thunder2
+raw ufo
 raw void_titan_dash
 string abc_action_bar_home_description
 string abc_action_bar_up_description

@@ -117,6 +117,7 @@ public class GameView extends SurfaceView implements Runnable {
     // New sounds
     private int soundRetroLaser, soundLaserGun;
     private int soundThunder;
+    private int soundUfo; // New UFO sound
     // Boss Sounds
     private int soundBossFire, soundBossIce, soundBossMech, soundBossGravity, soundBossSummon, soundCoinCollectV2,
             soundVoidTitanDash, soundBossShoot1, soundBossShoot2, soundBossShoot3, soundBossShoot4, soundBossShoot5,
@@ -423,12 +424,14 @@ public class GameView extends SurfaceView implements Runnable {
             soundMissile = soundPool.load(context, R.raw.guided_missile, 1);
             soundPower = soundPool.load(context, R.raw.power_boost, 1);
             soundShield = soundPool.load(context, R.raw.shield_block, 1);
-            soundTeleport = soundPool.load(context, R.raw.drag_launch, 1); // Fixed: drag_launch not dragon_launch
+            // soundTeleport redefined below to use correct R.raw.teleport
             soundPlayerBallHit = soundPool.load(context, R.raw.playerballhit, 1);
             soundLaserGun = soundPool.load(context, R.raw.laser_gun, 1);
             soundThunder = soundPool.load(context, R.raw.thunder2, 1);
 
             // Load New Unique Sounds
+            soundTeleport = soundPool.load(context, R.raw.teleport, 1); // FIXED: Load distinct teleport sound
+            soundUfo = soundPool.load(context, R.raw.ufo, 1); // FIXED: Load UFO sound
             soundBossFire = soundPool.load(context, R.raw.boss_fire, 1);
             soundBossIce = soundPool.load(context, R.raw.freeze, 1); // User disliked boss_ice, switching to standard
                                                                      // freeze
@@ -2359,7 +2362,7 @@ public class GameView extends SurfaceView implements Runnable {
                 break;
             case "ufo":
                 activeUfo = new Ufo();
-                playSound(soundPower);
+                playSound(soundUfo); // FIXED: Play specific UFO sound
                 floatingTexts.add(floatingTextPool.obtain("UFO ARRIVED!", targetBall.x, targetBall.y, Color.GREEN));
                 break;
 
