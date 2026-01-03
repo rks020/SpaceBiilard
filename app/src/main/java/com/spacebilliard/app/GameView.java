@@ -182,6 +182,7 @@ public class GameView extends SurfaceView implements Runnable {
     // add/remove!)
     private final ArrayList<Ball> bossProjectiles = new ArrayList<>();
     private long lastImpactSoundTime = 0; // Throttle impact sounds
+    private long lastBossAbilitySoundTime = 0; // Throttle boss ability sounds (Lightning, Supernova)
     private float playerHp = 1000, playerMaxHp = 1000;
 
     // CRYO-STASIS Freeze Mechanic
@@ -2833,7 +2834,12 @@ public class GameView extends SurfaceView implements Runnable {
                                         .add(new ElectricEffect(wBall.x, wBall.y, currentBoss.x, currentBoss.y, 0));
                                 createImpactBurst(wBall.x, wBall.y, Color.CYAN);
                                 createParticles(wBall.x, wBall.y, Color.CYAN);
-                                playSound(soundBlackExplosion);
+                                // Throttle sound - only play once per 200ms
+                                long now2 = System.currentTimeMillis();
+                                if (now2 - lastBossAbilitySoundTime > 200) {
+                                    playSound(soundBlackExplosion);
+                                    lastBossAbilitySoundTime = now2;
+                                }
                             } else {
                                 int dmg = 25 + (upgradeHunter - 1) * 2;
                                 currentBoss.hp -= dmg;
@@ -9231,7 +9237,12 @@ public class GameView extends SurfaceView implements Runnable {
                 proj.vy = (float) Math.sin(angle) * 8;
                 bossProjectiles.add(proj);
             }
-            playSound(soundBlackExplosion);
+            // Throttle sound - only play once per 200ms
+            long now = System.currentTimeMillis();
+            if (now - lastBossAbilitySoundTime > 200) {
+                playSound(soundBlackExplosion);
+                lastBossAbilitySoundTime = now;
+            }
         }
 
         void doSupernova() {
