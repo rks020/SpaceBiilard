@@ -7321,7 +7321,9 @@ public class GameView extends SurfaceView implements Runnable {
         float dy = ball.y - centerY;
         float dist = (float) Math.sqrt(dx * dx + dy * dy);
 
-        if (dist > circleRadius - ball.radius) {
+        // Add small threshold (0.5px) to prevent jitter from micro-corrections
+        float penetration = dist - (circleRadius - ball.radius);
+        if (penetration > 0.5f) {
             float angle = (float) Math.atan2(dy, dx);
             ball.x = centerX + (float) Math.cos(angle) * (circleRadius - ball.radius);
             ball.y = centerY + (float) Math.sin(angle) * (circleRadius - ball.radius);
