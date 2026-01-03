@@ -314,11 +314,9 @@ public class MainActivity extends Activity {
                 }
             });
         } else {
-            // Ad not ready, just continue anyway (fallback)
-            if (gameView != null) {
-                gameView.continueAfterAd();
-                hideAllPanels(); // Success
-            }
+            // Ad not ready - show toast and reload
+            android.widget.Toast.makeText(this, "Ad not ready, please wait...", android.widget.Toast.LENGTH_SHORT)
+                    .show();
             loadRewardedAd();
         }
     }
