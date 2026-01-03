@@ -136,14 +136,21 @@ public class QuestManager {
         if (quest != null && !quest.isCompleted()) {
             int oldProgress = quest.getCurrentProgress();
             quest.incrementProgress(amount);
-            int newProgress = quest.getCurrentProgress();
-            android.util.Log.d("QUEST_DEBUG", "Quest " + questId + ": " + oldProgress + " -> " + newProgress);
-            saveQuestProgress();
-            android.util.Log.d("QUEST_DEBUG", "Quest progress saved to SharedPreferences");
+            // int newProgress = quest.getCurrentProgress();
+            // android.util.Log.d("QUEST_DEBUG", "Quest " + questId + ": " + oldProgress + "
+            // -> " + newProgress);
+
+            // PERFORMANCE FIX: Do NOT save on every increment (causes lag)
+            // Only save if completed
+            if (quest.isCompleted()) {
+                saveQuestProgress();
+                // android.util.Log.d("QUEST_DEBUG", "Quest " + questId + " COMPLETED and
+                // saved!");
+            }
         } else if (quest == null) {
-            android.util.Log.e("QUEST_DEBUG", "Quest " + questId + " is null!");
+            // android.util.Log.e("QUEST_DEBUG", "Quest " + questId + " is null!");
         } else {
-            android.util.Log.d("QUEST_DEBUG", "Quest " + questId + " already completed");
+            // android.util.Log.d("QUEST_DEBUG", "Quest " + questId + " already completed");
         }
     }
 
