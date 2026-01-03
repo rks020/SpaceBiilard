@@ -2817,29 +2817,35 @@ public class GameView extends SurfaceView implements Runnable {
                             }
                         }
                     } else {
-                        long now = System.currentTimeMillis();
-                        if (now < electricModeEndTime) {
-                            int dmg = 40 + (upgradeHunter - 1) * 2;
-                            currentBoss.hp -= dmg;
-                            // Quest 18: Heavy Hitter (5000 damage)
-                            if (questManager != null) {
-                                questManager.incrementQuestProgress(18, 40);
+                        // Don't deal damage if frozen (prevents damage loop with CRYO-STASIS)
+                        if (!isFrozen) {
+                            long now = System.currentTimeMillis();
+                            if (now < electricModeEndTime) {
+                                int dmg = 40 + (upgradeHunter - 1) * 2;
+                                currentBoss.hp -= dmg;
+                                // Quest 18: Heavy Hitter (5000 damage)
+                                if (questManager != null) {
+                                    questManager.incrementQuestProgress(18, 40);
+                                }
+                                floatingTexts
+                                        .add(floatingTextPool.obtain("-" + dmg, wBall.x, wBall.y - 50, Color.CYAN));
+                                electricEffects
+                                        .add(new ElectricEffect(wBall.x, wBall.y, currentBoss.x, currentBoss.y, 0));
+                                createImpactBurst(wBall.x, wBall.y, Color.CYAN);
+                                createParticles(wBall.x, wBall.y, Color.CYAN);
+                                playSound(soundBlackExplosion);
+                            } else {
+                                int dmg = 25 + (upgradeHunter - 1) * 2;
+                                currentBoss.hp -= dmg;
+                                // Quest 18: Heavy Hitter
+                                if (questManager != null) {
+                                    questManager.incrementQuestProgress(18, 25);
+                                }
+                                createParticles(wBall.x, wBall.y, currentBoss.color);
+                                playSound(soundCollision);
+                                floatingTexts
+                                        .add(floatingTextPool.obtain("-" + dmg, wBall.x, wBall.y - 50, Color.WHITE));
                             }
-                            floatingTexts.add(floatingTextPool.obtain("-" + dmg, wBall.x, wBall.y - 50, Color.CYAN));
-                            electricEffects.add(new ElectricEffect(wBall.x, wBall.y, currentBoss.x, currentBoss.y, 0));
-                            createImpactBurst(wBall.x, wBall.y, Color.CYAN);
-                            createParticles(wBall.x, wBall.y, Color.CYAN);
-                            playSound(soundBlackExplosion);
-                        } else {
-                            int dmg = 25 + (upgradeHunter - 1) * 2;
-                            currentBoss.hp -= dmg;
-                            // Quest 18: Heavy Hitter
-                            if (questManager != null) {
-                                questManager.incrementQuestProgress(18, 25);
-                            }
-                            createParticles(wBall.x, wBall.y, currentBoss.color);
-                            playSound(soundCollision);
-                            floatingTexts.add(floatingTextPool.obtain("-" + dmg, wBall.x, wBall.y - 50, Color.WHITE));
                         }
                     }
 
