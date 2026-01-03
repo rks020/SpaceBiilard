@@ -328,7 +328,7 @@ public class GameView extends SurfaceView implements Runnable {
         maxCombo = prefs.getInt("maxCombo", 0);
         // maxUnlockedLevel'ı yükle (ilerlemeyi kaydet)
         maxUnlockedLevel = prefs.getInt("maxUnlockedLevel", 1);
-        // maxUnlockedLevel = 500; // TEST MODE: Unlock all levels
+        maxUnlockedLevel = 500; // TEST MODE: Unlock all levels
         // Coinleri yükle
         coins = prefs.getInt("coins", 0);
         // TEST MODE: Grant 10,000 coins for testing
@@ -478,6 +478,15 @@ public class GameView extends SurfaceView implements Runnable {
             prefs.edit().putBoolean("tutorial_shown", true).apply();
         }
 
+        // ALWAYS reset timer to level's initial time (whether dead or alive)
+        // Boss fights get 3 minutes, normal levels use formula
+        if (currentBoss != null || level % 10 == 0) {
+            timeLeft = 180000; // 3 minutes for boss fights
+        } else {
+            timeLeft = 20000 + (level * 500L);
+            timeLeft = Math.min(timeLeft, 45000); // Max 45 sn
+        }
+
         if (gameOver) {
             // CRITICAL: Reset defeat flags to prevent loop
             showPlayerDefeated = false;
@@ -487,10 +496,6 @@ public class GameView extends SurfaceView implements Runnable {
             if (lives <= 0) {
                 lives = 3; // Give FULL lives back
             }
-
-            // Reset to level's initial time (same formula as initLevel) - ALWAYS on Revive
-            timeLeft = 20000 + (level * 500L);
-            timeLeft = Math.min(timeLeft, 45000); // Max 45 sn
 
             // Restore player ball
             if (whiteBall != null) {
@@ -1249,7 +1254,9 @@ public class GameView extends SurfaceView implements Runnable {
         }
 
         // Zaman
-        timeLeft -= deltaTime;
+        if (!gameOver && !levelCompleted && playerHp > 0 && !showBossDefeated) {
+            timeLeft -= deltaTime;
+        }
 
         // Quest 40: Last Second - Complete with 0 seconds remaining
         if (timeLeft <= 1000 && timeLeft > 0 && coloredBalls.isEmpty() && pendingColoredBalls == 0) {
@@ -3305,8 +3312,8 @@ public class GameView extends SurfaceView implements Runnable {
 
             // Draw Player HP Bar (if Boss active)
             if (currentBoss != null) {
-                float barW = screenWidth * 0.5f;
-                float barH = 20;
+                float barW = screenWidth * 0.5f; // Increased from 0.5f
+                float barH = 25; // Increased from 20
                 float barX = (screenWidth - barW) / 2;
                 float barY = screenHeight - 250; // Slightly above bottom
 
@@ -3332,7 +3339,14 @@ public class GameView extends SurfaceView implements Runnable {
                 paint.setColor(Color.WHITE);
                 paint.setTextSize(30);
                 paint.setTextAlign(Paint.Align.CENTER);
-                canvas.drawText("PLAYER HP", centerX, barY - 10, paint);
+                canvas.drawText("PLAYER HP", centerX, barY - 15, paint);
+
+                // HP Numbers
+                paint.setTextSize(20);
+                paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                String hpText = (int) playerHp + " / " + (int) playerMaxHp;
+                canvas.drawText(hpText, centerX, barY + 15, paint);
+                paint.setTypeface(Typeface.DEFAULT);
             }
 
             // Draw Game Borders
@@ -5666,6 +5680,11 @@ public class GameView extends SurfaceView implements Runnable {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+        // BLOCK INPUT IF DEAD OR GAME OVER
+        if (playerHp <= 0 || gameOver || showPlayerDefeated) {
+            return true; // Consume event, no action
+        }
 
         float touchX = event.getX();
         float touchY = event.getY();
@@ -9973,6 +9992,12 @@ public class GameView extends SurfaceView implements Runnable {
             paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
             paint.setTextAlign(Paint.Align.CENTER);
             canvas.drawText(name, x, barY - 15, paint);
+
+            // HP Numbers on bar
+            paint.setTextSize(22);
+            String hpText = (int) hp + " / " + (int) maxHp;
+            canvas.drawText(hpText, x, barY + 17, paint);
+
             paint.setTypeface(Typeface.DEFAULT);
             paint.setTypeface(Typeface.DEFAULT);
         }

@@ -30,7 +30,7 @@ public class LevelSelectActivity extends Activity {
         // Load progress (legacy variable for display, actual logic uses stars)
         SharedPreferences prefs = getSharedPreferences("SpaceBilliard", MODE_PRIVATE);
         maxUnlockedLevel = prefs.getInt("maxUnlockedLevel", 1);
-        // maxUnlockedLevel = 500; // TEST MODE: SHOW ALL UNLOCKED
+        maxUnlockedLevel = 500; // TEST MODE: SHOW ALL UNLOCKED
 
         levelGrid = findViewById(R.id.levelGrid);
         txtProgress = findViewById(R.id.progress);
@@ -75,7 +75,7 @@ public class LevelSelectActivity extends Activity {
         // Reload progress data when returning from gameplay
         SharedPreferences prefs = getSharedPreferences("SpaceBilliard", MODE_PRIVATE);
         maxUnlockedLevel = prefs.getInt("maxUnlockedLevel", 1);
-        // maxUnlockedLevel = 500; // TEST MODE: SHOW ALL UNLOCKED
+        maxUnlockedLevel = 500; // TEST MODE: SHOW ALL UNLOCKED
 
         // Refresh the UI to show updated stars and unlocked levels
         updateUI();
@@ -120,13 +120,17 @@ public class LevelSelectActivity extends Activity {
             LinearLayout starsContainer = itemView.findViewById(R.id.starsContainer);
 
             // Logic: Determine if unlocked based on stars of previous level
-            boolean isUnlocked;
-            if (levelNum == 1) {
-                isUnlocked = true;
-            } else {
-                int prevStars = starPrefs.getInt("level_" + (levelNum - 1) + "_stars", 0);
-                isUnlocked = (prevStars == 3);
-            }
+            // TEST MODE: Unlock all levels
+            boolean isUnlocked = true;
+            /*
+             * boolean isUnlocked;
+             * if (levelNum == 1) {
+             * isUnlocked = true;
+             * } else {
+             * int prevStars = starPrefs.getInt("level_" + (levelNum - 1) + "_stars", 0);
+             * isUnlocked = (prevStars == 3);
+             * }
+             */
 
             int currentStars = starPrefs.getInt("level_" + levelNum + "_stars", 0);
             boolean isCompleted = (currentStars == 3);
