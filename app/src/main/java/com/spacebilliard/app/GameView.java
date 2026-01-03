@@ -2786,9 +2786,10 @@ public class GameView extends SurfaceView implements Runnable {
             if (currentBoss != null) {
                 float dx = wBall.x - currentBoss.x;
                 float dy = wBall.y - currentBoss.y;
-                float dist = (float) Math.sqrt(dx * dx + dy * dy);
+                float distSq = dx * dx + dy * dy;
+                float radiusSum = wBall.radius + currentBoss.radius;
 
-                if (dist < wBall.radius + currentBoss.radius) {
+                if (distSq < radiusSum * radiusSum) {
                     boolean bossShielded = (currentBoss.state == 1 || currentBoss.dashing);
                     if (bossShielded) {
                         playSound(soundShield);
@@ -2847,6 +2848,7 @@ public class GameView extends SurfaceView implements Runnable {
                     speed = Math.min(speed * 1.1f, 60f);
                     wBall.vx = (float) Math.cos(angle) * speed;
                     wBall.vy = (float) Math.sin(angle) * speed;
+                    float dist = (float) Math.sqrt(distSq); // Only needed for overlap calc
                     float overlap = (wBall.radius + currentBoss.radius) - dist + 2;
                     wBall.x += Math.cos(angle) * overlap;
                     wBall.y += Math.sin(angle) * overlap;
