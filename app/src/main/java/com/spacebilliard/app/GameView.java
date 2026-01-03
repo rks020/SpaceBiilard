@@ -1658,7 +1658,7 @@ public class GameView extends SurfaceView implements Runnable {
                 floatingTexts
                         .add(floatingTextPool.obtain("STAGE " + completedStage + " CLEARED!", centerX, centerY,
                                 Color.YELLOW));
-                playSound(soundCoin); // Lighter sound for stage clear
+                playSound(soundCoinCollectV2); // Lighter sound for stage clear
             }
             // else: Just continue to next stage within same level
 
@@ -3068,7 +3068,7 @@ public class GameView extends SurfaceView implements Runnable {
                         levelCompleted = true;
                         showStageCleared = true;
                         if (maxUnlockedLevel > level && level % 10 != 0) { // Only play if just clearing a stage
-                            playSound(soundCoinCollectV2);
+                            // playSound(soundCoinCollectV2); // Removed as per request
                         }
                         stageClearedTime = System.currentTimeMillis();
                         for (Ball b : blackBalls)
