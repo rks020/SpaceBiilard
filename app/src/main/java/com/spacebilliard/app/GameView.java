@@ -1717,7 +1717,7 @@ public class GameView extends SurfaceView implements Runnable {
         if (!ambience.isEmpty() && particles.size() < 150 && random.nextFloat() < 0.01f) { // 1% per frame, capped at
                                                                                            // 150
             float x = random.nextFloat() * screenWidth;
-            float y = random.nextFloat() * screenHeight; // Spawn anywhere
+            float y = screenHeight * (0.7f + random.nextFloat() * 0.3f); // Spawn from bottom (70-100%)
             float angle = (float) (Math.PI / 2); // Upward
             float speed = 2 + random.nextFloat() * 3;
 
