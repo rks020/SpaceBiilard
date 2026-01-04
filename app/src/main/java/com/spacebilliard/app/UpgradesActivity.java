@@ -12,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.media.AudioAttributes;
+import android.media.SoundPool;
 
 import com.spacebilliard.app.ui.NeonButton;
 
@@ -19,6 +21,10 @@ public class UpgradesActivity extends Activity {
 
     private SharedPreferences prefs;
     private TextView txtCoins;
+
+    // Sound
+    private SoundPool soundPool;
+    private int soundHomeButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,10 +74,26 @@ public class UpgradesActivity extends Activity {
                 R.drawable.ic_upgrade_regen_vector);
         setupUpgradeCard(R.id.cardSight, "upgrade_sight_2", "QUANTUM SIGHT", "+ Bounce Line", 350, 1.5f,
                 R.drawable.ic_upgrade_sight_2_vector);
-        setupUpgradeCard(R.id.cardDodge, "upgrade_dodge", "EVASION PROTOCOL", "+ Dodge Chance", 300, 1.3f,
+        setupUpgradeCard(R.id.cardDodge, "upgrade_dodge", "EVASION", "+ Dodge Chance", 300, 1.3f,
                 R.drawable.ic_upgrade_dodge_vector);
 
+        // Initialize SoundPool
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+        soundPool = new SoundPool.Builder()
+                .setMaxStreams(1)
+                .setAudioAttributes(audioAttributes)
+                .build();
+
+        // Load Home Button Sound
+        soundHomeButton = soundPool.load(this, R.raw.homebutton, 1);
+
         findViewById(R.id.btnBack).setOnClickListener(v -> {
+            // Play Home Sound
+            soundPool.play(soundHomeButton, 1f, 1f, 0, 0, 1f);
+
             v.animate()
                     .scaleX(0.96f)
                     .scaleY(0.96f)

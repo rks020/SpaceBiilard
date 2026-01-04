@@ -13,6 +13,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.media.AudioAttributes;
+import android.media.SoundPool;
 
 public class LevelSelectActivity extends Activity {
 
@@ -21,6 +23,12 @@ public class LevelSelectActivity extends Activity {
     private TextView txtSpaceName;
     private int currentSpace = 1; // 1 = Levels 1-10, 2 = Levels 11-20
     private int maxUnlockedLevel = 1;
+
+    // Sound
+    private SoundPool soundPool;
+    private int soundLevelSelector;
+    private int soundHomeButton;
+    private int soundMenuSelect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +40,21 @@ public class LevelSelectActivity extends Activity {
         maxUnlockedLevel = prefs.getInt("maxUnlockedLevel", 1);
         maxUnlockedLevel = 500; // TEST MODE: SHOW ALL UNLOCKED
 
+        // Initialize SoundPool
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+        soundPool = new SoundPool.Builder()
+                .setMaxStreams(2)
+                .setAudioAttributes(audioAttributes)
+                .build();
+
+        // Load Sounds
+        soundLevelSelector = soundPool.load(this, R.raw.levelsellector, 1);
+        soundHomeButton = soundPool.load(this, R.raw.homebutton, 1);
+        soundMenuSelect = soundPool.load(this, R.raw.menuselect, 1);
+
         levelGrid = findViewById(R.id.levelGrid);
         txtProgress = findViewById(R.id.progress);
         txtSpaceName = findViewById(R.id.txtSpaceName);
@@ -40,6 +63,9 @@ public class LevelSelectActivity extends Activity {
         Button btnBack = findViewById(R.id.btnReturn);
 
         btnBack.setOnClickListener(v -> {
+            // Play Home Button Sound
+            soundPool.play(soundHomeButton, 1f, 1f, 0, 0, 1f);
+
             v.animate()
                     .scaleX(0.96f)
                     .scaleY(0.96f)
@@ -53,6 +79,8 @@ public class LevelSelectActivity extends Activity {
 
         btnPrevSpace.setOnClickListener(v -> {
             if (currentSpace > 1) {
+                // Play Selector Sound
+                soundPool.play(soundLevelSelector, 1f, 1f, 0, 0, 1f);
                 currentSpace--;
                 updateUI();
             }
@@ -60,6 +88,8 @@ public class LevelSelectActivity extends Activity {
 
         btnNextSpace.setOnClickListener(v -> {
             if (currentSpace < 10) { // Max 10 spaces (100 levels)
+                // Play Selector Sound
+                soundPool.play(soundLevelSelector, 1f, 1f, 0, 0, 1f);
                 currentSpace++;
                 updateUI();
             }
@@ -188,7 +218,11 @@ public class LevelSelectActivity extends Activity {
                     starsContainer.setVisibility(View.GONE);
                 }
 
-                itemView.setOnClickListener(v -> openLevel(levelNum));
+                itemView.setOnClickListener(v -> {
+                    // Play Select Sound
+                    soundPool.play(soundMenuSelect, 1f, 1f, 0, 0, 1f);
+                    openLevel(levelNum);
+                });
             }
 
             levelGrid.addView(itemView);

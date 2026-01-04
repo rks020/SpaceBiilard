@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
+import android.media.AudioAttributes;
+import android.media.SoundPool;
 
 public class QuestsActivity extends AppCompatActivity {
 
@@ -16,6 +18,10 @@ public class QuestsActivity extends AppCompatActivity {
     private QuestAdapter adapter;
     private QuestManager questManager;
     private TextView tvQuestCount;
+
+    // Sound
+    private SoundPool soundPool;
+    private int soundHomeButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +45,24 @@ public class QuestsActivity extends AppCompatActivity {
         // Update quest count
         updateQuestCount();
 
+        // Initialize SoundPool
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+        soundPool = new SoundPool.Builder()
+                .setMaxStreams(1)
+                .setAudioAttributes(audioAttributes)
+                .build();
+
+        // Load Home Button Sound
+        soundHomeButton = soundPool.load(this, R.raw.homebutton, 1);
+
         // Back button
         btnBack.setOnClickListener(v -> {
+            // Play Home Sound
+            soundPool.play(soundHomeButton, 1f, 1f, 0, 0, 1f);
+
             v.animate()
                     .scaleX(0.96f)
                     .scaleY(0.96f)

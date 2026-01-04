@@ -1604,7 +1604,10 @@ raw electric_ball
 raw freeze
 raw game_over
 raw guided_missile
+raw homebutton
 raw laser_gun
+raw levelsellector
+raw menuselect
 raw money_collect
 raw playerballhit
 raw power_boost

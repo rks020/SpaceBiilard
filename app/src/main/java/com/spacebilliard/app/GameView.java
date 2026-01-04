@@ -226,7 +226,7 @@ public class GameView extends SurfaceView implements Runnable {
     // Ses Efektleri
     private final SoundPool soundPool;
     private int soundLaunch, soundCollision, soundCoin, soundBlackExplosion, soundElectric, soundFreeze, soundGameOver,
-            soundMissile, soundPower, soundShield, soundTeleport, soundPlayerBallHit;
+            soundMissile, soundPower, soundShield, soundTeleport, soundPlayerBallHit, soundHomeButton;
     private boolean soundLoaded = false;
     // MainActivity reference for updating UI panels
     private MainActivity mainActivity;
@@ -414,6 +414,7 @@ public class GameView extends SurfaceView implements Runnable {
         soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> soundLoaded = true);
 
         try {
+            soundHomeButton = soundPool.load(context, R.raw.homebutton, 1); // Load first for UI responsiveness
             soundLaunch = soundPool.load(context, R.raw.drag_launch, 1);
             soundCollision = soundPool.load(context, R.raw.collision_sound, 1);
             soundCoin = soundPool.load(context, R.raw.coin_sound, 1);
@@ -639,7 +640,6 @@ public class GameView extends SurfaceView implements Runnable {
 
         initLevel(level);
         updateUIPanels();
-        playSound(soundLaunch);
         gameStarted = true;
     }
 
@@ -6111,8 +6111,9 @@ public class GameView extends SurfaceView implements Runnable {
                     float iconY = screenHeight * 0.25f; // Adjusted position (moved down to avoid overlap)
 
                     if (Math.abs(touchX - iconX) < iconSize / 2 && Math.abs(touchY - iconY) < iconSize / 2) {
-                        resetToMainMenu();
-                        playSound(soundLaunch);
+                        playSound(soundHomeButton);
+                        // Delay to allow sound to play
+                        getHandler().postDelayed(() -> resetToMainMenu(), 200);
                         return true;
                     }
 

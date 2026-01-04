@@ -39,6 +39,10 @@ public class ShopActivity extends Activity {
         private int selectedItemPrice = 0;
         private boolean selectedItemOwned = false;
 
+        // Sound
+        private android.media.SoundPool soundPool;
+        private int soundHomeButton;
+
         @Override
         protected void onCreate(Bundle savedInstanceState) {
                 super.onCreate(savedInstanceState);
@@ -49,6 +53,17 @@ public class ShopActivity extends Activity {
 
                 // Initialize Quest Manager
                 questManager = QuestManager.getInstance(this);
+
+                // Initialize SoundPool
+                android.media.AudioAttributes audioAttributes = new android.media.AudioAttributes.Builder()
+                                .setUsage(android.media.AudioAttributes.USAGE_GAME)
+                                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .build();
+                soundPool = new android.media.SoundPool.Builder()
+                                .setMaxStreams(1)
+                                .setAudioAttributes(audioAttributes)
+                                .build();
+                soundHomeButton = soundPool.load(this, R.raw.homebutton, 1);
 
                 // 1. Root Container with Space Background
                 FrameLayout root = new FrameLayout(this);
@@ -735,6 +750,7 @@ public class ShopActivity extends Activity {
                 back.setLetterSpacing(0.05f);
                 back.setElevation(4 * getResources().getDisplayMetrics().density);
                 back.setOnClickListener(v -> {
+                        soundPool.play(soundHomeButton, 1f, 1f, 0, 0, 1f);
                         v.animate()
                                         .scaleX(0.96f)
                                         .scaleY(0.96f)
