@@ -1708,6 +1708,7 @@ public class GameView extends SurfaceView implements Runnable {
                         currentBoss.y, 0));
                 createImpactBurst(currentBoss.x, currentBoss.y, currentBoss.color);
                 currentBoss.hp -= 150; // Electric damage
+                triggerBossHitFeedback();
                 playSound(soundElectric);
             } else if (coloredBalls.size() > 0) {
                 Ball target2 = coloredBalls.get(random.nextInt(coloredBalls.size()));
@@ -2962,6 +2963,7 @@ public class GameView extends SurfaceView implements Runnable {
                                     isCrit = true;
                                 }
                                 currentBoss.hp -= dmg;
+                                triggerBossHitFeedback();
                                 if (isCrit) {
                                     floatingTexts.add(
                                             floatingTextPool.obtain("CRIT! -" + dmg, wBall.x, wBall.y - 80, Color.RED));
@@ -2986,6 +2988,7 @@ public class GameView extends SurfaceView implements Runnable {
                             } else {
                                 int dmg = 25 + (upgradeHunter - 1) * 2;
                                 currentBoss.hp -= dmg;
+                                triggerBossHitFeedback();
                                 // Quest 18: Heavy Hitter
                                 if (questManager != null) {
                                     questManager.incrementQuestProgress(18, 25);
@@ -8821,6 +8824,14 @@ public class GameView extends SurfaceView implements Runnable {
         }
     }
 
+    private void triggerBossHitFeedback() {
+        if (currentBoss != null) {
+            currentBoss.triggerHitFeedback();
+            // Screen Shake
+            shakeEndTime = System.currentTimeMillis() + 150;
+        }
+    }
+
     class Boss {
         String name;
         float x, y, radius;
@@ -8857,7 +8868,12 @@ public class GameView extends SurfaceView implements Runnable {
             this.radius = circleRadius * 0.25f;
             this.lastStateChangeTime = System.currentTimeMillis();
             this.lastAttackTime = System.currentTimeMillis(); // CRITICAL: Initialize attack timer
+        }
 
+        long hitFeedbackEndTime = 0;
+
+        void triggerHitFeedback() {
+            hitFeedbackEndTime = System.currentTimeMillis() + 150; // 150ms flash/shake
         }
 
         void update() {
@@ -9989,14 +10005,30 @@ public class GameView extends SurfaceView implements Runnable {
         }
 
         void draw(Canvas canvas) {
-            // Charging Telegraph Effect
-            if (charging) {
-                float progress = (System.currentTimeMillis() - chargeStartTime) / (float) chargeDuration;
-                progress = Math.min(progress, 1.0f);
+            long now = System.currentTimeMillis();
 
+            // --- HIT FEEDBACK: SHAKE ---
+            float shakeX = 0;
+            float shakeY = 0;
+            boolean isHit = now < hitFeedbackEndTime;
+
+            if (isHit) {
+                shakeX = (random.nextFloat() - 0.5f) * 30; // Boss shake intensity
+                shakeY = (random.nextFloat() - 0.5f) * 30;
+            }
+
+            canvas.save();
+            canvas.translate(shakeX, shakeY);
+
+            // --- TELEGRAPH INDICATORS (Draw BEFORE Boss) ---
+            if (charging) {
+                float progress = (float) (now - chargeStartTime) / chargeDuration;
+                if (progress > 1f)
+                    progress = 1f;
+                // ... (rest of telegraph logic)
                 paint.setStyle(Paint.Style.STROKE);
-                paint.setStrokeWidth(5 + 10 * progress);
-                paint.setColor(Color.WHITE);
+                paint.setStrokeWidth(5);
+                paint.setColor(Color.RED);
                 paint.setAlpha((int) (150 * progress));
 
                 // Specific shapes for telegraphs? For now circle is readable.
@@ -10132,7 +10164,7 @@ public class GameView extends SurfaceView implements Runnable {
 
                 // PHASE 3: EVENT HORIZON LINES (Synced with Active State)
                 if (hp < maxHp * 0.3) {
-                    long now = System.currentTimeMillis();
+
                     boolean isActive = (now - lastEventHorizonTime) < 2500;
 
                     if (isActive) {
@@ -10372,6 +10404,17 @@ public class GameView extends SurfaceView implements Runnable {
 
             paint.setTypeface(Typeface.DEFAULT);
             paint.setTypeface(Typeface.DEFAULT);
+
+            // --- HIT FEEDBACK: FLASH ---
+            if (isHit) {
+                paint.setStyle(Paint.Style.FILL);
+                paint.setColor(Color.WHITE);
+                paint.setAlpha(150); // Semi-transparent white
+                canvas.drawCircle(x, y, radius * 1.5f, paint);
+                paint.setAlpha(255);
+            }
+
+            canvas.restore(); // Restore shake translation
         }
     } // This closes the draw method.
 
