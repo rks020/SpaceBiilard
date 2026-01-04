@@ -43,8 +43,6 @@ public class ShopActivity extends Activity {
         private android.media.SoundPool soundPool;
         private int soundHomeButton;
         private int soundBuyButton;
-        private boolean soundHomeLoaded = false;
-        private boolean soundBuyLoaded = false;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +61,11 @@ public class ShopActivity extends Activity {
                                 .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
                                 .build();
                 soundPool = new android.media.SoundPool.Builder()
-                                .setMaxStreams(1)
+                                .setMaxStreams(2)
                                 .setAudioAttributes(audioAttributes)
                                 .build();
                 soundHomeButton = soundPool.load(this, R.raw.homebutton, 1);
+                soundBuyButton = soundPool.load(this, R.raw.buy_button, 1);
 
                 // 1. Root Container with Space Background
                 FrameLayout root = new FrameLayout(this);
@@ -675,9 +674,7 @@ public class ShopActivity extends Activity {
                                 // NOT OWNED -> SELECT FOR PURCHASE
                                 if (finalSkinId.equals(selectedItemId)) {
                                         // SECOND TAP -> BUY
-                                        if (soundBuyLoaded) {
-                                                soundPool.play(soundBuyButton, 1f, 1f, 1, 0, 1f); // Priority 1
-                                        }
+                                        soundPool.play(soundBuyButton, 1f, 1f, 1, 0, 1f);
                                         handlePurchase();
                                 } else {
                                         // FIRST TAP -> SELECT
@@ -740,9 +737,7 @@ public class ShopActivity extends Activity {
                                         .setDuration(80)
                                         .withEndAction(() -> {
                                                 v.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
-                                                if (soundBuyLoaded) {
-                                                        soundPool.play(soundBuyButton, 1f, 1f, 1, 0, 1f); // Priority 1
-                                                }
+                                                soundPool.play(soundBuyButton, 1f, 1f, 1, 0, 1f);
                                                 handlePurchase();
                                         })
                                         .start();
@@ -759,9 +754,7 @@ public class ShopActivity extends Activity {
                 back.setLetterSpacing(0.05f);
                 back.setElevation(4 * getResources().getDisplayMetrics().density);
                 back.setOnClickListener(v -> {
-                        if (soundHomeLoaded) {
-                                soundPool.play(soundHomeButton, 1f, 1f, 1, 0, 1f);
-                        }
+                        soundPool.play(soundHomeButton, 1f, 1f, 1, 0, 1f);
                         v.animate()
                                         .scaleX(0.96f)
                                         .scaleY(0.96f)
