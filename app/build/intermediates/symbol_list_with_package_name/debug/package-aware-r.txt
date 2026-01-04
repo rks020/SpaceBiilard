@@ -952,6 +952,7 @@ drawable admob_close_button_black_circle_white_cross
 drawable admob_close_button_white_circle_black_cross
 drawable admob_close_button_white_cross
 drawable app_icon
+drawable bg_badge_red
 drawable bg_bottom_bar
 drawable bg_button_back
 drawable bg_button_dark
@@ -1367,6 +1368,7 @@ id progressBar
 id progressLevel
 id progress_circular
 id progress_horizontal
+id questBadge
 id questCard
 id radio
 id ratio

@@ -9800,7 +9800,8 @@ public class GameView extends SurfaceView implements Runnable {
                         // Prepare Dash
                         charging = true;
                         chargeStartTime = now;
-                        playSound(soundVoidTitanDash); // Added unique dash sound
+                        chargeStartTime = now;
+                        // Sound moved to actual dash start
                     } else if (state == 2) {
                         // Prepare Burst
                         charging = true;
@@ -9830,6 +9831,7 @@ public class GameView extends SurfaceView implements Runnable {
                     // Wait 2 seconds (Red Eyes)
                     if (now - chargeStartTime > 2000) {
                         charging = false;
+                        playSound(soundVoidTitanDash); // Added unique dash sound here
                         // Lock Target logic
                         if (whiteBall != null) {
                             dashTargetX = whiteBall.x;

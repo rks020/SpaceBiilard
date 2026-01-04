@@ -98,9 +98,8 @@ public class MainMenuActivity extends Activity {
         });
 
         findViewById(R.id.btnBottomSpecial).setOnClickListener(v -> {
-            // TODO: Special/Modes screen
-            android.widget.Toast.makeText(this, "Special Modes - Coming Soon", android.widget.Toast.LENGTH_SHORT)
-                    .show();
+            Intent intent = new Intent(MainMenuActivity.this, ModesActivity.class);
+            startActivity(intent);
         });
 
         findViewById(R.id.btnBottomShop).setOnClickListener(v -> {
@@ -114,6 +113,30 @@ public class MainMenuActivity extends Activity {
         super.onResume();
         if (jupiterRotation != null && !jupiterRotation.isStarted()) {
             jupiterRotation.resume();
+        }
+        updateQuestBadge();
+    }
+
+    private void updateQuestBadge() {
+        TextView questBadge = findViewById(R.id.questBadge);
+        if (questBadge == null)
+            return;
+
+        QuestManager questManager = QuestManager.getInstance(this);
+        java.util.List<Quest> quests = questManager.getAllQuests();
+        int claimableCount = 0;
+
+        for (Quest q : quests) {
+            if (q.isCompleted() && !q.isClaimed()) {
+                claimableCount++;
+            }
+        }
+
+        if (claimableCount > 0) {
+            questBadge.setVisibility(View.VISIBLE);
+            questBadge.setText(String.valueOf(claimableCount));
+        } else {
+            questBadge.setVisibility(View.GONE);
         }
     }
 

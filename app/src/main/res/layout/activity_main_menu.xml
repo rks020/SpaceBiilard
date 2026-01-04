@@ -304,17 +304,42 @@
             android:background="@android:color/transparent"
             android:clickable="true"
             android:focusable="true"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             app:layout_constraintStart_toEndOf="@id/btnBottomUpgrades"
             app:layout_constraintEnd_toStartOf="@id/btnBottomPlayPlaceholder"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_weight="1">
 
-            <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/quests"
-                android:tint="#66FFFFFF"/>
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/quests"
+                    android:tint="#66FFFFFF"/>
+
+                <!-- Notification Badge -->
+                <TextView
+                    android:id="@+id/questBadge"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="top|end"
+                    android:background="@drawable/bg_badge_red"
+                    android:text="1"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:layout_marginTop="-4dp"
+                    android:layout_marginEnd="-6dp"/>
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
