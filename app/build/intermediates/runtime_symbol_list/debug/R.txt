@@ -1042,6 +1042,8 @@ int drawable ic_star_small 0x7f0700aa
 int drawable ic_trophy 0x7f0700ab
 int drawable ic_upgrade_aim 0x7f0700ac
 int drawable ic_upgrade_aim_vector 0x7f0700ad
+int drawable ic_upgrade_crit_vector 0x7f0700d5
+int drawable ic_upgrade_dodge_vector 0x7f0700d6
 int drawable ic_upgrade_energy 0x7f0700ae
 int drawable ic_upgrade_energy_vector 0x7f0700af
 int drawable ic_upgrade_hunter_vector 0x7f0700b0
@@ -1051,8 +1053,10 @@ int drawable ic_upgrade_luck_vector 0x7f0700b3
 int drawable ic_upgrade_midas_vector 0x7f0700b4
 int drawable ic_upgrade_nova_vector 0x7f0700b5
 int drawable ic_upgrade_railgun 0x7f0700b6
+int drawable ic_upgrade_regen_vector 0x7f0700d7
 int drawable ic_upgrade_shield 0x7f0700b7
 int drawable ic_upgrade_shield_vector 0x7f0700b8
+int drawable ic_upgrade_sight_2_vector 0x7f0700d8
 int drawable ic_upgrade_vampire 0x7f0700b9
 int drawable ic_upgrades 0x7f0700ba
 int drawable jupiter 0x7f0700bb
@@ -1215,6 +1219,8 @@ int id buttonPanel 0x7f090081
 int id cache_measures 0x7f090082
 int id callMeasure 0x7f090083
 int id cardAim 0x7f090084
+int id cardCrit 0x7f09019f
+int id cardDodge 0x7f0901a0
 int id cardEnergy 0x7f090085
 int id cardHunter 0x7f090086
 int id cardImpulse 0x7f090087
@@ -1222,7 +1228,9 @@ int id cardLevel 0x7f090088
 int id cardLuck 0x7f090089
 int id cardMidas 0x7f09008a
 int id cardNova 0x7f09008b
+int id cardRegen 0x7f0901a1
 int id cardShield 0x7f09008c
+int id cardSight 0x7f0901a2
 int id cardVampire 0x7f09008d
 int id carryVelocity 0x7f09008e
 int id center 0x7f09008f

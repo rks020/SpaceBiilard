@@ -478,6 +478,12 @@ public class GameView extends SurfaceView implements Runnable {
     private int upgradeHunter = 1;
     private int upgradeImpulse = 1;
     private int upgradeMidas = 1;
+    // Phase 2 Upgrades
+    private int upgradeCrit = 1; // Critical Lens
+    private int upgradeRegen = 1; // Nano-Repair
+    private int upgradeSight = 1; // Quantum Sight
+    private int upgradeDodge = 1; // Evasion Protocol
+    private long lastRegenTime = 0; // For Nano-Repair
     // New Advanced Upgrades
     private int upgradeRailgun = 0; // Starts at 0 (Unlocked via Shop)
     private int upgradeVampire = 0;
@@ -492,6 +498,10 @@ public class GameView extends SurfaceView implements Runnable {
         upgradeHunter = prefs.getInt("upgrade_hunter", 1);
         upgradeImpulse = prefs.getInt("upgrade_impulse", 1);
         upgradeMidas = prefs.getInt("upgrade_midas", 1);
+        upgradeCrit = prefs.getInt("upgrade_crit", 1);
+        upgradeRegen = prefs.getInt("upgrade_regen", 1);
+        upgradeSight = prefs.getInt("upgrade_sight_2", 1);
+        upgradeDodge = prefs.getInt("upgrade_dodge", 1);
         upgradeRailgun = prefs.getInt("upgrade_railgun", 0);
         upgradeVampire = prefs.getInt("upgrade_vampire", 0);
     }
@@ -1339,6 +1349,17 @@ public class GameView extends SurfaceView implements Runnable {
         // Zaman
         if (!gameOver && !levelCompleted && playerHp > 0 && !showBossDefeated) {
             timeLeft -= deltaTime;
+        }
+
+        // NANO-REPAIR (Passive Heal)
+        if (upgradeRegen > 1 && !gameOver && !levelCompleted && playerHp > 0 && playerHp < playerMaxHp) {
+            long now = System.currentTimeMillis();
+            if (now - lastRegenTime >= 5000) { // Every 5 seconds
+                int heal = (upgradeRegen - 1) * 20; // 20 HP per level (starts at lvl 2)
+                playerHp = Math.min(playerHp + heal, playerMaxHp);
+                floatingTexts.add(floatingTextPool.obtain("+" + heal, whiteBall.x, whiteBall.y - 50, Color.GREEN));
+                lastRegenTime = now;
+            }
         }
 
         // Quest 40: Last Second - Complete with 0 seconds remaining
@@ -2908,13 +2929,24 @@ public class GameView extends SurfaceView implements Runnable {
                                     playSound(soundCollision);
                                 }
                             } else {
-                                playerHp -= 40;
-                                floatingTexts
-                                        .add(floatingTextPool.obtain("-40", whiteBall.x, whiteBall.y - 50, Color.RED));
-                                createImpactBurst(whiteBall.x, whiteBall.y, Color.RED);
-                                cameraShakeX = 30;
-                                shakeEndTime = System.currentTimeMillis() + 400;
-                                playSound(soundCollision);
+                                // EVASION PROTOCOL
+                                boolean dodged = false;
+                                if (upgradeDodge > 1 && random.nextFloat() < ((upgradeDodge - 1) * 0.05f)) { // 5% per
+                                                                                                             // level
+                                    dodged = true;
+                                    floatingTexts.add(floatingTextPool.obtain("DODGE!", whiteBall.x, whiteBall.y - 50,
+                                            Color.CYAN));
+                                }
+
+                                if (!dodged) {
+                                    playerHp -= 40;
+                                    floatingTexts.add(
+                                            floatingTextPool.obtain("-40", whiteBall.x, whiteBall.y - 50, Color.RED));
+                                    createImpactBurst(whiteBall.x, whiteBall.y, Color.RED);
+                                    cameraShakeX = 30;
+                                    shakeEndTime = System.currentTimeMillis() + 400;
+                                    playSound(soundCollision);
+                                }
                             }
                         }
                     } else {
@@ -2923,7 +2955,18 @@ public class GameView extends SurfaceView implements Runnable {
                             long now = System.currentTimeMillis();
                             if (now < electricModeEndTime) {
                                 int dmg = 40 + (upgradeHunter - 1) * 2;
+                                // CRITICAL LENS
+                                boolean isCrit = false;
+                                if (upgradeCrit > 1 && random.nextFloat() < ((upgradeCrit - 1) * 0.05f)) {
+                                    dmg *= 2;
+                                    isCrit = true;
+                                }
                                 currentBoss.hp -= dmg;
+                                if (isCrit) {
+                                    floatingTexts.add(
+                                            floatingTextPool.obtain("CRIT! -" + dmg, wBall.x, wBall.y - 80, Color.RED));
+                                    createImpactBurst(wBall.x, wBall.y, Color.RED);
+                                }
                                 // Quest 18: Heavy Hitter (5000 damage)
                                 if (questManager != null) {
                                     questManager.incrementQuestProgress(18, 40);
@@ -6343,21 +6386,114 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void drawTrajectory(Canvas canvas, float launchAngle, float ratio, Ball currentDraggedBall) {
-        // Çizgi ve Ok parametreleri
+        // Quantum Sight Logic (Bounce Calculation)
+        // 1. Calculate max length
+        float totalLen = (250 + (upgradeAim - 1) * 8) * ratio;
+
+        // 2. Initial Ray
         float startDist = currentDraggedBall.radius * 1.5f;
-        float lineLen = (250 + (upgradeAim - 1) * 8) * ratio; // Scaling: Max ~130% of base (250 -> 322)
+        float currX = currentDraggedBall.x + (float) Math.cos(launchAngle) * startDist;
+        float currY = currentDraggedBall.y + (float) Math.sin(launchAngle) * startDist;
+        float currAngle = launchAngle;
+        float remainingLen = totalLen;
 
-        float startX = currentDraggedBall.x + (float) Math.cos(launchAngle) * startDist;
-        float startY = currentDraggedBall.y + (float) Math.sin(launchAngle) * startDist;
-        float endX = currentDraggedBall.x + (float) Math.cos(launchAngle) * (startDist + lineLen);
-        float endY = currentDraggedBall.y + (float) Math.sin(launchAngle) * (startDist + lineLen);
+        int maxBounces = (upgradeSight >= 1) ? 1 : 0; // Quantum Sight Lvl 1+ gives 1 bounce
 
-        // Visual end point (slightly before the arrow tip to avoid clipping)
-        float vOffset = 15;
-        float vEndX = currentDraggedBall.x
-                + (float) Math.cos(launchAngle) * (startDist + Math.max(0, lineLen - vOffset));
-        float vEndY = currentDraggedBall.y
-                + (float) Math.sin(launchAngle) * (startDist + Math.max(0, lineLen - vOffset));
+        for (int i = 0; i <= maxBounces; i++) {
+            // Check intersection with Table Boundary (Circle)
+            // Effective radius for center point is circleRadius - ball.radius
+            float effectiveRadius = circleRadius - currentDraggedBall.radius;
+
+            // Ray: P = O + t*D
+            float dx = (float) Math.cos(currAngle);
+            float dy = (float) Math.sin(currAngle);
+
+            // Quadratic for Intersection: |(O + tD) - Center|^2 = R^2
+            // Center is (centerX, centerY)
+            float fx = currX - centerX;
+            float fy = currY - centerY;
+
+            float a = dx * dx + dy * dy; // Should be 1
+            float b = 2 * (fx * dx + fy * dy);
+            float c = (fx * fx + fy * fy) - effectiveRadius * effectiveRadius;
+
+            float discriminant = b * b - 4 * a * c;
+            float intersectDist = Float.MAX_VALUE;
+
+            if (discriminant >= 0) {
+                // Two solutions, we want the smallest positive t > epsilon
+                float t1 = (-b - (float) Math.sqrt(discriminant)) / (2 * a);
+                float t2 = (-b + (float) Math.sqrt(discriminant)) / (2 * a);
+
+                if (t1 > 1.0f)
+                    intersectDist = t1; // Use small threshold to avoid self-intersection
+                else if (t2 > 1.0f)
+                    intersectDist = t2;
+            }
+
+            // Determine segment length
+            float segLen = Math.min(remainingLen, intersectDist);
+
+            float endX = currX + dx * segLen;
+            float endY = currY + dy * segLen;
+
+            // Draw Segment
+            // Only draw arrow if this is the very last segment AND we ran out of length
+            // (didn't hit wall)
+            // Or should we always draw arrow even if hitting wall?
+            // Usually arrow implies "this is where it goes".
+            boolean isLastSubSegment = (i == maxBounces) || (segLen < intersectDist);
+
+            drawTrajectorySegment(canvas, currX, currY, endX, endY, isLastSubSegment);
+
+            remainingLen -= segLen;
+
+            if (remainingLen <= 0 || intersectDist > remainingLen + 1000) { // No length left or no intersection
+                break;
+            }
+
+            // Update for next bounce
+            currX = endX;
+            currY = endY;
+
+            // Reflect Angle
+            // Normal at collision (relative to center)
+            float nx = (endX - centerX) / effectiveRadius; // Normalized? effectiveRadius is length
+            float ny = (endY - centerY) / effectiveRadius;
+
+            // R = D - 2*(D.N)*N
+            float dot = dx * nx + dy * ny;
+            float rx = dx - 2 * dot * nx;
+            float ry = dy - 2 * dot * ny;
+
+            currAngle = (float) Math.atan2(ry, rx);
+
+            // Move start slightly off wall to avoid immediate re-intersection
+            currX += rx * 2.0f;
+            currY += ry * 2.0f;
+        }
+    }
+
+    private void drawTrajectorySegment(Canvas canvas, float startX, float startY, float vEndX, float vEndY,
+            boolean drawArrow) {
+        float dx = vEndX - startX;
+        float dy = vEndY - startY;
+        float lineLen = (float) Math.sqrt(dx * dx + dy * dy);
+        if (lineLen < 1)
+            return;
+
+        float launchAngle = (float) Math.atan2(dy, dx); // Recalculate for generic drawing
+
+        // Use vEndX/vEndY as the visual End Point directly
+        float vizEndX = vEndX;
+        float vizEndY = vEndY;
+
+        if (drawArrow) {
+            float vOffset = 15;
+            float ratio = Math.min(1.0f, Math.max(0, (lineLen - vOffset) / lineLen));
+            vizEndX = startX + dx * ratio;
+            vizEndY = startY + dy * ratio;
+        }
 
         // Kesikli çizgi (Trajectory)
         paint.setStyle(Paint.Style.STROKE);
@@ -6366,378 +6502,147 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setAlpha(180);
 
         if (selectedTrajectory.equals("laser")) {
-            // Visionary Laser Style
-            // Wrapper Glow
             paint.setAlpha(100);
             paint.setStrokeWidth(12);
             paint.setColor(Color.RED);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-
-            // Main Beam
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
             paint.setAlpha(255);
-            // paint.setShadowLayer(15, 0, 0, Color.RED); // REMOVED
             paint.setStrokeWidth(8);
             paint.setColor(Color.RED);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
             paint.setColor(Color.WHITE);
             paint.setStrokeWidth(3);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-            // paint.clearShadowLayer();
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
         } else if (selectedTrajectory.equals("electric")) {
-            // Electric Zig-Zag
             paint.setAlpha(255);
             paint.setStrokeWidth(5);
             paint.setColor(Color.CYAN);
-            // paint.setShadowLayer(20, 0, 0, Color.CYAN); // REMOVED
             paint.setStyle(Paint.Style.STROKE);
-
-            cachedTrajectoryPath.reset(); // USE POOLED OBJECT
+            cachedTrajectoryPath.reset();
             cachedTrajectoryPath.moveTo(startX, startY);
-            int segs = 12;
+            int segs = (int) (lineLen / 20) + 2;
             for (int i = 1; i <= segs; i++) {
-                float px = startX + (vEndX - startX) * i / segs;
-                float py = startY + (vEndY - startY) * i / segs;
+                float t = (float) i / segs;
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
                 float offset = (float) (Math.sin(System.currentTimeMillis() * 0.05 + i) * 15);
-                float perpX = -(endY - startY) / lineLen;
-                float perpY = (endX - startX) / lineLen;
+                float perpX = -dy / lineLen;
+                float perpY = dx / lineLen;
                 cachedTrajectoryPath.lineTo(px + perpX * offset, py + perpY * offset);
             }
-
-            // Double draw for glow
             paint.setStrokeWidth(10);
             paint.setAlpha(80);
             canvas.drawPath(cachedTrajectoryPath, paint);
-
             paint.setStrokeWidth(5);
             paint.setAlpha(255);
             canvas.drawPath(cachedTrajectoryPath, paint);
-
-            // paint.clearShadowLayer();
         } else if (selectedTrajectory.equals("dots")) {
-            // Golden Pearls
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(Color.rgb(255, 215, 0));
-            // paint.setShadowLayer(15, 0, 0, Color.YELLOW); // REMOVED
-            int dots = 10;
+            int dots = (int) (lineLen / 30);
             for (int i = 0; i <= dots; i++) {
-                float px = startX + (vEndX - startX) * i / dots;
-                float py = startY + (vEndY - startY) * i / dots;
-                // Fake glow
+                float t = (float) i / dots;
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
                 paint.setAlpha(100);
                 canvas.drawCircle(px, py, 9, paint);
                 paint.setAlpha(255);
                 canvas.drawCircle(px, py, 6, paint);
             }
-            // paint.clearShadowLayer();
         } else if (selectedTrajectory.equals("plasma")) {
-            // Fading Plasma
             paint.setStyle(Paint.Style.FILL);
-            int dots = 15;
+            int dots = (int) (lineLen / 20);
             for (int i = 0; i <= dots; i++) {
                 float t = (float) i / dots;
-                float px = startX + (vEndX - startX) * t;
-                float py = startY + (vEndY - startY) * t;
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
                 paint.setColor(Color.MAGENTA);
                 paint.setAlpha((int) (255 * t));
-                // paint.setShadowLayer(10 * t, 0, 0, Color.MAGENTA); // REMOVED
-
-                // Manual Glow
                 canvas.drawCircle(px, py, 8 * t * 1.3f, paint);
                 canvas.drawCircle(px, py, 8 * t, paint);
             }
             paint.setAlpha(255);
-            // paint.clearShadowLayer();
         } else if (selectedTrajectory.equals("arrow")) {
-            // Green Arrow
             paint.setAlpha(255);
-            // paint.setShadowLayer(15, 0, 0, Color.GREEN); // REMOVED
-
-            // Glow
             paint.setStrokeWidth(12);
             paint.setColor(Color.GREEN);
             paint.setAlpha(100);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
             paint.setStrokeWidth(6);
             paint.setAlpha(255);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-
-            // Small arrowheads along the line
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
             paint.setStyle(Paint.Style.FILL);
             int arrows = 3;
+            // Simplified arrow heads
             for (int i = 1; i <= arrows; i++) {
                 float t = (float) i / arrows;
-                float ax = startX + (vEndX - startX) * t;
-                float ay = startY + (vEndY - startY) * t;
+                float ax = startX + (vizEndX - startX) * t;
+                float ay = startY + (vizEndY - startY) * t;
+                // Just dots for now to save space or could re-add triangles
+                canvas.drawCircle(ax, ay, 5, paint);
             }
-            // paint.clearShadowLayer();
         } else if (selectedTrajectory.equals("wave")) {
-            // Cyan Wave
             paint.setAlpha(255);
             paint.setStrokeWidth(4);
             paint.setColor(Color.CYAN);
             paint.setStyle(Paint.Style.STROKE);
-
-            cachedTrajectoryPath.reset(); // REUSE
+            cachedTrajectoryPath.reset();
             cachedTrajectoryPath.moveTo(startX, startY);
-            int segs = 20;
+            int segs = (int) (lineLen / 15);
             for (int i = 1; i <= segs; i++) {
                 float t = (float) i / segs;
-                float px = startX + (vEndX - startX) * t;
-                float py = startY + (vEndY - startY) * t;
-
-                // Sine wave
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
                 float offset = (float) Math.sin(t * Math.PI * 4 - System.currentTimeMillis() * 0.01) * 20;
-                float perpX = -(endY - startY) / lineLen;
-                float perpY = (endX - startX) / lineLen;
-
+                float perpX = -dy / lineLen;
+                float perpY = dx / lineLen;
                 cachedTrajectoryPath.lineTo(px + perpX * offset, py + perpY * offset);
             }
             canvas.drawPath(cachedTrajectoryPath, paint);
-        } else if (selectedTrajectory.equals("grid")) {
-            // Projected Grid Guide
-            paint.setAlpha(150);
-            paint.setStrokeWidth(2);
-            paint.setColor(Color.WHITE);
-            paint.setStyle(Paint.Style.STROKE);
-
-            // Draw a "ladder" or grid projection
-            int steps = 15;
-            for (int i = 0; i <= steps; i++) {
-                float t = (float) i / steps;
-                float px = startX + (vEndX - startX) * t;
-                float py = startY + (vEndY - startY) * t;
-
-                // Cross lines
-                float perpX = -(endY - startY) / lineLen * 10 * (1 + t); // Widens at end
-                float perpY = (endX - startX) / lineLen * 10 * (1 + t);
-
-                canvas.drawLine(px - perpX, py - perpY, px + perpX, py + perpY, paint);
-            }
-            // Side lines
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-
-        } else if (selectedTrajectory.equals("pulse")) {
-            // Pulsating Line
-            float pulse = (float) (Math.sin(System.currentTimeMillis() * 0.02) * 0.5 + 0.5);
-            paint.setAlpha(255);
-            paint.setStrokeWidth(4 + 4 * pulse);
-            paint.setColor(Color.rgb(255, 50, 50));
-            // paint.setShadowLayer(15 * pulse, 0, 0, Color.RED); // REMOVED
-
-            // Glow
-            paint.setAlpha(100);
-            paint.setStrokeWidth((4 + 4 * pulse) * 2);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-
-            paint.setAlpha(255);
-            paint.setStrokeWidth(4 + 4 * pulse);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-            // paint.clearShadowLayer();
-
-        } else if (selectedTrajectory.equals("sniper")) {
-            // Sniper Crosshairs
-            paint.setStrokeWidth(2);
-            paint.setColor(Color.RED);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-            int crosses = 4;
-            for (int i = 1; i <= crosses; i++) {
-                float t = (float) i / (crosses + 1);
-                float px = startX + (vEndX - startX) * t;
-                float py = startY + (vEndY - startY) * t;
-                paint.setStrokeWidth(4);
-                float size = 15;
-                canvas.drawLine(px - size, py, px + size, py, paint);
-                canvas.drawLine(px, py - size, px, py + size, paint);
-            }
-        } else if (selectedTrajectory.equals("double")) {
-            // Double Lines
-            paint.setStrokeWidth(3);
-            paint.setColor(Color.CYAN);
-            // paint.setShadowLayer(10, 0, 0, Color.CYAN); // REMOVED
-            // Offset perpendicular to line
-            float perpX = -(endY - startY) / lineLen * 10;
-            float perpY = (endX - startX) / lineLen * 10;
-
-            // Glow
-            paint.setAlpha(100);
-            paint.setStrokeWidth(6);
-            canvas.drawLine(startX + perpX, startY + perpY, vEndX + perpX, vEndY + perpY, paint);
-            canvas.drawLine(startX - perpX, startY - perpY, vEndX - perpX, vEndY - perpY, paint);
-
-            paint.setAlpha(255);
-            paint.setStrokeWidth(3);
-            canvas.drawLine(startX + perpX, startY + perpY, vEndX + perpX, vEndY + perpY, paint);
-            canvas.drawLine(startX - perpX, startY - perpY, vEndX - perpX, vEndY - perpY, paint);
-            // paint.clearShadowLayer();
-        } else if (selectedTrajectory.equals("rainbow")) {
-            // Rainbow
-            int[] colors = { Color.RED, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA };
-            LinearGradient shader = new LinearGradient(startX, startY, vEndX, vEndY, colors, null,
-                    Shader.TileMode.REPEAT);
-            paint.setShader(shader);
-            paint.setStrokeWidth(6);
-            paint.setAlpha(200);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-            paint.setShader(null);
-        } else if (selectedTrajectory.equals("dashdot")) {
-            // Dash Dot
-            paint.setPathEffect(new android.graphics.DashPathEffect(new float[] { 40, 20, 10, 20 }, 0));
-            paint.setStrokeWidth(4);
-            paint.setColor(Color.WHITE);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-            paint.setPathEffect(null);
-        } else if (selectedTrajectory.equals("stars")) {
-            // Stars
-            paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.YELLOW);
-            int stars = 6;
-            for (int i = 1; i <= stars; i++) {
-                float t = (float) i / (stars + 1);
-                float px = startX + (vEndX - startX) * t;
-                float py = startY + (vEndY - startY) * t;
-                drawStarPath(canvas, px, py, 12); // Reusing existing helper
-            }
-        } else if (selectedTrajectory.equals("hearts")) {
-            // Hearts
-            paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.rgb(255, 105, 180));
-            int hearts = 6;
-            for (int i = 1; i <= hearts; i++) {
-                float t = (float) i / (hearts + 1);
-                float px = startX + (vEndX - startX) * t;
-                float py = startY + (vEndY - startY) * t;
-                // Simple heart shape (circle for now to keep it fast)
-                canvas.drawCircle(px, py, 10, paint);
-            }
-        } else if (selectedTrajectory.equals("tech")) {
-            // Tech Circuit
-            paint.setColor(Color.GREEN);
-            paint.setStrokeWidth(2);
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
-            int nodes = 5;
-            paint.setStyle(Paint.Style.FILL);
-            for (int i = 0; i <= nodes; i++) {
-                float t = (float) i / nodes;
-                float px = startX + (vEndX - startX) * t;
-                float py = startY + (vEndY - startY) * t;
-                canvas.drawCircle(px, py, 6, paint);
-            }
-        } else if (selectedTrajectory.equals("snake")) {
-            // Snake S-Curve
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(4);
-            paint.setColor(Color.GREEN);
-            android.graphics.Path path = new android.graphics.Path();
-            path.moveTo(startX, startY);
-            int segs = 15;
-            for (int i = 1; i <= segs; i++) {
-                float t = (float) i / segs;
-                float px = startX + (vEndX - startX) * t;
-                float py = startY + (vEndY - startY) * t;
-                // Faster frequency for snake
-                float offset = (float) Math.sin(t * Math.PI * 6) * 15;
-                float perpX = -(endY - startY) / lineLen;
-                float perpY = (endX - startX) / lineLen;
-                path.lineTo(px + perpX * offset, py + perpY * offset);
-            }
-            canvas.drawPath(path, paint);
-        } else if (selectedTrajectory.equals("chevron")) {
-            // Chevrons
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(4);
-            paint.setColor(Color.rgb(255, 165, 0)); // Orange
-            int chevs = 8;
-            // Vector direction
-            float dx = (vEndX - startX) / lineLen;
-            float dy = (vEndY - startY) / lineLen;
-            // Perpendicular
-            float px = -dy * 15;
-            float py = dx * 15;
-
-            // Animate offset
-            float animOffset = (System.currentTimeMillis() % 1000) / 1000.0f;
-
-            for (int i = 0; i < chevs; i++) {
-                float t = ((float) i / chevs + animOffset) % 1.0f;
-                if (t < 0.1f)
-                    continue; // Fade in at start
-
-                float cx = startX + (vEndX - startX) * t;
-                float cy = startY + (vEndY - startY) * t;
-
-                android.graphics.Path p = new android.graphics.Path();
-                p.moveTo(cx - dx * 10 + px, cy - dy * 10 + py);
-                p.lineTo(cx, cy);
-                p.lineTo(cx - dx * 10 - px, cy - dy * 10 - py);
-                canvas.drawPath(p, paint);
-            }
-        } else if (selectedTrajectory.equals("fire")) {
-            // Fire
-            paint.setStyle(Paint.Style.FILL);
-            int particles = 20;
-            for (int i = 0; i < particles; i++) {
-                float t = (float) i / particles;
-                float px = startX + (vEndX - startX) * t;
-                float py = startY + (vEndY - startY) * t;
-
-                float size = 15 * (1 - t) * (0.8f + random.nextFloat() * 0.4f);
-                int alpha = (int) (255 * (1 - t));
-
-                // Jitter
-                px += (random.nextFloat() - 0.5f) * 10;
-                py += (random.nextFloat() - 0.5f) * 10;
-
-                paint.setColor(Color.rgb(255, 69 + random.nextInt(100), 0));
-                paint.setAlpha(alpha);
-                canvas.drawCircle(px, py, size, paint);
-            }
-            paint.setAlpha(255);
-
         } else {
             // Default dashed
             paint.setPathEffect(new android.graphics.DashPathEffect(new float[] { 20, 20 }, 0));
-            canvas.drawLine(startX, startY, vEndX, vEndY, paint);
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
             paint.setPathEffect(null);
         }
         paint.setAlpha(255);
 
-        // Ok başı (V şeklinde) - Çizginin SONUNDA
-        int arrowColor = Color.WHITE;
-        int shadowColor = Color.CYAN;
-        if (selectedTrajectory.equals("laser")) {
-            arrowColor = Color.RED;
-            shadowColor = Color.RED;
-        } else if (selectedTrajectory.equals("electric")) {
-            arrowColor = Color.CYAN;
-            shadowColor = Color.CYAN;
-        } else if (selectedTrajectory.equals("dots")) {
-            arrowColor = Color.rgb(255, 215, 0);
-            shadowColor = Color.YELLOW;
-        } else if (selectedTrajectory.equals("plasma")) {
-            arrowColor = Color.MAGENTA;
-            shadowColor = Color.MAGENTA;
+        // Arrow Head (Only if drawArrow is true)
+        if (drawArrow) {
+            int arrowColor = Color.WHITE;
+            int shadowColor = Color.CYAN;
+            if (selectedTrajectory.equals("laser")) {
+                arrowColor = Color.RED;
+                shadowColor = Color.RED;
+            } else if (selectedTrajectory.equals("electric")) {
+                arrowColor = Color.CYAN;
+                shadowColor = Color.CYAN;
+            } else if (selectedTrajectory.equals("dots")) {
+                arrowColor = Color.rgb(255, 215, 0);
+                shadowColor = Color.YELLOW;
+            } else if (selectedTrajectory.equals("plasma")) {
+                arrowColor = Color.MAGENTA;
+                shadowColor = Color.MAGENTA;
+            }
+
+            paint.setStrokeWidth(8);
+            paint.setStrokeCap(Paint.Cap.ROUND);
+            paint.setColor(arrowColor);
+            paint.setShadowLayer(10, 0, 0, shadowColor);
+
+            float arrowSize = (selectedTrajectory.equals("dashed")) ? 40 : 50;
+            float wingAngle = (float) Math.toRadians(150);
+
+            float wing1X = vEndX + (float) Math.cos(launchAngle + wingAngle) * arrowSize;
+            float wing1Y = vEndY + (float) Math.sin(launchAngle + wingAngle) * arrowSize;
+
+            float wing2X = vEndX + (float) Math.cos(launchAngle - wingAngle) * arrowSize;
+            float wing2Y = vEndY + (float) Math.sin(launchAngle - wingAngle) * arrowSize;
+
+            canvas.drawLine(vEndX, vEndY, wing1X, wing1Y, paint);
+            canvas.drawLine(vEndX, vEndY, wing2X, wing2Y, paint);
+            paint.clearShadowLayer();
         }
-
-        paint.setStrokeWidth(8);
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setColor(arrowColor);
-        paint.setShadowLayer(10, 0, 0, shadowColor);
-
-        float arrowSize = (selectedTrajectory.equals("dashed")) ? 40 : 50;
-        float wingAngle = (float) Math.toRadians(150); // 150 derece kanat açısı
-
-        // startX/Y yerine endX/Y kullanıyoruz (Gerçek uç)
-        float wing1X = endX + (float) Math.cos(launchAngle + wingAngle) * arrowSize;
-        float wing1Y = endY + (float) Math.sin(launchAngle + wingAngle) * arrowSize;
-
-        float wing2X = endX + (float) Math.cos(launchAngle - wingAngle) * arrowSize;
-        float wing2Y = endY + (float) Math.sin(launchAngle - wingAngle) * arrowSize;
-
-        canvas.drawLine(endX, endY, wing1X, wing1Y, paint);
-        canvas.drawLine(endX, endY, wing2X, wing2Y, paint);
-        paint.clearShadowLayer();
     }
 
     private void saveProgress() {

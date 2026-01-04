@@ -1043,6 +1043,8 @@ drawable ic_star_small
 drawable ic_trophy
 drawable ic_upgrade_aim
 drawable ic_upgrade_aim_vector
+drawable ic_upgrade_crit_vector
+drawable ic_upgrade_dodge_vector
 drawable ic_upgrade_energy
 drawable ic_upgrade_energy_vector
 drawable ic_upgrade_hunter_vector
@@ -1052,8 +1054,10 @@ drawable ic_upgrade_luck_vector
 drawable ic_upgrade_midas_vector
 drawable ic_upgrade_nova_vector
 drawable ic_upgrade_railgun
+drawable ic_upgrade_regen_vector
 drawable ic_upgrade_shield
 drawable ic_upgrade_shield_vector
+drawable ic_upgrade_sight_2_vector
 drawable ic_upgrade_vampire
 drawable ic_upgrades
 drawable jupiter
@@ -1216,6 +1220,8 @@ id buttonPanel
 id cache_measures
 id callMeasure
 id cardAim
+id cardCrit
+id cardDodge
 id cardEnergy
 id cardHunter
 id cardImpulse
@@ -1223,7 +1229,9 @@ id cardLevel
 id cardLuck
 id cardMidas
 id cardNova
+id cardRegen
 id cardShield
+id cardSight
 id cardVampire
 id carryVelocity
 id center

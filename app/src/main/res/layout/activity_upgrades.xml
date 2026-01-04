@@ -94,6 +94,12 @@
 
                 <include layout="@layout/item_upgrade_card" android:id="@+id/cardVampire" />
 
+                <!-- PHASE 2 UPGRADES -->
+                <include layout="@layout/item_upgrade_card" android:id="@+id/cardCrit" />
+                <include layout="@layout/item_upgrade_card" android:id="@+id/cardRegen" />
+                <include layout="@layout/item_upgrade_card" android:id="@+id/cardSight" />
+                <include layout="@layout/item_upgrade_card" android:id="@+id/cardDodge" />
+
             </LinearLayout>
         </ScrollView>
 
@@ -148,7 +154,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• LASER SIGHT: Increases the length of the aiming line for better precision.\n\n• ENERGY CORE: Increases the duration of all active skills (Shield, Freeze, etc.).\n\n• LUCKY CHARM: Increases the amount of coins earned when clearing a stage.\n\n• SHIELD GEN: Grants a chance to start every level with a protective shield (100% chance at Max Level).\n\n• NOVA MODULE: Increases the explosion radius of the special ball.\n\n• BOSS HUNTER: Increases damage dealt to boss enemies.\n\n• IMPULSE ENG: Increases bounce speed when hitting walls.\n\n• MIDAS CHIP: Increases coin drop chance from destroyed balls.\n\n• VAMPIRE CORE: Restores HP when blocking projectiles or destroying colored balls during boss fights."
+                    android:text="• LASER SIGHT: Increases the length of the aiming line for better precision.\n\n• ENERGY CORE: Increases the duration of all active skills (Shield, Freeze, etc.).\n\n• LUCKY CHARM: Increases the amount of coins earned when clearing a stage.\n\n• SHIELD GEN: Grants a chance to start every level with a protective shield (100% chance at Max Level).\n\n• NOVA MODULE: Increases the explosion radius of the special ball.\n\n• BOSS HUNTER: Increases damage dealt to boss enemies.\n\n• IMPULSE ENG: Increases bounce speed when hitting walls.\n\n• MIDAS CHIP: Increases coin drop chance from destroyed balls.\n\n• VAMPIRE CORE: Restores HP when blocking projectiles or destroying colored balls during boss fights.\n\n• CRITICAL LENS: Chance to deal double damage to bosses.\n\n• NANO REPAIR: Passively regenerates HP over time.\n\n• QUANTUM SIGHT: Trajectory line shows wall bounces for advanced aiming.\n\n• EVASION PROTOCOL: Chance to completely dodge incoming damage."
                     android:textColor="#CCCCCC"
                     android:textSize="14sp"
                     android:lineSpacingExtra="6dp"/>

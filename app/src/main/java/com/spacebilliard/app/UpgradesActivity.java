@@ -30,6 +30,12 @@ public class UpgradesActivity extends Activity {
         setContentView(R.layout.activity_upgrades);
 
         prefs = getSharedPreferences("SpaceBilliard", MODE_PRIVATE);
+
+        // DEV: Grant 50k coins for testing
+        if (prefs.getInt("coins", 0) < 50000) {
+            prefs.edit().putInt("coins", 50000).apply();
+            Toast.makeText(this, "DEV: Added 50,000 Coins", Toast.LENGTH_SHORT).show();
+        }
         txtCoins = findViewById(R.id.txtCoins);
         updateCoinDisplay();
 
@@ -54,6 +60,16 @@ public class UpgradesActivity extends Activity {
 
         setupUpgradeCard(R.id.cardVampire, "upgrade_vampire", "VAMPIRE CORE", "+ Heal on Kill", 400, 1.3f,
                 R.drawable.ic_upgrade_vampire);
+
+        // Phase 2 Upgrades
+        setupUpgradeCard(R.id.cardCrit, "upgrade_crit", "CRITICAL LENS", "+ Crit Chance", 250, 1.3f,
+                R.drawable.ic_upgrade_crit_vector);
+        setupUpgradeCard(R.id.cardRegen, "upgrade_regen", "NANO REPAIR", "Passive Heal", 300, 1.4f,
+                R.drawable.ic_upgrade_regen_vector);
+        setupUpgradeCard(R.id.cardSight, "upgrade_sight_2", "QUANTUM SIGHT", "+ Bounce Line", 350, 1.5f,
+                R.drawable.ic_upgrade_sight_2_vector);
+        setupUpgradeCard(R.id.cardDodge, "upgrade_dodge", "EVASION PROTOCOL", "+ Dodge Chance", 300, 1.3f,
+                R.drawable.ic_upgrade_dodge_vector);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> {
             v.animate()
@@ -143,7 +159,7 @@ public class UpgradesActivity extends Activity {
         if (prefKey.equals("upgrade_aim")) {
             txtBoost.setText((100 + (currentLevel * 3)) + "% Line Length");
         } else if (prefKey.equals("upgrade_energy")) {
-            txtBoost.setText("+" + (currentLevel * 10) + "% Duration");
+            txtBoost.setText("+" + (currentLevel * 1) + "% Duration");
         } else if (prefKey.equals("upgrade_luck")) {
             txtBoost.setText("+" + (currentLevel * 5) + "% Income");
         } else if (prefKey.equals("upgrade_shield")) {
@@ -154,6 +170,14 @@ public class UpgradesActivity extends Activity {
 
         } else if (prefKey.equals("upgrade_vampire")) {
             txtBoost.setText("+" + (currentLevel * 2) + " HP Drain");
+        } else if (prefKey.equals("upgrade_crit")) {
+            txtBoost.setText((5 + currentLevel) + "% Crit Chance");
+        } else if (prefKey.equals("upgrade_regen")) {
+            txtBoost.setText("+" + (currentLevel * 1) + " HP/5s");
+        } else if (prefKey.equals("upgrade_sight_2")) {
+            txtBoost.setText(currentLevel >= 1 ? "Active (Lvl " + currentLevel + ")" : "Not Active");
+        } else if (prefKey.equals("upgrade_dodge")) {
+            txtBoost.setText((currentLevel * 2) + "% Dodge Chance");
         } else {
             txtBoost.setText(benefit);
         }
