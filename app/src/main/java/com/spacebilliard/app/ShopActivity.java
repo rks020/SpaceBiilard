@@ -42,6 +42,9 @@ public class ShopActivity extends Activity {
         // Sound
         private android.media.SoundPool soundPool;
         private int soundHomeButton;
+        private int soundBuyButton;
+        private boolean soundHomeLoaded = false;
+        private boolean soundBuyLoaded = false;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -672,6 +675,9 @@ public class ShopActivity extends Activity {
                                 // NOT OWNED -> SELECT FOR PURCHASE
                                 if (finalSkinId.equals(selectedItemId)) {
                                         // SECOND TAP -> BUY
+                                        if (soundBuyLoaded) {
+                                                soundPool.play(soundBuyButton, 1f, 1f, 1, 0, 1f); // Priority 1
+                                        }
                                         handlePurchase();
                                 } else {
                                         // FIRST TAP -> SELECT
@@ -734,6 +740,9 @@ public class ShopActivity extends Activity {
                                         .setDuration(80)
                                         .withEndAction(() -> {
                                                 v.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
+                                                if (soundBuyLoaded) {
+                                                        soundPool.play(soundBuyButton, 1f, 1f, 1, 0, 1f); // Priority 1
+                                                }
                                                 handlePurchase();
                                         })
                                         .start();
@@ -750,7 +759,9 @@ public class ShopActivity extends Activity {
                 back.setLetterSpacing(0.05f);
                 back.setElevation(4 * getResources().getDisplayMetrics().density);
                 back.setOnClickListener(v -> {
-                        soundPool.play(soundHomeButton, 1f, 1f, 0, 0, 1f);
+                        if (soundHomeLoaded) {
+                                soundPool.play(soundHomeButton, 1f, 1f, 1, 0, 1f);
+                        }
                         v.animate()
                                         .scaleX(0.96f)
                                         .scaleY(0.96f)
@@ -832,6 +843,15 @@ public class ShopActivity extends Activity {
                         // Insufficient balance
                         descriptionText.setText("⚠️ INSUFFICIENT COINS! Need " + selectedItemPrice + " coins.");
                         descriptionText.setTextColor(Color.RED);
+                }
+        }
+
+        @Override
+        protected void onDestroy() {
+                super.onDestroy();
+                if (soundPool != null) {
+                        soundPool.release();
+                        soundPool = null;
                 }
         }
 }
