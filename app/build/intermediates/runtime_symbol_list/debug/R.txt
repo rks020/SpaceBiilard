@@ -1017,7 +1017,6 @@ int drawable common_google_signin_btn_text_light_focused 0x7f070091
 int drawable common_google_signin_btn_text_light_normal 0x7f070092
 int drawable common_google_signin_btn_text_light_normal_background 0x7f070093
 int drawable custom_progress_bar_horizontal 0x7f070094
-int drawable gamepad 0x7f070095
 int drawable googleg_disabled_color_18 0x7f070096
 int drawable googleg_standard_color_18 0x7f070097
 int drawable ic_arrow_left 0x7f070098
@@ -1033,6 +1032,7 @@ int drawable ic_hand_swipe 0x7f0700a1
 int drawable ic_info 0x7f0700a2
 int drawable ic_launcher_background 0x7f0700a3
 int drawable ic_lock 0x7f0700a4
+int drawable ic_mode 0x7f0700dc
 int drawable ic_play 0x7f0700a5
 int drawable ic_quests 0x7f0700a6
 int drawable ic_shape_hexagon 0x7f0700a7
@@ -1059,6 +1059,7 @@ int drawable ic_upgrade_shield_vector 0x7f0700bb
 int drawable ic_upgrade_sight_2_vector 0x7f0700bc
 int drawable ic_upgrade_vampire 0x7f0700bd
 int drawable ic_upgrades 0x7f0700be
+int drawable joystick 0x7f0700db
 int drawable jupiter 0x7f0700bf
 int drawable menu_btn_cyan 0x7f0700c0
 int drawable menu_btn_gold 0x7f0700c1

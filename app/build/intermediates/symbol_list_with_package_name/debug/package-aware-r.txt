@@ -1018,7 +1018,6 @@ drawable common_google_signin_btn_text_light_focused
 drawable common_google_signin_btn_text_light_normal
 drawable common_google_signin_btn_text_light_normal_background
 drawable custom_progress_bar_horizontal
-drawable gamepad
 drawable googleg_disabled_color_18
 drawable googleg_standard_color_18
 drawable ic_arrow_left
@@ -1034,6 +1033,7 @@ drawable ic_hand_swipe
 drawable ic_info
 drawable ic_launcher_background
 drawable ic_lock
+drawable ic_mode
 drawable ic_play
 drawable ic_quests
 drawable ic_shape_hexagon
@@ -1060,6 +1060,7 @@ drawable ic_upgrade_shield_vector
 drawable ic_upgrade_sight_2_vector
 drawable ic_upgrade_vampire
 drawable ic_upgrades
+drawable joystick
 drawable jupiter
 drawable menu_btn_cyan
 drawable menu_btn_gold

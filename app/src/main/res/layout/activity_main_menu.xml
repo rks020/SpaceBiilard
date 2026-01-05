@@ -382,7 +382,7 @@
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/gamepad"
+                android:src="@drawable/joystick"
                 android:tint="#66FFFFFF"/>
 
             <TextView
