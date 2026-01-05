@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -42,12 +43,44 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
     // Particles & Physics
     private ParticlePool particlePool = new ParticlePool();
     private List<Particle> activeParticles = new ArrayList<>();
-    private float MAX_SPEED = 40f;
+    private float BASE_MAX_SPEED = 40f;
     private float TRAIL_SPEED_THRESHOLD = 20f;
 
-    // Frame timing - EN ÖNEMLİ DEĞİŞİKLİK
+    // Game State
+    private long score = 0;
+    private float speedMeter = 100f;
+    private float maxSpeedMeter = 100f;
+    private int speedLevel = 0;
+    private int maxSpeedLevel = 10;
+    private boolean gameOver = false;
+
+    // Combo System
+    private int comboCount = 0;
+    private int comboMultiplier = 1;
+    private long lastPortalTime = 0;
+    private long comboResetDelay = 2000;
+
+    // Time Attack Mode
+    private boolean isTimeAttackMode = true;
+    private float timeRemaining = 60f;
+    private float maxTime = 60f;
+
+    // Score Animation
+    private float scoreTextScale = 1f;
+    private float targetScoreScale = 1f;
+
+    // Background stars
+    private List<Star> stars = new ArrayList<>();
+
+    private static class Star {
+        float x, y;
+        float brightness;
+        float size;
+    }
+
+    // Frame timing
     private static final long TARGET_FPS = 60;
-    private static final long FRAME_TIME = 1000000000 / TARGET_FPS; // nanoseconds
+    private static final long FRAME_TIME = 1000000000 / TARGET_FPS;
     private long lastFrameTime = System.nanoTime();
 
     private class Particle {
@@ -93,7 +126,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 
     private class ParticlePool {
         private final List<Particle> pool = new ArrayList<>();
-        private final int MAX_POOL_SIZE = 100; // Azaltıldı
+        private final int MAX_POOL_SIZE = 100;
 
         public Particle obtain(float x, float y, int color) {
             Particle p;
@@ -118,7 +151,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         holder = getHolder();
         holder.addCallback(this);
         paint = new Paint();
-        paint.setAntiAlias(true); // Smooth edges
+        paint.setAntiAlias(true);
     }
 
     @Override
@@ -143,7 +176,6 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             update();
             draw();
 
-            // FPS kontrolü - kasma çözümü
             long frameTime = System.nanoTime() - startTime;
             if (frameTime < FRAME_TIME) {
                 try {
@@ -156,20 +188,40 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
     }
 
     private void update() {
-        if (!isPlaying)
+        if (!isPlaying || gameOver)
             return;
 
-        // Delta time hesaplama - smooth hareket için
         long currentTime = System.nanoTime();
         float deltaTime = (currentTime - lastFrameTime) / 1000000000.0f;
         lastFrameTime = currentTime;
 
-        // Cap delta time - büyük sıçramaları önler
         if (deltaTime > 0.05f)
             deltaTime = 0.05f;
 
-        // Update Particles - daha az sıklıkta
-        if (activeParticles.size() < 50) { // Partikül limiti
+        // Check combo timeout
+        if (comboCount > 0 && System.currentTimeMillis() - lastPortalTime > comboResetDelay) {
+            comboCount = 0;
+            comboMultiplier = 1;
+        }
+
+        // Score increases based on speed level AND combo
+        int baseIncrease = speedLevel == maxSpeedLevel ? 10 : 1;
+        score += baseIncrease * comboMultiplier;
+
+        // Time Attack: decrease time
+        if (isTimeAttackMode) {
+            timeRemaining -= deltaTime;
+            if (timeRemaining <= 0) {
+                timeRemaining = 0;
+                gameOver = true;
+            }
+        }
+
+        // Animate score text scale
+        scoreTextScale += (targetScoreScale - scoreTextScale) * 0.1f;
+
+        // Update Particles
+        if (activeParticles.size() < 50) {
             for (int i = 0; i < activeParticles.size(); i++) {
                 Particle p = activeParticles.get(i);
                 if (!p.update()) {
@@ -186,7 +238,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         for (Ball b : targetBalls)
             updateBall(b, deltaTime);
 
-        // Collisions between balls
+        // Collisions
         if (whiteBall != null && whiteBall.active) {
             for (Ball b : targetBalls)
                 checkCollision(whiteBall, b);
@@ -199,17 +251,19 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
     }
 
     private void updateBall(Ball b, float deltaTime) {
-        // Delta time ile smooth hareket
-        float dt = Math.min(deltaTime * 60f, 2f); // 60 FPS normalize
+        float dt = Math.min(deltaTime * 60f, 2f);
 
         b.x += b.vx * dt;
         b.y += b.vy * dt;
-        b.vx *= Math.pow(0.999f, dt);
-        b.vy *= Math.pow(0.999f, dt);
 
-        // Speed Check & Trail - daha az partikül
+        // Friction decreases with speed level
+        float frictionFactor = 0.999f - (speedLevel * 0.0001f);
+        b.vx *= Math.pow(frictionFactor, dt);
+        b.vy *= Math.pow(frictionFactor, dt);
+
+        // Trail
         float speed = (float) Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-        if (speed > TRAIL_SPEED_THRESHOLD && Math.random() > 0.7) { // %30 şans
+        if (speed > TRAIL_SPEED_THRESHOLD && Math.random() > 0.7) {
             int color = (Math.random() > 0.5) ? Color.RED : Color.parseColor("#FFA500");
             if (activeParticles.size() < 50) {
                 activeParticles.add(particlePool.obtain(b.x, b.y, color));
@@ -217,13 +271,14 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         }
 
         // Cap Speed
-        if (speed > MAX_SPEED) {
-            float ratio = MAX_SPEED / speed;
+        float maxSpeed = BASE_MAX_SPEED + (speedLevel * 8f);
+        if (speed > maxSpeed) {
+            float ratio = maxSpeed / speed;
             b.vx *= ratio;
             b.vy *= ratio;
         }
 
-        // Circular Wall Collision & Portal Check
+        // Wall Collision & Portal Check
         float dx = b.x - centerX;
         float dy = b.y - centerY;
         float dist = (float) Math.sqrt(dx * dx + dy * dy);
@@ -234,7 +289,6 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             if (angleDeg < 0)
                 angleDeg += 360;
 
-            // Check Portals
             if (isInsidePortal(angleDeg, orangePortalAngle)) {
                 teleport(b, orangePortalAngle, bluePortalAngle);
             } else if (isInsidePortal(angleDeg, bluePortalAngle)) {
@@ -247,6 +301,26 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
                 float dot = b.vx * nx + b.vy * ny;
                 b.vx = b.vx - 2 * dot * nx;
                 b.vy = b.vy - 2 * dot * ny;
+
+                // Slow down
+                b.vx *= 0.7f;
+                b.vy *= 0.7f;
+
+                if (speedLevel > 0) {
+                    speedLevel--;
+                }
+
+                // Decrease speed meter
+                speedMeter -= 15f;
+                if (speedMeter <= 0) {
+                    speedMeter = 0;
+                    gameOver = true;
+                }
+
+                // Reset combo
+                comboCount = 0;
+                comboMultiplier = 1;
+                targetScoreScale = 1f;
 
                 float overlap = (dist + b.radius) - arenaRadius;
                 b.x -= nx * overlap;
@@ -290,8 +364,33 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         float newVx = b.vx * cos - b.vy * sin;
         float newVy = b.vx * sin + b.vy * cos;
 
-        newVx *= 1.3f;
-        newVy *= 1.3f;
+        // Speed boost
+        newVx *= 1.8f;
+        newVy *= 1.8f;
+
+        if (speedLevel < maxSpeedLevel) {
+            speedLevel++;
+        }
+
+        speedMeter += 10f;
+        if (speedMeter > maxSpeedMeter) {
+            speedMeter = maxSpeedMeter;
+        }
+
+        // Combo System
+        comboCount++;
+        comboMultiplier = Math.min(comboCount, 10);
+        lastPortalTime = System.currentTimeMillis();
+
+        targetScoreScale = 1f + (comboMultiplier * 0.1f);
+
+        // Time Attack bonus
+        if (isTimeAttackMode) {
+            timeRemaining += 2f;
+            if (timeRemaining > maxTime) {
+                timeRemaining = maxTime;
+            }
+        }
 
         b.vx = newVx;
         b.vy = newVy;
@@ -336,24 +435,47 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         if (canvas == null)
             return;
 
-        canvas.drawColor(Color.BLACK);
+        // Dark blue gradient background
+        paint.setStyle(Paint.Style.FILL);
+        int topColor = Color.rgb(5, 5, 20);
+        int bottomColor = Color.rgb(15, 15, 40);
+        android.graphics.LinearGradient gradient = new android.graphics.LinearGradient(
+                0, 0, 0, screenHeight,
+                topColor, bottomColor,
+                android.graphics.Shader.TileMode.CLAMP);
+        paint.setShader(gradient);
+        canvas.drawRect(0, 0, screenWidth, screenHeight, paint);
+        paint.setShader(null);
 
-        // Draw Arena
+        // Draw stars
+        paint.setStyle(Paint.Style.FILL);
+        for (Star star : stars) {
+            int alpha = (int) (star.brightness * 255);
+            paint.setColor(Color.argb(alpha, 255, 255, 255));
+            canvas.drawCircle(star.x, star.y, star.size, paint);
+        }
+
+        // Arena with GLOW
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(10);
-        paint.setColor(Color.WHITE);
+
+        paint.setStrokeWidth(20);
+        paint.setColor(Color.argb(50, 0, 229, 255));
+        canvas.drawCircle(centerX, centerY, arenaRadius + 10, paint);
+
+        paint.setStrokeWidth(12);
+        paint.setColor(Color.argb(255, 0, 229, 255));
         canvas.drawCircle(centerX, centerY, arenaRadius, paint);
 
-        // Draw Particles
+        // Particles
         paint.setStyle(Paint.Style.FILL);
         for (Particle p : activeParticles)
             p.draw(canvas, paint);
 
-        // Draw Portals
+        // Portals
         drawPortal(canvas, orangePortalAngle, Color.parseColor("#FFA500"));
         drawPortal(canvas, bluePortalAngle, Color.parseColor("#00BFFF"));
 
-        // Draw Controls Zones
+        // Controls
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.argb(50, 255, 165, 0));
         canvas.drawRect(0, screenHeight - CONTROL_Height, screenWidth / 2, screenHeight, paint);
@@ -361,20 +483,180 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         paint.setColor(Color.argb(50, 0, 191, 255));
         canvas.drawRect(screenWidth / 2, screenHeight - CONTROL_Height, screenWidth, screenHeight, paint);
 
-        // Labels
         paint.setColor(Color.WHITE);
         paint.setTextSize(40);
         canvas.drawText("ORANGE", 50, screenHeight - CONTROL_Height + 100, paint);
         canvas.drawText("BLUE", screenWidth / 2 + 50, screenHeight - CONTROL_Height + 100, paint);
 
-        // Draw Balls
+        // Score - Animated
         paint.setStyle(Paint.Style.FILL);
-        if (whiteBall != null && whiteBall.active)
+        paint.setColor(Color.WHITE);
+        float animatedSize = 80 * scoreTextScale;
+        paint.setTextSize(animatedSize);
+        paint.setTextAlign(Paint.Align.CENTER);
+        canvas.drawText(String.valueOf(score), centerX, 120, paint);
+
+        // Speed Meter - Neon style
+        drawSpeedMeter(canvas);
+
+        // Combo Counter with neon star
+        if (comboCount > 1) {
+            drawComboStar(canvas, screenWidth - 180, 80, 30);
+            paint.setTextAlign(Paint.Align.RIGHT);
+            paint.setTextSize(50);
+            paint.setColor(Color.YELLOW);
+            canvas.drawText("x" + comboMultiplier, screenWidth - 30, 100, paint);
+        }
+
+        // Time - with neon clock
+        if (isTimeAttackMode) {
+            float iconY = comboCount > 1 ? 130 : 30;
+            drawClockIcon(canvas, screenWidth - 160, iconY + 20, timeRemaining > 10);
+
+            paint.setTextAlign(Paint.Align.RIGHT);
+            paint.setTextSize(40);
+            int timeColor = timeRemaining > 10 ? Color.rgb(0, 255, 255) : Color.RED;
+            paint.setColor(timeColor);
+            canvas.drawText(String.format("%.1fs", timeRemaining), screenWidth - 30, comboCount > 1 ? 160 : 60, paint);
+        }
+
+        // Speed Level
+        paint.setTextAlign(Paint.Align.LEFT);
+        paint.setTextSize(30);
+        paint.setColor(Color.WHITE);
+        canvas.drawText("Speed: " + speedLevel + "/" + maxSpeedLevel, 30, 90, paint);
+
+        // Game Over
+        if (gameOver) {
+            paint.setTextSize(100);
+            paint.setTextAlign(Paint.Align.CENTER);
+            paint.setColor(Color.RED);
+            canvas.drawText("GAME OVER", centerX, centerY - 50, paint);
+            paint.setTextSize(50);
+            canvas.drawText("Score: " + score, centerX, centerY + 50, paint);
+
+            drawNeonButton(canvas, centerX - 150, centerY + 100, 300, 100, "RESTART");
+        }
+
+        // Balls with glow
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextAlign(Paint.Align.LEFT);
+
+        if (whiteBall != null && whiteBall.active) {
+            paint.setColor(Color.argb(80, 255, 255, 255));
+            canvas.drawCircle(whiteBall.x, whiteBall.y, whiteBall.radius + 15, paint);
+            paint.setColor(Color.argb(150, 255, 255, 255));
+            canvas.drawCircle(whiteBall.x, whiteBall.y, whiteBall.radius + 8, paint);
+
             whiteBall.draw(canvas, paint);
+        }
+
         for (Ball b : targetBalls)
             b.draw(canvas, paint);
 
         holder.unlockCanvasAndPost(canvas);
+    }
+
+    private void drawSpeedMeter(Canvas canvas) {
+        float barWidth = screenWidth * 0.6f;
+        float barX = centerX - barWidth / 2;
+        float barY = 160;
+        float barHeight = 30;
+
+        // Outer glow
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(4);
+        paint.setColor(Color.argb(80, 0, 229, 255));
+        canvas.drawRoundRect(barX - 5, barY - 5, barX + barWidth + 5, barY + barHeight + 5, 8, 8, paint);
+
+        // Border
+        paint.setStrokeWidth(2);
+        paint.setColor(Color.argb(200, 0, 229, 255));
+        canvas.drawRoundRect(barX, barY, barX + barWidth, barY + barHeight, 5, 5, paint);
+
+        // Fill
+        paint.setStyle(Paint.Style.FILL);
+        float fillWidth = barWidth * (speedMeter / maxSpeedMeter);
+        int barColor = speedMeter > 50 ? Color.rgb(0, 255, 150)
+                : (speedMeter > 25 ? Color.rgb(255, 200, 0) : Color.RED);
+        paint.setColor(barColor);
+        if (fillWidth > 0) {
+            canvas.drawRoundRect(barX, barY, barX + fillWidth, barY + barHeight, 5, 5, paint);
+        }
+
+        paint.setTextSize(24);
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setColor(Color.WHITE);
+        canvas.drawText(String.format("%.0f%%", speedMeter), centerX, barY + 22, paint);
+    }
+
+    private void drawComboStar(Canvas canvas, float x, float y, float size) {
+        Path star = new Path();
+        float angle = (float) Math.PI / 5;
+        for (int i = 0; i < 10; i++) {
+            float r = (i % 2 == 0) ? size : size / 2;
+            float currX = x + r * (float) Math.cos(i * angle - Math.PI / 2);
+            float currY = y + r * (float) Math.sin(i * angle - Math.PI / 2);
+            if (i == 0)
+                star.moveTo(currX, currY);
+            else
+                star.lineTo(currX, currY);
+        }
+        star.close();
+
+        // Glow
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.argb(60, 255, 215, 0));
+        canvas.drawPath(star, paint);
+
+        // Main
+        paint.setColor(Color.argb(255, 255, 215, 0));
+        canvas.save();
+        canvas.scale(0.8f, 0.8f, x, y);
+        canvas.drawPath(star, paint);
+        canvas.restore();
+    }
+
+    private void drawClockIcon(Canvas canvas, float x, float y, boolean good) {
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(3);
+        paint.setColor(Color.argb(100, 0, 255, 255));
+        canvas.drawCircle(x, y, 22, paint);
+
+        paint.setStrokeWidth(2);
+        int color = good ? Color.rgb(0, 255, 255) : Color.RED;
+        paint.setColor(color);
+        canvas.drawCircle(x, y, 18, paint);
+
+        paint.setStrokeWidth(2);
+        canvas.drawLine(x, y, x, y - 10, paint);
+        canvas.drawLine(x, y, x + 6, y, paint);
+    }
+
+    private void drawNeonButton(Canvas canvas, float x, float y, float w, float h, String text) {
+        // Outer glow
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.argb(40, 0, 229, 255));
+        canvas.drawRoundRect(x - 8, y - 8, x + w + 8, y + h + 8, 15, 15, paint);
+
+        // Background
+        paint.setColor(Color.argb(180, 20, 20, 40));
+        canvas.drawRoundRect(x, y, x + w, y + h, 10, 10, paint);
+
+        // Border
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(3);
+        paint.setColor(Color.rgb(0, 229, 255));
+        canvas.drawRoundRect(x, y, x + w, y + h, 10, 10, paint);
+
+        // Text
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.rgb(0, 255, 255));
+        paint.setTextSize(45);
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        canvas.drawText(text, x + w / 2, y + h / 2 + 15, paint);
+        paint.setTypeface(android.graphics.Typeface.DEFAULT);
     }
 
     private void drawPortal(Canvas canvas, float angle, int color) {
@@ -382,14 +664,19 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         float oldWidth = paint.getStrokeWidth();
         Paint.Style oldStyle = paint.getStyle();
 
-        paint.setColor(color);
-        paint.setStrokeWidth(20);
+        // Outer glow
+        paint.setColor(Color.argb(60, Color.red(color), Color.green(color), Color.blue(color)));
+        paint.setStrokeWidth(35);
         paint.setStyle(Paint.Style.STROKE);
-
         if (arenaBounds == null) {
             arenaBounds = new RectF(centerX - arenaRadius, centerY - arenaRadius,
                     centerX + arenaRadius, centerY + arenaRadius);
         }
+        canvas.drawArc(arenaBounds, angle - portalWidth / 2, portalWidth, false, paint);
+
+        // Main portal
+        paint.setColor(color);
+        paint.setStrokeWidth(25);
         canvas.drawArc(arenaBounds, angle - portalWidth / 2, portalWidth, false, paint);
 
         paint.setColor(oldColor);
@@ -399,6 +686,22 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (gameOver && event.getAction() == MotionEvent.ACTION_DOWN) {
+            float tapX = event.getX();
+            float tapY = event.getY();
+
+            float buttonWidth = 300;
+            float buttonHeight = 100;
+            float buttonX = centerX - buttonWidth / 2;
+            float buttonY = centerY + 100;
+
+            if (tapX >= buttonX && tapX <= buttonX + buttonWidth &&
+                    tapY >= buttonY && tapY <= buttonY + buttonHeight) {
+                loadLevel();
+                return true;
+            }
+        }
+
         int pointerIndex = event.getActionIndex();
         int maskedAction = event.getActionMasked();
 
@@ -481,6 +784,32 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         targetBalls.clear();
         activeParticles.clear();
 
+        // Create stars
+        stars.clear();
+        for (int i = 0; i < 80; i++) {
+            Star star = new Star();
+            star.x = (float) (Math.random() * screenWidth);
+            star.y = (float) (Math.random() * (screenHeight - CONTROL_Height));
+            star.brightness = 0.3f + (float) (Math.random() * 0.7f);
+            star.size = 1f + (float) (Math.random() * 2f);
+            stars.add(star);
+        }
+
+        // Reset
+        score = 0;
+        speedMeter = 100f;
+        speedLevel = 0;
+        gameOver = false;
+        comboCount = 0;
+        comboMultiplier = 1;
+        lastPortalTime = 0;
+        scoreTextScale = 1f;
+        targetScoreScale = 1f;
+
+        if (isTimeAttackMode) {
+            timeRemaining = maxTime;
+        }
+
         giveRandomVelocity(whiteBall);
     }
 
@@ -503,7 +832,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 
     public void resume() {
         isPlaying = true;
-        lastFrameTime = System.nanoTime(); // Önemli: resume'da reset
+        lastFrameTime = System.nanoTime();
         gameThread = new Thread(this);
         gameThread.start();
     }

@@ -998,6 +998,7 @@ drawable btn_radio_on_mtrl
 drawable btn_radio_on_to_off_mtrl_animation
 drawable btn_return
 drawable btn_return_hq
+drawable combo_star_icon
 drawable common_full_open_on_phone
 drawable common_google_signin_btn_icon_dark
 drawable common_google_signin_btn_icon_dark_focused
@@ -1018,6 +1019,7 @@ drawable common_google_signin_btn_text_light_focused
 drawable common_google_signin_btn_text_light_normal
 drawable common_google_signin_btn_text_light_normal_background
 drawable custom_progress_bar_horizontal
+drawable game_hud_panel
 drawable googleg_disabled_color_18
 drawable googleg_standard_color_18
 drawable ic_arrow_left
@@ -1083,8 +1085,11 @@ drawable notification_tile_bg
 drawable notify_panel_notification_icon_bg
 drawable offline_dialog_background
 drawable offline_dialog_default_icon_42dp
+drawable progress_bar_frame
 drawable quests
+drawable restart_button
 drawable test_level_drawable
+drawable timer_icon
 drawable tooltip_frame_dark
 drawable tooltip_frame_light
 font montserrat_black
