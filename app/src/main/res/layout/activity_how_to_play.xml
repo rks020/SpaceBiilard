@@ -119,9 +119,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="32dp"
                     android:lineSpacingExtra="4dp"
-                    android:text="Collect special colored balls for power-ups:\n🟠 Orange: +5 seconds extra time\n🟡 Gold: Power boost for strong shot\n🟣 Purple: Barrier shield protection\n🔵 Cyan: Electric chain reaction\n🔴 Red: Missile homing attack\n🟢 Green: Teleport to safety"
+                    android:text="Collect special colored balls/items:\n\n❤ Nano Repair: Restores Player HP.\n🟠 Time Orb: Adds +5 seconds.\n🟡 Power Boost: Super strong impact.\n🟣 Barrier: Protects from 1 Black Ball hit.\n⚡ Electric: Zaps multiple balls.\n🔴 Missile: Homing attack on enemies.\n🚀 Swarm: Launches multiple missiles.\n🟢 Teleport: Safe warping on impact.\n💠 Split Save: Splits to avoid death.\n⚫ Vortex: Sucks in nearby balls.\n👻 Ghost: Phases through obstacles.\n🎯 Laser: Shows perfect trajectory.\n⚗ Alchemy: Turns Black Balls to Gold.\n🌊 Repulsor: Pushes all balls away.\n🛸 UFO: Summons ally saucer.\n💥 Blast Wave: Explosive area clear."
                     android:textColor="#FFFFFF"
-                    android:textSize="16sp" />
+                    android:textSize="15sp" />
 
                 <Button
                     android:id="@+id/btnGotIt"

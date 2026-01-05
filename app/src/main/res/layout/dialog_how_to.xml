@@ -60,137 +60,15 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="12dp"/>
 
-            <!-- Orange -->
-            <LinearLayout
+            <!-- Comprehensive Power-Ups List -->
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
-                <View
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/bg_button_rounded_orange" 
-                    android:layout_marginRight="12dp"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Extra Time (+5s)\nGrants 5 extra seconds"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:lineSpacingExtra="2dp"/>
-            </LinearLayout>
-
-            <!-- Gold -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
-                <View
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/bg_button_rounded_gold" 
-                    android:layout_marginRight="12dp"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Power Boost\nYour next shot is super strong"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:lineSpacingExtra="2dp"/>
-            </LinearLayout>
-
-            <!-- Purple -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
-                <View
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/bg_button_rounded_purple" 
-                    android:layout_marginRight="12dp"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Barrier Shield\nProtects you from damage"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:lineSpacingExtra="2dp"/>
-            </LinearLayout>
-
-            <!-- Cyan -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
-                <View
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/bg_button_rounded_cyan" 
-                    android:layout_marginRight="12dp"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Electric Ball\nChain destruction effect"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:lineSpacingExtra="2dp"/>
-            </LinearLayout>
-
-            <!-- Red -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
-                <View
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/bg_button_rounded_red"
-                    android:layout_marginRight="12dp"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Missile Ball\nHoming attack on targets"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:lineSpacingExtra="2dp"/>
-            </LinearLayout>
-
-            <!-- Green -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="20dp">
-                <View
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@drawable/bg_button_rounded_green"
-                    android:layout_marginRight="12dp"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Teleport Ball\nInstant jump to safety"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:lineSpacingExtra="2dp"/>
-            </LinearLayout>
+                android:text="Collect special colored balls/items:\n\n❤ Nano Repair: Restores Player HP.\n🟠 Time Orb: Adds +5 seconds.\n🟡 Power Boost: Super strong impact.\n🟣 Barrier: Protects from 1 Black Ball hit.\n⚡ Electric: Zaps multiple balls.\n🔴 Missile: Homing attack on enemies.\n🚀 Swarm: Launches multiple missiles.\n🟢 Teleport: Safe warping on impact.\n💠 Split Save: Splits to avoid death.\n⚫ Vortex: Sucks in nearby balls.\n👻 Ghost: Phases through obstacles.\n🎯 Laser: Shows perfect trajectory.\n⚗ Alchemy: Turns Black Balls to Gold.\n🌊 Repulsor: Pushes all balls away.\n🛸 UFO: Summons ally saucer.\n💥 Blast Wave: Explosive area clear."
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="20dp"/>
 
             <!-- Tips -->
             <TextView
