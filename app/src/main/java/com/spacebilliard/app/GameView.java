@@ -455,7 +455,7 @@ public class GameView extends SurfaceView implements Runnable {
         }
 
         // Yıldızları oluştur
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 50; i++) {
             stars.add(new Star());
         }
 
@@ -2967,18 +2967,9 @@ public class GameView extends SurfaceView implements Runnable {
                             if (now < electricModeEndTime) {
                                 int dmg = 40 + (upgradeHunter - 1) * 2;
                                 // CRITICAL LENS
-                                boolean isCrit = false;
-                                if (upgradeCrit > 1 && random.nextFloat() < ((upgradeCrit - 1) * 0.05f)) {
-                                    dmg *= 2;
-                                    isCrit = true;
-                                }
-                                currentBoss.hp -= dmg;
+                                // Default behavior: Kamikaze dive (handled in movement logic)
+
                                 triggerBossHitFeedback();
-                                if (isCrit) {
-                                    floatingTexts.add(
-                                            floatingTextPool.obtain("CRIT! -" + dmg, wBall.x, wBall.y - 80, Color.RED));
-                                    createImpactBurst(wBall.x, wBall.y, Color.RED);
-                                }
                                 // Quest 18: Heavy Hitter (5000 damage)
                                 if (questManager != null) {
                                     questManager.incrementQuestProgress(18, 40);
@@ -6403,6 +6394,8 @@ public class GameView extends SurfaceView implements Runnable {
         // Quantum Sight Logic (Bounce Calculation)
         // 1. Calculate max length
         float totalLen = (250 + (upgradeAim - 1) * 8) * ratio;
+        // ENABLE FOR ALL SPACES (Universal Fix)
+        // int space = ((level - 1) / 10) + 1; // Used for geometry
 
         // 2. Initial Ray
         float startDist = currentDraggedBall.radius * 1.5f;
@@ -6412,80 +6405,204 @@ public class GameView extends SurfaceView implements Runnable {
         float remainingLen = totalLen;
 
         int maxBounces = (upgradeSight >= 1) ? 1 : 0; // Quantum Sight Lvl 1+ gives 1 bounce
+        // if (upgradeSight >= 2) maxBounces = 2; // Potential upgrade?
+
+        int space = ((level - 1) / 10) + 1;
 
         for (int i = 0; i <= maxBounces; i++) {
-            // Check intersection with Table Boundary (Circle)
-            // Effective radius for center point is circleRadius - ball.radius
-            float effectiveRadius = circleRadius - currentDraggedBall.radius;
+            float intersectDist = Float.MAX_VALUE;
+            float bestNx = 0;
+            float bestNy = 0;
 
-            // Ray: P = O + t*D
             float dx = (float) Math.cos(currAngle);
             float dy = (float) Math.sin(currAngle);
 
-            // Quadratic for Intersection: |(O + tD) - Center|^2 = R^2
-            // Center is (centerX, centerY)
-            float fx = currX - centerX;
-            float fy = currY - centerY;
+            if (space == 1) {
+                // --- SPACE 1: CIRCLE ---
+                float effectiveRadius = circleRadius - currentDraggedBall.radius;
+                float fx = currX - centerX;
+                float fy = currY - centerY;
+                float a = 1.0f;
+                float b = 2 * (fx * dx + fy * dy);
+                float c = (fx * fx + fy * fy) - effectiveRadius * effectiveRadius;
+                float discriminant = b * b - 4 * a * c;
 
-            float a = dx * dx + dy * dy; // Should be 1
-            float b = 2 * (fx * dx + fy * dy);
-            float c = (fx * fx + fy * fy) - effectiveRadius * effectiveRadius;
+                if (discriminant >= 0) {
+                    float t1 = (-b - (float) Math.sqrt(discriminant)) / 2;
+                    float t2 = (-b + (float) Math.sqrt(discriminant)) / 2;
+                    if (t1 > 1.0f)
+                        intersectDist = t1;
+                    else if (t2 > 1.0f)
+                        intersectDist = t2;
+                }
 
-            float discriminant = b * b - 4 * a * c;
-            float intersectDist = Float.MAX_VALUE;
+                // Normal Calculation for Circle
+                if (intersectDist < Float.MAX_VALUE) {
+                    float hitX = currX + dx * intersectDist;
+                    float hitY = currY + dy * intersectDist;
+                    bestNx = (hitX - centerX) / effectiveRadius;
+                    bestNy = (hitY - centerY) / effectiveRadius;
+                }
 
-            if (discriminant >= 0) {
-                // Two solutions, we want the smallest positive t > epsilon
-                float t1 = (-b - (float) Math.sqrt(discriminant)) / (2 * a);
-                float t2 = (-b + (float) Math.sqrt(discriminant)) / (2 * a);
+            } else if (space == 2 || space == 3) {
+                // --- SPACE 2 (Square) & 3 (Rectangle) ---
+                float halfW = circleRadius;
+                float halfH = circleRadius;
+                if (space == 2) {
+                    // Space 2 Custom Top Margin (match collision logic)
+                    halfH = circleRadius; // Bottom is normal
+                    // Top is special: centerY - circleRadius * 0.85f
+                    // We handle as general box defined by L, T, R, B
+                } else {
+                    // Space 3 (Rect)
+                    halfH = circleRadius * 0.7f;
+                }
 
-                if (t1 > 1.0f)
-                    intersectDist = t1; // Use small threshold to avoid self-intersection
-                else if (t2 > 1.0f)
-                    intersectDist = t2;
+                float L = centerX - halfW + currentDraggedBall.radius;
+                float R = centerX + halfW - currentDraggedBall.radius;
+                float T = centerY - halfH + currentDraggedBall.radius;
+                if (space == 2)
+                    T = centerY - (circleRadius * 0.85f) + currentDraggedBall.radius;
+                float B = centerY + halfH - currentDraggedBall.radius;
+
+                // Ray-Box Intersection (Slab Method optimized for segments)
+                // Check 4 walls: Left, Right, Top, Bottom
+                // Left: x = L
+                if (dx != 0) {
+                    float tL = (L - currX) / dx;
+                    if (tL > 1.0f) {
+                        float yL = currY + dy * tL;
+                        if (yL >= T && yL <= B && tL < intersectDist) {
+                            intersectDist = tL;
+                            bestNx = 1;
+                            bestNy = 0;
+                        }
+                    }
+                    float tR = (R - currX) / dx;
+                    if (tR > 1.0f) {
+                        float yR = currY + dy * tR;
+                        if (yR >= T && yR <= B && tR < intersectDist) {
+                            intersectDist = tR;
+                            bestNx = -1;
+                            bestNy = 0;
+                        }
+                    }
+                }
+                // Top/Bottom: y = T / y = B
+                if (dy != 0) {
+                    float tT = (T - currY) / dy;
+                    if (tT > 1.0f) {
+                        float xT = currX + dx * tT;
+                        if (xT >= L && xT <= R && tT < intersectDist) {
+                            intersectDist = tT;
+                            bestNx = 0;
+                            bestNy = 1;
+                        }
+                    }
+                    float tB = (B - currY) / dy;
+                    if (tB > 1.0f) {
+                        float xB = currX + dx * tB;
+                        if (xB >= L && xB <= R && tB < intersectDist) {
+                            intersectDist = tB;
+                            bestNx = 0;
+                            bestNy = -1;
+                        }
+                    }
+                }
+
+            } else {
+                // --- POLYGONS (Pentagon, Hexagon, etc.) ---
+                int sides = 5;
+                float scale = 1.15f;
+                if (space == 5)
+                    sides = 6;
+                if (space == 6)
+                    sides = 3;
+                // Matches checkCollisions logic logic
+                if (space == 6)
+                    scale = 1.3f;
+
+                float polyR = circleRadius * scale - currentDraggedBall.radius; // Inner boundary approximation
+                // We need actual segments. Generate vertices.
+                float[] vx = new float[sides];
+                float[] vy = new float[sides];
+                double angleOffset = -Math.PI / 2;
+
+                for (int v = 0; v < sides; v++) {
+                    double theta = angleOffset + v * (2 * Math.PI / sides);
+                    vx[v] = centerX + (float) Math.cos(theta) * polyR;
+                    vy[v] = centerY + (float) Math.sin(theta) * polyR;
+                }
+
+                // Intersect Ray with each segment
+                for (int v = 0; v < sides; v++) {
+                    float x1 = vx[v];
+                    float y1 = vy[v];
+                    float x2 = vx[(v + 1) % sides];
+                    float y2 = vy[(v + 1) % sides];
+
+                    // Segment: P1 + u*(P2-P1)
+                    // Ray: curr + t*D
+                    // Solve for t and u
+                    float segDx = x2 - x1;
+                    float segDy = y2 - y1;
+                    float den = dx * segDy - dy * segDx;
+
+                    if (Math.abs(den) > 0.0001f) { // Not parallel
+                        float t = ((x1 - currX) * segDy - (y1 - currY) * segDx) / den;
+                        float u = ((x1 - currX) * dy - (y1 - currY) * dx) / den;
+
+                        if (t > 1.0f && u >= 0 && u <= 1.0f) {
+                            if (t < intersectDist) {
+                                intersectDist = t;
+                                // Normal is perpendicular to segment (-dy, dx) normalized
+                                float len = (float) Math.sqrt(segDx * segDx + segDy * segDy);
+                                bestNx = segDy / len; // Rotate -90 or +90?
+                                bestNy = -segDx / len;
+                                // Ensure normal points inward (towards center)
+                                // Dot product with vector to center should be positive
+                                float toCenX = centerX - (x1 + segDx * 0.5f);
+                                float toCenY = centerY - (y1 + segDy * 0.5f);
+                                if (bestNx * toCenX + bestNy * toCenY < 0) {
+                                    bestNx = -bestNx;
+                                    bestNy = -bestNy;
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
-            // Determine segment length
+            // --- COMMON RESULT HANDLING ---
             float segLen = Math.min(remainingLen, intersectDist);
-
             float endX = currX + dx * segLen;
             float endY = currY + dy * segLen;
 
-            // Draw Segment
-            // Only draw arrow if this is the very last segment AND we ran out of length
-            // (didn't hit wall)
-            // Or should we always draw arrow even if hitting wall?
-            // Usually arrow implies "this is where it goes".
             boolean isLastSubSegment = (i == maxBounces) || (segLen < intersectDist);
-
             drawTrajectorySegment(canvas, currX, currY, endX, endY, isLastSubSegment);
 
             remainingLen -= segLen;
 
-            if (remainingLen <= 0 || intersectDist > remainingLen + 1000) { // No length left or no intersection
+            if (remainingLen <= 0 || intersectDist > remainingLen + 1000) {
                 break;
             }
 
             // Update for next bounce
             currX = endX;
             currY = endY;
+            currAngle = shiftAngleByNormal(dx, dy, bestNx, bestNy);
 
-            // Reflect Angle
-            // Normal at collision (relative to center)
-            float nx = (endX - centerX) / effectiveRadius; // Normalized? effectiveRadius is length
-            float ny = (endY - centerY) / effectiveRadius;
-
-            // R = D - 2*(D.N)*N
-            float dot = dx * nx + dy * ny;
-            float rx = dx - 2 * dot * nx;
-            float ry = dy - 2 * dot * ny;
-
-            currAngle = (float) Math.atan2(ry, rx);
-
-            // Move start slightly off wall to avoid immediate re-intersection
-            currX += rx * 2.0f;
-            currY += ry * 2.0f;
+            // Push off wall
+            currX += bestNx * 2.0f;
+            currY += bestNy * 2.0f;
         }
+    }
+
+    private float shiftAngleByNormal(float dx, float dy, float nx, float ny) {
+        float dot = dx * nx + dy * ny;
+        float rx = dx - 2 * dot * nx;
+        float ry = dy - 2 * dot * ny;
+        return (float) Math.atan2(ry, rx);
     }
 
     private void drawTrajectorySegment(Canvas canvas, float startX, float startY, float vEndX, float vEndY,
@@ -10496,7 +10613,7 @@ public class GameView extends SurfaceView implements Runnable {
                         // Kamikaze strike!
                         createImpactBurst(x, y, Color.RED);
                         createParticles(x, y, Color.RED);
-                        currentBoss.hp -= 5; // 25 damage
+                        currentBoss.hp -= 10; // Set damage to 10
                         playSound(soundBlackExplosion);
 
                         // Bounce back after strike
@@ -10598,6 +10715,7 @@ public class GameView extends SurfaceView implements Runnable {
                                 java.util.ArrayList<Ball> toDestroy = new java.util.ArrayList<>();
                                 int hitCount = 0;
 
+                                // KAMIKAZE LOGIC: Check collision with balls
                                 for (Ball target : coloredBalls) {
                                     if (hitCount >= 3)
                                         break; // Max 3
@@ -10610,11 +10728,13 @@ public class GameView extends SurfaceView implements Runnable {
                                         // Minimal explosion effect for performance
                                         createImpactBurst(target.x, target.y, target.color);
                                         toDestroy.add(target);
-                                        score += 10;
+                                        // score += 10; // Optional: Points for kamikaze?
                                         playSound(soundBlackExplosion);
                                         hitCount++;
                                     }
                                 }
+
+                                // Player collision check removed (UFO attacks Boss)
 
                                 // Remove destroyed balls
                                 // Quest tracking for batch destruction
@@ -10644,46 +10764,9 @@ public class GameView extends SurfaceView implements Runnable {
             }
         }
 
-        void fireLaserAtBoss() {
-            if (currentBoss == null)
-                return;
+        // fireLaserAtBoss REMOVED
 
-            // Create laser beam effect
-            electricEffects.add(new ElectricEffect(x, y + 20, currentBoss.x, currentBoss.y, 1));
-            // Red Impact
-            createImpactBurst(currentBoss.x, currentBoss.y, Color.RED);
-            currentBoss.hp -= 100; // Damage
-            playSound(soundElectric);
-
-            // Visual feedback (Red Text)
-            floatingTexts.add(floatingTextPool.obtain("UFO LASER!", x, y - 40, Color.RED));
-        }
-
-        void fireLaserAtColoredBalls() {
-            if (coloredBalls == null || coloredBalls.isEmpty())
-                return;
-
-            // Find up to 2 nearest colored balls
-            java.util.ArrayList<Ball> targets = new java.util.ArrayList<>();
-            // Simple nearest search (optimize if needed)
-            coloredBalls.sort((b1, b2) -> Float.compare((float) Math.hypot(b1.x - x, b1.y - y),
-                    (float) Math.hypot(b2.x - x, b2.y - y)));
-
-            for (int i = 0; i < Math.min(2, coloredBalls.size()); i++) {
-                targets.add(coloredBalls.get(i));
-            }
-
-            for (Ball target : targets) {
-                // Red Laser Visual
-                electricEffects.add(new ElectricEffect(x, y + 20, target.x, target.y, 1));
-                createImpactBurst(target.x, target.y, Color.RED);
-
-                // Destroy Ball
-                coloredBalls.remove(target);
-                score += 10; // Bonus points
-                playSound(soundElectric);
-            }
-        }
+        // fireLaserAtColoredBalls REMOVED
 
         void draw(Canvas canvas) {
             // Draw UFO (color varies by attack mode)
