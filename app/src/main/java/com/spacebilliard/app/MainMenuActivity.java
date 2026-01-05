@@ -62,7 +62,35 @@ public class MainMenuActivity extends Activity {
             startActivity(new Intent(MainMenuActivity.this, HallOfFameActivity.class));
         });
 
-        findViewById(R.id.btnGuide).setOnClickListener(v -> {
+        View btnGuide = findViewById(R.id.btnGuide);
+
+        // Check if first launch
+        SharedPreferences prefs = getSharedPreferences("SpaceBilliard", MODE_PRIVATE);
+        boolean hasSeenGuide = prefs.getBoolean("hasSeenGuide", false);
+
+        // Start blinking animation if first time
+        if (!hasSeenGuide) {
+            android.animation.ObjectAnimator blinkAnim = android.animation.ObjectAnimator.ofFloat(
+                    btnGuide, "alpha", 1f, 0.3f, 1f);
+            blinkAnim.setDuration(1500);
+            blinkAnim.setRepeatCount(android.animation.ValueAnimator.INFINITE);
+            blinkAnim.start();
+
+            // Store reference to stop later
+            btnGuide.setTag(blinkAnim);
+        }
+
+        btnGuide.setOnClickListener(v -> {
+            // Stop blinking animation if running
+            Object animTag = v.getTag();
+            if (animTag instanceof android.animation.ObjectAnimator) {
+                ((android.animation.ObjectAnimator) animTag).cancel();
+                v.setAlpha(1f);
+            }
+
+            // Mark as seen
+            prefs.edit().putBoolean("hasSeenGuide", true).apply();
+
             startActivity(new Intent(MainMenuActivity.this, HowToPlayActivity.class));
         });
 
