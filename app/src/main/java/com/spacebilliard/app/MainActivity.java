@@ -318,6 +318,7 @@ public class MainActivity extends Activity {
             android.widget.Toast.makeText(this, "Ad not ready, please wait...", android.widget.Toast.LENGTH_SHORT)
                     .show();
             loadRewardedAd();
+            showGameOverScreen(); // Re-open Game Over screen so user isn't stuck
         }
     }
 }

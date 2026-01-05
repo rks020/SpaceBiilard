@@ -9110,18 +9110,15 @@ public class GameView extends SurfaceView implements Runnable {
             else if (hp < maxHp * 0.7)
                 phase = 2;
 
-            if (phase == 2) {
+            if (phase >= 2) {
                 // Solar Flare Ring every 5s
                 if (now - lastStateChangeTime > 3000 + random.nextInt(3000)) { // Random 3-6s
-                    doSolarFlare();
-                    lastStateChangeTime = now;
-                }
-            } else if (phase == 3) {
-                // Supernova - Erratic movement
-                x = hoverCenterX + (random.nextFloat() - 0.5f) * 20;
-                y = hoverCenterY + (random.nextFloat() - 0.5f) * 20;
-                if (now - lastStateChangeTime > 1500 + random.nextInt(1500)) { // Random 1.5-3s
-                    doSupernova();
+                    // Phase 3 Cumulative: 50/50 chance to do Supernova instead if Phase 3
+                    if (phase == 3 && random.nextFloat() < 0.5f) {
+                        doSupernova();
+                    } else {
+                        doSolarFlare();
+                    }
                     lastStateChangeTime = now;
                 }
             }
@@ -9164,11 +9161,11 @@ public class GameView extends SurfaceView implements Runnable {
                 x = centerX + (float) Math.cos(angle) * dist;
                 y = centerY + (float) Math.sin(angle) * dist;
 
-                // Attack based on Phase
-                if (phase == 3) {
+                // Attack based on Phase (Cumulative)
+                if (phase == 3 && random.nextFloat() < 0.5f) {
                     doNebulaBurst();
                 } else {
-                    shootMistShard();
+                    shootMistShard(); // Default Phase 2/1 attack
                 }
 
                 lastStateChangeTime = now;
@@ -9359,15 +9356,22 @@ public class GameView extends SurfaceView implements Runnable {
             }
 
             // Attacks
-            if (phase == 2 && now - lastStateChangeTime > 2000 + random.nextInt(2000)) { // Random 2-4s
-                shootPlasmaBullet();
-                shootPlasmaBullet();
-                shootPlasmaBullet();
-                lastStateChangeTime = now;
-            } else if (phase == 3 && now - lastStateChangeTime > 1000 + random.nextInt(1500)) { // Random 1-2.5s
-                // Homing Swarm
-                for (int i = 0; i < 3; i++)
+            // Attacks: Cumulative Phase 3
+            if (now - lastStateChangeTime > 2000 + random.nextInt(2000)) {
+                if (phase == 3 && random.nextFloat() < 0.5f) {
+                    // Homing Swarm (Phase 3)
+                    for (int i = 0; i < 3; i++)
+                        shootPlasmaBullet();
+                } else if (phase >= 2) {
+                    // Triple Shot (Phase 2)
                     shootPlasmaBullet();
+                    shootPlasmaBullet();
+                    shootPlasmaBullet();
+                } else {
+                    // Normally Phase 1 is move-only or handled elsewhere, but let's ensure action
+                    if (phase >= 1)
+                        shootPlasmaBullet();
+                }
                 lastStateChangeTime = now;
             }
         }
@@ -9487,11 +9491,12 @@ public class GameView extends SurfaceView implements Runnable {
             else if (hp < maxHp * 0.7)
                 phase = 2;
 
-            if (phase == 2 && now - lastAttackTime > 5000) {
-                doFracture();
-                lastAttackTime = now;
-            } else if (phase == 3 && now - lastAttackTime > 4000) {
-                doEarthquake();
+            if (now - lastAttackTime > 4000) {
+                if (phase == 3 && random.nextFloat() < 0.5f) {
+                    doEarthquake(); // Phase 3
+                } else if (phase >= 2) {
+                    doFracture(); // Phase 2
+                }
                 lastAttackTime = now;
             }
 
@@ -9583,13 +9588,14 @@ public class GameView extends SurfaceView implements Runnable {
             else if (hp < maxHp * 0.7)
                 phase = 2;
 
-            if (phase == 2 && now - lastAttackTime > 5000) {
-                // Phase 2: Echo Projectiles
-                doEchoShot();
-                lastAttackTime = now;
-            } else if (phase == 3 && now - lastAttackTime > 4000) {
-                // Phase 3: Temporal Storm
-                doTemporalStorm();
+            if (now - lastAttackTime > 4000) {
+                if (phase == 3 && random.nextFloat() < 0.5f) {
+                    // Phase 3: Temporal Storm
+                    doTemporalStorm();
+                } else if (phase >= 2) {
+                    // Phase 2: Echo Projectiles
+                    doEchoShot();
+                }
                 lastAttackTime = now;
             }
         }
@@ -9834,7 +9840,12 @@ public class GameView extends SurfaceView implements Runnable {
                 if (now - lastStateChangeTime > 2000 + random.nextInt(2000)) { // Random 2-4s delay
                     // Select next state based on HP - 3 PHASES
                     if (hp < maxHp * 0.3) {
-                        state = 2; // Phase 3: Burst (Crisis)
+                        // Phase 3: Randomly choose between Dash (1) and Burst (2)
+                        if (random.nextFloat() < 0.5f) {
+                            state = 1; // Dash (Phase 2 attack)
+                        } else {
+                            state = 2; // Phase 3: Burst (Phase 3 attack)
+                        }
                     } else if (hp < maxHp * 0.7) {
                         state = 1; // Phase 2: Dash (Aggressive)
                     } else {
