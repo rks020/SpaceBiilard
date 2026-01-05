@@ -294,7 +294,7 @@ public class LevelSelectActivity extends Activity {
                         }
 
                         bossInfoPanel.setThemeColor(Color.RED);
-                        bossInfoPanel.setData("BOSS WARNING\n" + bossName + "\nAppears at Stage 5/5", "", "",
+                        bossInfoPanel.setData("BOSS WARNING\nTarget: " + bossName + "\nAppears at Stage 5/5", "", "",
                                 "");
                         bossPanelOverlay.setVisibility(View.VISIBLE);
                     } else {

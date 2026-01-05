@@ -79,7 +79,9 @@ public class NeonInfoPanel extends View {
             // First split by explicit newlines
             String[] lines = fullText.split("\n");
 
-            float availableWidth = (getWidth() > 0 ? getWidth() : 360) - (60); // Approx width minus padding
+            float screenWidth = getResources().getDisplayMetrics().widthPixels;
+            float availableWidth = (getWidth() > 0 ? getWidth() : screenWidth * 0.8f)
+                    - (60 * getResources().getDisplayMetrics().density);
 
             for (String rawLine : lines) {
                 // Word wrap
