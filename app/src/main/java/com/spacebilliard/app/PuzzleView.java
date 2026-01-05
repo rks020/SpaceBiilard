@@ -350,7 +350,8 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 
     private void teleport(Ball b, float inAngle, float outAngle) {
         float outRad = (float) Math.toRadians(outAngle);
-        float spawnRadius = arenaRadius - b.radius - 20;
+        // Spawn deeper inside for smoother transition
+        float spawnRadius = arenaRadius - b.radius - 80;
 
         b.x = centerX + (float) Math.cos(outRad) * spawnRadius;
         b.y = centerY + (float) Math.sin(outRad) * spawnRadius;
@@ -455,15 +456,15 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             canvas.drawCircle(star.x, star.y, star.size, paint);
         }
 
-        // Arena with GLOW
+        // Arena with GLOW - Purple to avoid blue portal conflict
         paint.setStyle(Paint.Style.STROKE);
 
         paint.setStrokeWidth(20);
-        paint.setColor(Color.argb(50, 0, 229, 255));
+        paint.setColor(Color.argb(50, 200, 50, 255)); // Purple glow
         canvas.drawCircle(centerX, centerY, arenaRadius + 10, paint);
 
         paint.setStrokeWidth(12);
-        paint.setColor(Color.argb(255, 0, 229, 255));
+        paint.setColor(Color.argb(255, 200, 50, 255)); // Purple main
         canvas.drawCircle(centerX, centerY, arenaRadius, paint);
 
         // Particles
@@ -531,11 +532,15 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             paint.setTextSize(100);
             paint.setTextAlign(Paint.Align.CENTER);
             paint.setColor(Color.RED);
-            canvas.drawText("GAME OVER", centerX, centerY - 50, paint);
+            canvas.drawText("GAME OVER", centerX, centerY - 100, paint);
             paint.setTextSize(50);
-            canvas.drawText("Score: " + score, centerX, centerY + 50, paint);
+            canvas.drawText("Score: " + score, centerX, centerY - 20, paint);
 
-            drawNeonButton(canvas, centerX - 150, centerY + 100, 300, 100, "RESTART");
+            // RESTART button (red style)
+            drawRedButton(canvas, centerX - 150, centerY + 40, 300, 80, "RESTART");
+
+            // BACK button below restart
+            drawRedButton(canvas, centerX - 150, centerY + 140, 300, 80, "BACK");
         }
 
         // Balls with glow
@@ -633,29 +638,29 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         canvas.drawLine(x, y, x + 6, y, paint);
     }
 
-    private void drawNeonButton(Canvas canvas, float x, float y, float w, float h, String text) {
-        // Outer glow
+    private void drawRedButton(Canvas canvas, float x, float y, float w, float h, String text) {
+        // Outer glow (red)
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.argb(40, 0, 229, 255));
-        canvas.drawRoundRect(x - 8, y - 8, x + w + 8, y + h + 8, 15, 15, paint);
+        paint.setColor(Color.argb(40, 255, 50, 50));
+        canvas.drawRoundRect(x - 6, y - 6, x + w + 6, y + h + 6, 12, 12, paint);
 
-        // Background
-        paint.setColor(Color.argb(180, 20, 20, 40));
-        canvas.drawRoundRect(x, y, x + w, y + h, 10, 10, paint);
+        // Background (dark red)
+        paint.setColor(Color.argb(180, 80, 20, 20));
+        canvas.drawRoundRect(x, y, x + w, y + h, 8, 8, paint);
 
-        // Border
+        // Border (bright red)
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(3);
-        paint.setColor(Color.rgb(0, 229, 255));
-        canvas.drawRoundRect(x, y, x + w, y + h, 10, 10, paint);
+        paint.setColor(Color.rgb(255, 80, 80));
+        canvas.drawRoundRect(x, y, x + w, y + h, 8, 8, paint);
 
         // Text
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.rgb(0, 255, 255));
-        paint.setTextSize(45);
+        paint.setColor(Color.rgb(255, 220, 220));
+        paint.setTextSize(38);
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        canvas.drawText(text, x + w / 2, y + h / 2 + 15, paint);
+        canvas.drawText(text, x + w / 2, y + h / 2 + 12, paint);
         paint.setTypeface(android.graphics.Typeface.DEFAULT);
     }
 
@@ -691,13 +696,22 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             float tapY = event.getY();
 
             float buttonWidth = 300;
-            float buttonHeight = 100;
+            float buttonHeight = 80;
             float buttonX = centerX - buttonWidth / 2;
-            float buttonY = centerY + 100;
 
+            // Restart button
+            float restartY = centerY + 40;
             if (tapX >= buttonX && tapX <= buttonX + buttonWidth &&
-                    tapY >= buttonY && tapY <= buttonY + buttonHeight) {
+                    tapY >= restartY && tapY <= restartY + buttonHeight) {
                 loadLevel();
+                return true;
+            }
+
+            // Back button
+            float backY = centerY + 140;
+            if (tapX >= buttonX && tapX <= buttonX + buttonWidth &&
+                    tapY >= backY && tapY <= backY + buttonHeight) {
+                ((android.app.Activity) getContext()).finish();
                 return true;
             }
         }

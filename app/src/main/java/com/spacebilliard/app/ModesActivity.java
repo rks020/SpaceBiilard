@@ -26,16 +26,18 @@ public class ModesActivity extends Activity {
 
                 // Back Button (removed from top-left, will be placed below START)
 
-                // Info Panel
+                // Info Panel with larger size for description
                 NeonInfoPanel infoPanel = new NeonInfoPanel(this);
                 FrameLayout.LayoutParams panelParams = new FrameLayout.LayoutParams(
-                                (int) (300 * getResources().getDisplayMetrics().density),
-                                (int) (200 * getResources().getDisplayMetrics().density));
+                                (int) (340 * getResources().getDisplayMetrics().density),
+                                (int) (280 * getResources().getDisplayMetrics().density));
                 panelParams.gravity = Gravity.CENTER;
                 infoPanel.setLayoutParams(panelParams);
 
-                // Use multiline text logic in NeonInfoPanel
-                infoPanel.setData("WELCOME TO\nONE SHOT MODE", "", "", "");
+                // Use multiline mode with full description
+                infoPanel.setData(
+                                "WELCOME TO PORTAL MODE - Control both portals simultaneously to keep the ball alive. Master left-right brain coordination and hand-eye precision to achieve the highest combo!",
+                                "", "", "");
 
                 mainLayout.addView(infoPanel);
 
@@ -61,20 +63,7 @@ public class ModesActivity extends Activity {
                         mainLayout.removeAllViews();
                         mainLayout.addView(puzzleView);
 
-                        // Re-add back button in top-left for puzzle view (smaller)
-                        Button backBtnPuzzle = new Button(this);
-                        backBtnPuzzle.setText("BACK");
-                        backBtnPuzzle.setTextColor(Color.parseColor("#EAFBFF"));
-                        backBtnPuzzle.setBackground(getDrawable(R.drawable.btn_close_red));
-                        backBtnPuzzle.setTextSize(12);
-                        backBtnPuzzle.setTypeface(null, android.graphics.Typeface.BOLD);
-                        FrameLayout.LayoutParams backPuzzleParams = new FrameLayout.LayoutParams(
-                                        (int) (90 * getResources().getDisplayMetrics().density),
-                                        (int) (40 * getResources().getDisplayMetrics().density));
-                        backPuzzleParams.gravity = Gravity.TOP | Gravity.LEFT;
-                        backPuzzleParams.setMargins(15, 15, 0, 0);
-                        backBtnPuzzle.setOnClickListener(v2 -> finish());
-                        mainLayout.addView(backBtnPuzzle, backPuzzleParams);
+                        // Back button removed - now in game over screen
                 });
                 mainLayout.addView(startBtn, startParams);
 
