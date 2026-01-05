@@ -177,6 +177,12 @@ public class GameView extends SurfaceView implements Runnable {
     private float tutAnimOffset = 0;
     private boolean tutAnimGrowing = true;
 
+    // Info Panel Tutorial State
+    private boolean showInfoPanel = false;
+    private String infoPanelTitle = "";
+    private String infoPanelDesc = "";
+    private String infoPanelKey = "";
+
     // Sürükleme
     private boolean isDragging = false;
     private Ball draggedBall = null;
@@ -510,6 +516,7 @@ public class GameView extends SurfaceView implements Runnable {
     public void reloadPreferences() {
         loadUpgrades();
         SharedPreferences prefs = getContext().getSharedPreferences("SpaceBilliard", Context.MODE_PRIVATE);
+        activePassivePower = prefs.getString("activePassive", "none");
         selectedSkin = prefs.getString("selectedSkin", "default");
         selectedTrail = prefs.getString("selectedTrail", "none");
         selectedAura = prefs.getString("selectedAura", "none");
@@ -935,6 +942,11 @@ public class GameView extends SurfaceView implements Runnable {
         if (whiteBall != null) {
             whiteBall.radius = originalWhiteBallRadius;
             whiteBall.color = Color.WHITE;
+
+            // TUTORIAL TRIGGER FOR PASSIVE
+            if (!activePassivePower.equals("none")) {
+                triggerInfoPanelForPassive(activePassivePower);
+            }
         }
         blastWave = null;
 
@@ -1237,6 +1249,10 @@ public class GameView extends SurfaceView implements Runnable {
         lastTime = currentTime;
 
         // PAUSE GAME IF INFO SCREEN IS ACTIVE
+        if (showInfoPanel) {
+            return;
+        }
+
         if (System.currentTimeMillis() < levelInfoEndTime) {
             return;
         }
@@ -2130,6 +2146,8 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void activateSpecialPower(String type, Ball targetBall) {
+        triggerInfoPanelForBall(type);
+
         // Inventory Collection Logic
         // ONLY specific types go to inventory: magma, lightning, multiball, ufo,
         // repulsor, alchemy, swarm
@@ -2246,6 +2264,7 @@ public class GameView extends SurfaceView implements Runnable {
                     floatingTexts
                             .add(floatingTextPool.obtain("PASSIVE READY!", targetBall.x, targetBall.y, Color.GREEN));
                     createParticles(targetBall.x, targetBall.y, Color.GREEN);
+                    triggerInfoPanelForPassive("teleport"); // TRIGGER TUTORIAL
                 } else {
                     // Already charged
                     playSound(soundCoin);
@@ -2261,6 +2280,7 @@ public class GameView extends SurfaceView implements Runnable {
                     floatingTexts
                             .add(floatingTextPool.obtain("SPLIT READY!", targetBall.x, targetBall.y, Color.MAGENTA));
                     createParticles(targetBall.x, targetBall.y, Color.MAGENTA);
+                    triggerInfoPanelForPassive("split_save"); // TRIGGER TUTORIAL
                 } else {
                     // Already charged
                     playSound(soundCoin);
@@ -2275,6 +2295,7 @@ public class GameView extends SurfaceView implements Runnable {
                     playSound(soundPower);
                     floatingTexts.add(floatingTextPool.obtain("VORTEX READY!", targetBall.x, targetBall.y, Color.CYAN));
                     createParticles(targetBall.x, targetBall.y, Color.CYAN);
+                    triggerInfoPanelForPassive("vortex"); // TRIGGER TUTORIAL
                 } else {
                     // Already charged
                     playSound(soundCoin);
@@ -5622,6 +5643,50 @@ public class GameView extends SurfaceView implements Runnable {
         if (showHighScore) {
             drawHighScoreOverlay(canvas);
         }
+
+        // Info Panel Tutorial (Top Most)
+        if (showInfoPanel) {
+            drawInfoPanelTutorial(canvas);
+        }
+    }
+
+    private void triggerInfoPanelForPassive(String type) {
+        // User requested ONLY these types: TP, SS, VX
+        if (!type.equals("teleport") && !type.equals("split_save") && !type.equals("vortex")) {
+            return;
+        }
+
+        String key = "tut_generic_passive";
+        if (getContext().getSharedPreferences("SpaceBilliard", Context.MODE_PRIVATE).getBoolean(key, false)) {
+            return;
+        }
+
+        infoPanelKey = key;
+        infoPanelTitle = "PASSIVE ABILITY";
+        infoPanelDesc = "You have a Passive Ability equipped!\nIt works automatically when you hit a black ball.\nCheck the Shop for more details.";
+        showInfoPanel = true;
+    }
+
+    private void triggerInfoPanelForBall(String type) {
+        // Classify as Usable (Inventory) or Instant (Special Effect)
+        boolean isUsable = type.equals("magma") || type.equals("lightning") || type.equals("multiball")
+                || type.equals("ufo") || type.equals("repulsor") || type.equals("alchemy") || type.equals("swarm");
+
+        String key = isUsable ? "tut_generic_usable" : "tut_generic_instant";
+
+        if (getContext().getSharedPreferences("SpaceBilliard", Context.MODE_PRIVATE).getBoolean(key, false)) {
+            return;
+        }
+
+        infoPanelKey = key;
+        if (isUsable) {
+            infoPanelTitle = "ACTION BALL";
+            infoPanelDesc = "You collected a usable item!\nIt is stored in your inventory.\nTap the button to activate it.";
+        } else {
+            infoPanelTitle = "SPECIAL BALL";
+            infoPanelDesc = "You found a Special Ball!\nThese balls activate immediately\nwhen you hit them.";
+        }
+        showInfoPanel = true;
     }
 
     private void drawInstructionsOverlay(Canvas canvas) {
@@ -5767,6 +5832,89 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setTextSize(screenWidth * 0.05f); // Reduced
         paint.setColor(Color.rgb(255, 100, 100));
         canvas.drawText("TAP TO CLOSE", centerX, cy + panelHeight * 0.45f, paint);
+    }
+
+    private void drawInfoPanelTutorial(Canvas canvas) {
+        // Yarı saydam arka plan
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.BLACK);
+        paint.setAlpha(200);
+        canvas.drawRect(0, 0, screenWidth, screenHeight, paint);
+        paint.setAlpha(255);
+
+        // Ana panel
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.argb(230, 10, 10, 30));
+
+        float panelWidth = screenWidth * 0.8f;
+        float panelHeight = screenHeight * 0.5f; // Kompakt
+        float py = centerY;
+
+        canvas.drawRoundRect(centerX - panelWidth / 2, py - panelHeight / 2, centerX + panelWidth / 2,
+                py + panelHeight / 2, 40, 40, paint);
+
+        // Kenarlık (Pulsing Green)
+        long time = System.currentTimeMillis() % 1000;
+        float alpha = 0.5f + 0.5f * (float) Math.sin(time * 0.006f);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(5);
+        paint.setColor(Color.GREEN);
+        paint.setAlpha((int) (255 * alpha));
+        paint.setShadowLayer(20, 0, 0, Color.GREEN);
+        canvas.drawRoundRect(centerX - panelWidth / 2, py - panelHeight / 2, centerX + panelWidth / 2,
+                py + panelHeight / 2, 40, 40, paint);
+        paint.clearShadowLayer();
+        paint.setAlpha(255);
+
+        // Başlık
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(screenWidth * 0.08f);
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setColor(Color.GREEN);
+        paint.setShadowLayer(10, 0, 0, Color.GREEN);
+        canvas.drawText(infoPanelTitle, centerX, py - panelHeight * 0.3f, paint);
+        paint.clearShadowLayer();
+
+        // Açıklama (Multi-line)
+        paint.setTextSize(screenWidth * 0.045f);
+        paint.setColor(Color.WHITE);
+
+        ArrayList<String> lines = splitStringByWidth(infoPanelDesc, panelWidth * 0.9f, paint);
+        float textY = py - panelHeight * 0.1f;
+        float lineHeight = paint.getTextSize() * 1.4f;
+
+        for (String line : lines) {
+            canvas.drawText(line, centerX, textY, paint);
+            textY += lineHeight;
+        }
+
+        // Tap to Continue
+        paint.setTextSize(screenWidth * 0.05f);
+        paint.setColor(Color.GRAY);
+        canvas.drawText("TAP TO CONTINUE", centerX, py + panelHeight * 0.4f, paint);
+    }
+
+    private ArrayList<String> splitStringByWidth(String text, float width, Paint p) {
+        ArrayList<String> result = new ArrayList<>();
+        if (text == null)
+            return result;
+
+        String[] lines = text.split("\n");
+        for (String paragraph : lines) {
+            String[] words = paragraph.split(" ");
+            StringBuilder currentLine = new StringBuilder();
+
+            for (String word : words) {
+                if (p.measureText(currentLine.toString() + word) < width) {
+                    currentLine.append(word).append(" ");
+                } else {
+                    result.add(currentLine.toString());
+                    currentLine = new StringBuilder(word + " ");
+                }
+            }
+            result.add(currentLine.toString());
+        }
+        return result;
     }
 
     private void drawNeonButton(Canvas canvas, String text, float cx, float cy, float w, float h, int color) {
@@ -5997,6 +6145,18 @@ public class GameView extends SurfaceView implements Runnable {
                     showTutorial = false;
                     SharedPreferences prefs = getContext().getSharedPreferences("SpaceBilliard", Context.MODE_PRIVATE);
                     prefs.edit().putBoolean("tutorial_shown", true).apply();
+                }
+
+                // Info Panel Tutorial Dismiss
+                if (showInfoPanel) {
+                    showInfoPanel = false;
+                    isPlaying = true;
+                    // Save as shown
+                    getContext().getSharedPreferences("SpaceBilliard", Context.MODE_PRIVATE)
+                            .edit()
+                            .putBoolean(infoPanelKey, true)
+                            .apply();
+                    return true;
                 }
 
                 // Overlay kapatma
@@ -7521,6 +7681,14 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void drawInventory(Canvas canvas) {
+        // Draw Label "INVENTORY" above the first slot
+        paint.setColor(Color.WHITE);
+        paint.setTextSize(inventorySlotSize * 0.3f);
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        canvas.drawText("INVENTORY", inventoryX, inventoryY - inventorySlotSize * 0.75f, paint);
+        paint.setTypeface(Typeface.DEFAULT);
+
         for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
             float slotX = inventoryX + i * (inventorySlotSize * 1.2f);
 
