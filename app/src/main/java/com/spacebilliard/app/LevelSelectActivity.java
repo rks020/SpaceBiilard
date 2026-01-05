@@ -12,9 +12,12 @@ import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
+
+import com.spacebilliard.app.ui.NeonInfoPanel;
 
 public class LevelSelectActivity extends Activity {
 
@@ -29,6 +32,12 @@ public class LevelSelectActivity extends Activity {
     private int soundLevelSelector;
     private int soundHomeButton;
     private int soundMenuSelect;
+
+    // Boss Panel UI
+    private RelativeLayout bossPanelOverlay;
+    private NeonInfoPanel bossInfoPanel;
+    private Button btnStartBoss;
+    private int pendingBossLevel = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +70,28 @@ public class LevelSelectActivity extends Activity {
         ImageButton btnPrevSpace = findViewById(R.id.btnPrevSpace);
         ImageButton btnNextSpace = findViewById(R.id.btnNextSpace);
         Button btnBack = findViewById(R.id.btnReturn);
+
+        // Initialize Boss Panel
+        bossPanelOverlay = findViewById(R.id.bossPanelOverlay);
+        bossInfoPanel = findViewById(R.id.bossInfoPanel);
+        btnStartBoss = findViewById(R.id.btnStartBoss);
+
+        // Hide overlay on touch outside
+        bossPanelOverlay.setOnClickListener(v -> {
+            bossPanelOverlay.setVisibility(View.GONE);
+            pendingBossLevel = -1;
+        });
+
+        // Start Boss Level
+        btnStartBoss.setOnClickListener(v -> {
+            if (pendingBossLevel != -1) {
+                // Play Select Sound
+                soundPool.play(soundMenuSelect, 1f, 1f, 0, 0, 1f);
+                openLevel(pendingBossLevel);
+                bossPanelOverlay.setVisibility(View.GONE);
+                pendingBossLevel = -1;
+            }
+        });
 
         btnBack.setOnClickListener(v -> {
             // Play Home Button Sound
@@ -221,7 +252,55 @@ public class LevelSelectActivity extends Activity {
                 itemView.setOnClickListener(v -> {
                     // Play Select Sound
                     soundPool.play(soundMenuSelect, 1f, 1f, 0, 0, 1f);
-                    openLevel(levelNum);
+
+                    if (isBoss) {
+                        // Show Boss Info Panel
+                        pendingBossLevel = levelNum;
+
+                        // Determine Boss Name (Simple logic based on GameView)
+                        String bossName = "UNKNOWN";
+                        int spaceIndex = (int) Math.ceil(levelNum / 10.0);
+                        switch (spaceIndex) {
+                            case 1:
+                                bossName = "VOID TITAN";
+                                break;
+                            case 2:
+                                bossName = "LUNAR CONSTRUCT";
+                                break;
+                            case 3:
+                                bossName = "SOLARION";
+                                break;
+                            case 4:
+                                bossName = "NEBULON";
+                                break;
+                            case 5:
+                                bossName = "GRAVITON";
+                                break;
+                            case 6:
+                                bossName = "MECHA-CORE";
+                                break;
+                            case 7:
+                                bossName = "CRYO-STASIS";
+                                break;
+                            case 8:
+                                bossName = "GEO-BREAKER";
+                                break;
+                            case 9:
+                                bossName = "BIO-HAZARD";
+                                break;
+                            case 10:
+                                bossName = "CHRONO-SHIFTER";
+                                break;
+                        }
+
+                        bossInfoPanel.setThemeColor(Color.RED);
+                        bossInfoPanel.setData("BOSS WARNING\nTarget: " + bossName + "\nAppears at Stage 5/5", "", "",
+                                "");
+                        bossPanelOverlay.setVisibility(View.VISIBLE);
+                    } else {
+                        // Normal Level Start
+                        openLevel(levelNum);
+                    }
                 });
             }
 

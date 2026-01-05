@@ -113,4 +113,35 @@
         android:layout_marginBottom="24dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"/>
+    <!-- Boss Info Overlay -->
+    <RelativeLayout
+        android:id="@+id/bossPanelOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#AB000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        android:padding="20dp">
+
+        <com.spacebilliard.app.ui.NeonInfoPanel
+            android:id="@+id/bossInfoPanel"
+            android:layout_width="300dp"
+            android:layout_height="200dp"
+            android:layout_centerInParent="true"/>
+
+        <Button
+            android:id="@+id/btnStartBoss"
+            android:layout_width="160dp"
+            android:layout_height="60dp"
+            android:layout_below="@id/bossInfoPanel"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="START"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/btn_close_red"/>
+
+    </RelativeLayout>
 </RelativeLayout>

@@ -1176,6 +1176,8 @@ int id beginning 0x7f090056
 int id bestChoice 0x7f090057
 int id bgLevel 0x7f090058
 int id blocking 0x7f090059
+int id bossInfoPanel 0x7f0901a3
+int id bossPanelOverlay 0x7f0901a4
 int id bottom 0x7f09005a
 int id bottomBar 0x7f09005b
 int id bounce 0x7f09005c
@@ -1215,6 +1217,7 @@ int id btnRematch 0x7f09007d
 int id btnReset 0x7f09007e
 int id btnReturn 0x7f09007f
 int id btnRevive 0x7f090080
+int id btnStartBoss 0x7f0901a5
 int id buttonPanel 0x7f090081
 int id cache_measures 0x7f090082
 int id callMeasure 0x7f090083
