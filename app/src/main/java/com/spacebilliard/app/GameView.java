@@ -2953,6 +2953,16 @@ public class GameView extends SurfaceView implements Runnable {
                     } else {
                         // Don't deal damage if frozen (prevents damage loop with CRYO-STASIS)
                         if (!isFrozen) {
+                            // MINIMUM VELOCITY CHECK
+                            float impactSpeed = (float) Math.sqrt(wBall.vx * wBall.vx + wBall.vy * wBall.vy);
+                            if (impactSpeed < 5.0f) {
+                                if (random.nextFloat() < 0.1f) { // Throttle text
+                                    floatingTexts.add(
+                                            floatingTextPool.obtain("TOO WEAK", wBall.x, wBall.y - 50, Color.LTGRAY));
+                                }
+                                continue; // Skip damage
+                            }
+
                             long now = System.currentTimeMillis();
                             if (now < electricModeEndTime) {
                                 int dmg = 40 + (upgradeHunter - 1) * 2;
@@ -9575,7 +9585,7 @@ public class GameView extends SurfaceView implements Runnable {
             proj.vx = (float) Math.cos(angle) * speed;
             proj.vy = (float) Math.sin(angle) * speed;
             bossProjectiles.add(proj);
-            playSound(soundBossIce);
+            playSound(soundBossShoot1);
         }
 
         void doFreezingBreath() {
@@ -9589,7 +9599,7 @@ public class GameView extends SurfaceView implements Runnable {
                 proj.vy = (float) Math.sin(angle) * 15;
                 bossProjectiles.add(proj);
             }
-            playSound(soundBossIce);
+            playSound(soundBossShoot1);
         }
 
         void shootRockThrow() {
