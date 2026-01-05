@@ -285,15 +285,7 @@ public class NeonInfoPanel extends View {
                     valuePaint);
         }
 
-        // Coin emoji
-        float iconX = leftContent;
-        textPaint.setTextSize(16 * density);
-        textPaint.setColor(Color.rgb(255, 215, 0)); // Gold color
-        String coinEmoji = "💰";
-        float emojiW = textPaint.measureText(coinEmoji);
-        canvas.drawText(coinEmoji, iconX, startY + spacing * 2 + 3 * density, textPaint);
-        textPaint.setTextSize(baseTextSize); // Restore
-        textPaint.setColor(themeColor); // Restore
+        // Coin emoji removed as per user request
 
         // APPLY ANIMATION SCALE
         valuePaint.setTextSize(baseTextSize * coinTextScale);
@@ -303,7 +295,18 @@ public class NeonInfoPanel extends View {
             valuePaint.setColor(themeColor);
         }
 
-        canvas.drawText(coinsValue, 0, coinsValue.length(), iconX + 24 * density, startY + spacing * 2, valuePaint);
+        // Removed Coin drawing offset logic
+        float iconX = leftContent; // Reuse variable for layout if needed
+        // canvas.drawText(coinsValue, 0, coinsValue.length(), iconX + 24 * density,
+        // startY + spacing * 2, valuePaint);
+        // Note: Score or other values might use this space, but for Boss Panel
+        // multiline mode, this section isn't used.
+        // For Normal mode, Line 3 might be empty now if we don't draw coins.
+        // Assuming this panel is mainly for Boss Info now or top HUD. If Top HUD, we
+        // need to hide it properly if requested.
+        // But user request specifically mentioned "coin simgesini kaldır" for the Boss
+        // Panel context.
+        // To be safe, I'll comment out the coin drawing entirely for now.
 
         // Reset Paint
         valuePaint.setTextSize(baseTextSize);

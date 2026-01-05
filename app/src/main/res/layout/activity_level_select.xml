@@ -126,8 +126,8 @@
 
         <com.spacebilliard.app.ui.NeonInfoPanel
             android:id="@+id/bossInfoPanel"
-            android:layout_width="300dp"
-            android:layout_height="200dp"
+            android:layout_width="380dp"
+            android:layout_height="220dp"
             android:layout_centerInParent="true"/>
 
         <Button
