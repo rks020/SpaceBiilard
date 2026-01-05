@@ -116,6 +116,10 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
 
                     // Trigger UI refresh if needed by notifying item changed
                     notifyItemChanged(position);
+
+                    if (rewardClaimedListener != null) {
+                        rewardClaimedListener.onRewardClaimed();
+                    }
                 });
             } else {
                 holder.btnClaimReward.setVisibility(View.GONE);
@@ -139,6 +143,17 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
     public void updateQuests(List<Quest> newQuests) {
         this.quests = newQuests;
         notifyDataSetChanged();
+    }
+
+    // Listener Interface
+    public interface OnRewardClaimedListener {
+        void onRewardClaimed();
+    }
+
+    private OnRewardClaimedListener rewardClaimedListener;
+
+    public void setOnRewardClaimedListener(OnRewardClaimedListener listener) {
+        this.rewardClaimedListener = listener;
     }
 
     static class QuestViewHolder extends RecyclerView.ViewHolder {

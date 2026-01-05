@@ -22,6 +22,7 @@ public class QuestsActivity extends AppCompatActivity {
     // Sound
     private SoundPool soundPool;
     private int soundHomeButton;
+    private int soundCoinCollect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +58,12 @@ public class QuestsActivity extends AppCompatActivity {
 
         // Load Home Button Sound
         soundHomeButton = soundPool.load(this, R.raw.homebutton, 1);
+        soundCoinCollect = soundPool.load(this, R.raw.money_collect, 1);
+
+        // Set listener for reward sound
+        adapter.setOnRewardClaimedListener(() -> {
+            soundPool.play(soundCoinCollect, 1f, 1f, 0, 0, 1f);
+        });
 
         // Back button
         btnBack.setOnClickListener(v -> {
