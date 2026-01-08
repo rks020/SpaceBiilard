@@ -857,6 +857,16 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void initLevel(int lv) {
+        // FAILSAFE: Level 100 Cap
+        if (lv > 100) {
+            lv = 100;
+            level = 100;
+            gameCompleted = true; // Force Game Completed
+            gameStarted = false;
+            playSound(soundPower);
+            return;
+        }
+
         level = lv;
 
         // Level Info Screen logic - ONLY SHOW ON STAGE 1 & START OF SPACE (Level 1, 11,
@@ -1315,6 +1325,11 @@ public class GameView extends SurfaceView implements Runnable {
         if (!gameStarted || gameOver)
             return;
 
+        if (gameCompleted) {
+            drawGameCompleted(canvas);
+            return;
+        }
+
         // QUEST TRACKING - Survival/Time-Based Quests
         if (questManager != null && currentBoss == null) {
             // Quest 36: Endurance - Survive 20 minutes in one level
@@ -1635,6 +1650,16 @@ public class GameView extends SurfaceView implements Runnable {
                 // Show "LEVEL COMPLETE" text
                 floatingTexts.add(floatingTextPool.obtain("LEVEL COMPLETE!", centerX, centerY - 100, Color.GREEN));
                 playSound(soundPower); // Victory sound
+
+                // Check for Game Completion (Level 100 finished)
+                if (level >= 100) {
+                    gameCompleted = true;
+                    levelCompleted = false; // Stop the loop
+                    showStageCleared = false; // Wait for final screen
+                    gameStarted = false; // Stop game loop logic
+                    playSound(soundPower); // Victory sound
+                    return; // STOP EXECUTION HERE
+                }
 
                 level++; // Go to next level
                 // Quest 21-23, 30: Reach specific levels
@@ -3009,7 +3034,21 @@ public class GameView extends SurfaceView implements Runnable {
                                 }
                             } else {
                                 int dmg = 25 + (upgradeHunter - 1) * 2;
-                                currentBoss.hp -= dmg;
+
+                                // HP GATE for Chrono-Shifter (Level 100)
+                                if (currentBoss.name.equals("CHRONO-SHIFTER") && currentBoss.phase < 5) {
+                                    int gateHp = (int) (currentBoss.maxHp * 0.2f);
+                                    if (currentBoss.hp - dmg <= gateHp) {
+                                        currentBoss.hp = 3000; // Force exact 3000 HP for Final Phase
+                                        // The update() loop will handle phase transition
+                                    } else {
+                                        currentBoss.hp -= dmg;
+                                    }
+                                } else {
+                                    currentBoss.hp -= dmg;
+                                    if (currentBoss.hp < 0)
+                                        currentBoss.hp = 0;
+                                }
                                 triggerBossHitFeedback();
                                 // Quest 18: Heavy Hitter
                                 if (questManager != null) {
@@ -6049,6 +6088,88 @@ public class GameView extends SurfaceView implements Runnable {
         return Color.rgb(r, g, b);
     }
 
+    private void drawGameCompleted(Canvas canvas) {
+        // Draw Animated Background
+        paint.setColor(Color.BLACK);
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawRect(0, 0, screenWidth, screenHeight, paint);
+
+        // Animated Nebula Effect
+        long time = System.currentTimeMillis();
+        for (int i = 0; i < 50; i++) {
+            float x = (float) ((Math.sin(time * 0.0001 + i) + 1) * screenWidth * 0.5);
+            float y = (float) ((Math.cos(time * 0.0002 + i * 0.5) + 1) * screenHeight * 0.5);
+            float r = (float) (20 + Math.sin(time * 0.001 + i) * 10);
+            paint.setColor(Color.rgb(random.nextInt(100), random.nextInt(50), 100 + random.nextInt(155)));
+            paint.setAlpha(100);
+            canvas.drawCircle(x, y, r, paint);
+        }
+
+        // Title
+        paint.setColor(Color.rgb(255, 215, 0)); // Gold
+        paint.setTextSize(screenWidth * 0.09f);
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setFakeBoldText(true);
+        paint.setShadowLayer(20, 0, 0, Color.YELLOW);
+        canvas.drawText("YOU MASTERED", centerX, centerY - screenHeight * 0.2f, paint);
+        canvas.drawText("THE UNIVERSE!", centerX, centerY - screenHeight * 0.12f, paint);
+        paint.clearShadowLayer();
+
+        // Message
+        paint.setColor(Color.WHITE);
+        paint.setTextSize(screenWidth * 0.05f);
+        paint.setFakeBoldText(false);
+        canvas.drawText("You have completed all 100 levels.", centerX, centerY + screenHeight * 0.05f, paint);
+        canvas.drawText("You are the ultimate champion!", centerX, centerY + screenHeight * 0.1f, paint);
+
+        // RETURN TO HQ Button (Custom Style)
+        float btnW = screenWidth * 0.5f;
+        float btnH = screenHeight * 0.07f;
+        float btnY = screenHeight * 0.85f;
+        drawHQButton(canvas, "RETURN TO HQ", centerX, btnY, btnW, btnH);
+    }
+
+    private void drawHQButton(Canvas canvas, String text, float cx, float cy, float w, float h) {
+        float density = getResources().getDisplayMetrics().density;
+        android.graphics.RectF btnRect = new android.graphics.RectF(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2);
+        float radius = 28 * density;
+
+        // 1. Glow / Shadow
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.argb(51, 34, 255, 217)); // #3322FFD9
+        canvas.drawRoundRect(btnRect.left - 4, btnRect.top - 4, btnRect.right + 4, btnRect.bottom + 4, radius,
+                radius, paint);
+
+        // 2. Main Gradient Body
+        paint.setStyle(Paint.Style.FILL);
+        // #1A1F2E to #0E1220 (Dark Blue/Grey)
+        int startColor = Color.rgb(26, 31, 46);
+        int endColor = Color.rgb(14, 18, 32);
+        android.graphics.Shader gradient = new android.graphics.LinearGradient(
+                0, btnRect.top, 0, btnRect.bottom,
+                startColor, endColor, android.graphics.Shader.TileMode.CLAMP);
+        paint.setShader(gradient);
+        canvas.drawRoundRect(btnRect, radius, radius, paint);
+        paint.setShader(null);
+
+        // 3. Stroke (Gold/Yellow)
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(1.5f * density);
+        paint.setColor(Color.rgb(255, 215, 106)); // #FFD76A
+        canvas.drawRoundRect(btnRect, radius, radius, paint);
+
+        // 4. Text
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.WHITE);
+        paint.setTextSize(h * 0.4f);
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setFakeBoldText(true);
+        Paint.FontMetrics fm = paint.getFontMetrics();
+        float textY = cy - (fm.descent + fm.ascent) / 2;
+        canvas.drawText(text, cx, textY, paint);
+        paint.setFakeBoldText(false);
+    }
+
     private String getRank() {
         if (comboCounter >= 11)
             return "SS";
@@ -6239,35 +6360,52 @@ public class GameView extends SurfaceView implements Runnable {
                     return true;
                 }
 
-                if (!gameStarted) {
+                if (gameCompleted) {
+                    float btnW = screenWidth * 0.5f;
+                    float btnH = screenHeight * 0.07f;
+                    float btnY = screenHeight * 0.85f; // Position for OK button
+
+                    // OK Button (Rect check)
+                    if (Math.abs(touchX - centerX) < btnW / 2 && Math.abs(touchY - btnY) < btnH / 2) {
+                        gameCompleted = false;
+                        gameStarted = false;
+                        playSound(soundHomeButton);
+                        resetToMainMenu(); // Use helper method
+                        return true;
+                    }
+                    return true; // Consume touch if on completion screen
+                } else if (!gameStarted) {
                     // Main Menu touches are now handled by NeonMainMenuPanel in MainActivity
                     return true;
                 } else if (gameOver) {
                     // Game Over touches are now handled by NeonGameOverPanel in MainActivity
                     return true;
 
-                } else if (gameCompleted) {
-                    float btnW = screenWidth * 0.5f;
-                    float btnH = screenHeight * 0.07f;
-                    float btnY = screenHeight * 0.75f;
+                } else if (showStageCleared) {
+                    // Check for tap to continue
+                    if (System.currentTimeMillis() - stageClearedTime > 1000) {
+                        showStageCleared = false;
+                        levelCompleted = false;
 
-                    if (Math.abs(touchX - centerX) < btnW / 2 && Math.abs(touchY - btnY) < btnH / 2) {
-                        gameCompleted = false;
-                        gameStarted = false;
-                        score = 0;
-                        initLevel(1);
-                        maxUnlockedLevel = Math.min(maxUnlockedLevel, 100); // just safety
-                        gameCompleted = false;
-                        gameStarted = false;
-                        score = 0;
-                        initLevel(1);
-                        maxUnlockedLevel = Math.min(maxUnlockedLevel, 100); // just safety
-                        updateUIPanels();
-                        playSound(soundLaunch);
+                        if (level >= 100) {
+                            // GAME COMPLETED
+                            gameCompleted = true;
+                            gameStarted = false; // Stop game loop logic
+                            playSound(soundPower); // Victory sound
+                        } else {
+                            // Next Level
+                            level++;
+                            if (level > maxUnlockedLevel) {
+                                maxUnlockedLevel = level;
+                                saveProgress();
+                            }
+                            initLevel(level);
+                        }
                         return true;
                     }
                 } else {
                     int action = event.getAction();
+
                     // Check In-Game Menu Icon touch only when game is running and not paused/over
                     float density = getResources().getDisplayMetrics().density;
                     float iconSize = screenWidth * 0.1f;
@@ -6490,6 +6628,7 @@ public class GameView extends SurfaceView implements Runnable {
         }
 
         return true;
+
     }
 
     public void pause() {
@@ -7089,7 +7228,12 @@ public class GameView extends SurfaceView implements Runnable {
 
         // Premium Navigation Arrows (Below the grid)
         float arrowRadius = screenWidth * 0.08f;
-        float arrowY = gridEndY + arrowRadius + 30 * getResources().getDisplayMetrics().density;
+        // Animation: Pulse (Grow/Shrink)
+        // More visible pulse: +/- 15%, faster speed
+        float pulse = 1.0f + 0.15f * (float) Math.sin(System.currentTimeMillis() * 0.008);
+        arrowRadius *= pulse;
+
+        float arrowY = gridEndY + screenWidth * 0.08f + 30 * getResources().getDisplayMetrics().density;
 
         // Left Arrow (if not on first page)
         if (selectorPage > 1) {
@@ -7538,53 +7682,6 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setAlpha(255);
         canvas.drawText(text, cx, cy + height * 0.18f, paint);
         // paint.clearShadowLayer();
-    }
-
-    private void drawGameCompleted(Canvas canvas) {
-        // Darken background
-        canvas.drawColor(Color.argb(200, 0, 0, 0));
-
-        float centerX = screenWidth / 2f;
-        float centerY = screenHeight / 2f;
-
-        // Pulsing Text Effect
-        float pulse = (float) (Math.sin(System.currentTimeMillis() * 0.005) * 0.1 + 1.0);
-
-        paint.setTextAlign(Paint.Align.CENTER);
-        paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-
-        // "CONGRATULATIONS"
-        paint.setTextSize(screenWidth * 0.10f * pulse); // Reduced from 0.12f
-        paint.setColor(Color.rgb(255, 215, 0)); // Gold
-        paint.setShadowLayer(20, 0, 0, Color.RED);
-        canvas.drawText("CONGRATULATIONS", centerX, centerY - screenHeight * 0.1f, paint);
-        paint.clearShadowLayer();
-
-        // "YOU MASTERED THE GALAXY"
-        paint.setTextSize(screenWidth * 0.05f);
-        paint.setColor(Color.WHITE);
-        canvas.drawText("YOU MASTERED THE GALAXY", centerX, centerY + screenHeight * 0.05f, paint);
-
-        // "Space 10 - Level 100 Completed"
-        paint.setTextSize(screenWidth * 0.04f);
-        paint.setColor(Color.CYAN);
-        canvas.drawText("Level 100 Completed", centerX, centerY + screenHeight * 0.12f, paint);
-
-        // Restart info ?
-        // Restart info ?
-        /*
-         * paint.setTextSize(screenWidth * 0.035f);
-         * paint.setColor(Color.LTGRAY);
-         * paint.setTypeface(Typeface.DEFAULT);
-         * canvas.drawText("(Restart App to Play Again)", centerX, centerY +
-         * screenHeight * 0.25f, paint);
-         */
-
-        // BACK TO MENU Button
-        float btnW = screenWidth * 0.5f;
-        float btnH = screenHeight * 0.07f;
-        float btnY = screenHeight * 0.75f;
-        drawNeonButton(canvas, "BACK TO MENU", centerX, btnY, btnW, btnH, Color.rgb(255, 100, 100));
     }
 
     public void startGameWithLevel(int levelNum) {
@@ -9136,6 +9233,7 @@ public class GameView extends SurfaceView implements Runnable {
         long lastStateChangeTime;
         long lastEventHorizonTime = 0; // New timer for periodic abilities
         int state = 0; // 0: Idle/Shoot, 1: Dash, 2: Burst
+        int phase = 1; // 1-5 Tracks Boss Phase
         long lastAttackTime;
         float dashTargetX, dashTargetY;
         boolean dashing = false;
@@ -9730,41 +9828,141 @@ public class GameView extends SurfaceView implements Runnable {
         }
 
         private void updateChronoShifter(long now) {
-            // Ticks: Teleports short distances every second (Tick-Tock)
-            if (now - lastStateChangeTime > 800 + random.nextInt(700)) { // Random 0.8-1.5s
-                float angle = (float) Math.atan2(y - centerY, x - centerX);
-                angle += (Math.PI / 6); // Move 30 degrees (1 hour on clock)
-                float dist = circleRadius * 0.6f;
+            // Calculations Phase based on HP percentage
+            float hpPercent = (float) hp / maxHp;
 
+            // Phase Transition Logic (prevent skipping straight to death)
+            // If Phase < 5, don't let HP drop below 20%
+            if (hpPercent <= 0.2f && phase < 5) {
+                phase = 5; // Force phase 5 start
+                hp = (int) (maxHp * 0.2f); // Set to exact start of Phase 5
+                createImpactBurst(x, y, Color.RED);
+                playSound(soundBossSummon);
+                floatingTexts.add(floatingTextPool.obtain("THE END IS NEAR!", x, y - 100, Color.RED));
+            } else if (hpPercent <= 0.4f && phase < 4) {
+                phase = 4;
+            } else if (hpPercent <= 0.6f && phase < 3) {
+                phase = 3;
+            } else if (hpPercent <= 0.8f && phase < 2) {
+                phase = 2;
+            }
+
+            // Calculations Phase based on HP percentage (Double check)
+            hpPercent = (float) hp / maxHp;
+
+            if (hp <= 3000) {
+                phase = 5; // FORCE FINAL PHASE
+            } else if (hpPercent > 0.8f)
+                phase = 1;
+            else if (hpPercent > 0.6f)
+                phase = 2;
+            else if (hpPercent > 0.4f)
+                phase = 3;
+            else if (hpPercent > 0.2f)
+                phase = 4;
+            else
+                phase = 5;
+
+            // GLOBAL BOSS ATTACKS (From Start of Game)
+            // Uses random Phase 3 skills from previous encounters
+            if (now - lastBossAbilitySoundTime > 2500) { // Every 2.5s
+                float r = random.nextFloat();
+                // 7 Bosses -> ~0.14 probability each
+                if (r < 0.14f)
+                    doSupernova(); // Solarion Phase 3
+                else if (r < 0.28f)
+                    doNebulaBurst(); // Nebulon Phase 3
+                else if (r < 0.42f) { // Graviton Phase 3 (Pseudo)
+                    shootGravityWell();
+                    shootGravityWell();
+                } else if (r < 0.56f) { // Mecha-Core Phase 3 (Swarm)
+                    shootPlasmaBullet();
+                    shootPlasmaBullet();
+                    shootPlasmaBullet();
+                } else if (r < 0.70f)
+                    doFreezingBreath(); // Cryo-Stasis Phase 3
+                else if (r < 0.84f)
+                    shootRockThrow(); // Geo-Breaker Phase 3
+                else
+                    shootAcidBlob(); // Bio-Hazard Phase 3 (Toxic Rain pseudo)
+
+                lastBossAbilitySoundTime = now;
+                // Visual feedback for copy ability
+                createParticles(x, y, Color.WHITE);
+            }
+
+            // Base Movement (Teleport "Tick-Tock")
+            if (now - lastStateChangeTime > 800 + random.nextInt(700)) {
+                float angle = (float) Math.atan2(y - centerY, x - centerX);
+                angle += (Math.PI / 6); // Move 1 hour on clock
+                float dist = circleRadius * 0.6f;
                 x = centerX + (float) Math.cos(angle) * dist;
                 y = centerY + (float) Math.sin(angle) * dist;
 
-                shootClockHand();
+                // Attack based on Phase
+                if (phase == 1) {
+                    shootClockHand();
+                } else if (phase == 2 && random.nextFloat() < 0.4f) {
+                    shootClockHand(); // Still use basic attack occasionally
+                }
                 lastStateChangeTime = now;
             }
 
-            // --- PASSIVE: PHASE SHIFT (Chance to teleport when hit) ---
-            if (now % 100 == 0 && random.nextFloat() < 0.05f) {
-                // Mini blink
-                x += (random.nextFloat() - 0.5f) * 20;
-                y += (random.nextFloat() - 0.5f) * 20;
-            }
+            // Phase Specific Periodic Attacks
+            if (now - lastAttackTime > 3000)
 
-            int phase = 1;
-            if (hp < maxHp * 0.3)
-                phase = 3;
-            else if (hp < maxHp * 0.7)
-                phase = 2;
+            { // Main attack cycle
+                switch (phase) {
+                    case 2: // Time Weaving (Summons)
+                        doEchoShot();
+                        createParticles(x, y, Color.GREEN);
+                        break;
+                    case 3: // Chrono Stasis (Freeze)
+                        if (random.nextFloat() < 0.5f)
+                            doFreezingBreath();
+                        else
+                            shootIceSpike();
+                        createParticles(x, y, Color.CYAN);
+                        break;
+                    case 4: // Reality Fracture (Chaos)
+                        doTemporalStorm();
+                        createParticles(x, y, Color.MAGENTA);
+                        break;
+                    case 5: // The End of Time (Desperation)
+                        doEarthquake();
+                        if (random.nextFloat() < 0.5f) {
+                            doNebulaBurst();
+                        }
 
-            if (now - lastAttackTime > 4000) {
-                if (phase == 3 && random.nextFloat() < 0.5f) {
-                    // Phase 3: Temporal Storm
-                    doTemporalStorm();
-                } else if (phase >= 2) {
-                    // Phase 2: Echo Projectiles
-                    doEchoShot();
+                        // NEW: Random attacks from previous bosses
+                        if (now - lastBossAbilitySoundTime > 2000) { // Extra attack every 2s
+                            float r = random.nextFloat();
+                            if (r < 0.2f)
+                                shootSolarBolt(); // Solarion
+                            else if (r < 0.4f)
+                                shootMistShard(); // Nebulon
+                            else if (r < 0.6f)
+                                shootGravityWell();// Void Titan
+                            else if (r < 0.8f)
+                                shootAcidBlob(); // Bio-Hazard
+                            else
+                                shootIceSpike(); // Chrono (Self)
+                            lastBossAbilitySoundTime = now;
+                        }
+
+                        createParticles(x, y, Color.RED);
+                        // Constant pressure
+                        if (now % 60 == 0)
+                            shootVoidProjectile();
+                        break;
                 }
                 lastAttackTime = now;
+            }
+
+            // Passive: Phase Shift (Blink on hit)
+            if (now % 100 == 0 && random.nextFloat() < 0.05f) {
+                x += (random.nextFloat() - 0.5f) * 20;
+                y += (random.nextFloat() - 0.5f) * 20;
             }
         }
 

@@ -57,8 +57,8 @@
 
         <ImageButton
             android:id="@+id/btnPrevSpace"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_left"
             android:padding="8dp"/>
@@ -75,8 +75,8 @@
 
         <ImageButton
             android:id="@+id/btnNextSpace"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_right"
             android:padding="8dp"/>

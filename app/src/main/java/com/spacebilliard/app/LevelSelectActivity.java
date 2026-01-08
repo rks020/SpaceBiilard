@@ -71,6 +71,43 @@ public class LevelSelectActivity extends Activity {
         ImageButton btnNextSpace = findViewById(R.id.btnNextSpace);
         Button btnBack = findViewById(R.id.btnReturn);
 
+        // Remove default Ripple/Orange background
+        btnNextSpace.setBackground(null);
+        btnPrevSpace.setBackground(null);
+
+        // Animation: Pulse Arrows (Ensure starts after layout)
+        btnNextSpace.post(() -> {
+            android.animation.ObjectAnimator scaleDownX = android.animation.ObjectAnimator.ofFloat(btnNextSpace,
+                    "scaleX", 1f, 1.25f); // Increased to 1.25x
+            android.animation.ObjectAnimator scaleDownY = android.animation.ObjectAnimator.ofFloat(btnNextSpace,
+                    "scaleY", 1f, 1.25f);
+            scaleDownX.setDuration(600); // Faster
+            scaleDownY.setDuration(600);
+            scaleDownX.setRepeatCount(android.animation.ObjectAnimator.INFINITE);
+            scaleDownX.setRepeatMode(android.animation.ObjectAnimator.REVERSE);
+            scaleDownY.setRepeatCount(android.animation.ObjectAnimator.INFINITE);
+            scaleDownY.setRepeatMode(android.animation.ObjectAnimator.REVERSE);
+            android.animation.AnimatorSet scaleDown = new android.animation.AnimatorSet();
+            scaleDown.play(scaleDownX).with(scaleDownY);
+            scaleDown.start();
+        });
+
+        btnPrevSpace.post(() -> {
+            android.animation.ObjectAnimator scalePrevX = android.animation.ObjectAnimator.ofFloat(btnPrevSpace,
+                    "scaleX", 1f, 1.25f);
+            android.animation.ObjectAnimator scalePrevY = android.animation.ObjectAnimator.ofFloat(btnPrevSpace,
+                    "scaleY", 1f, 1.25f);
+            scalePrevX.setDuration(600);
+            scalePrevY.setDuration(600);
+            scalePrevX.setRepeatCount(android.animation.ObjectAnimator.INFINITE);
+            scalePrevX.setRepeatMode(android.animation.ObjectAnimator.REVERSE);
+            scalePrevY.setRepeatCount(android.animation.ObjectAnimator.INFINITE);
+            scalePrevY.setRepeatMode(android.animation.ObjectAnimator.REVERSE);
+            android.animation.AnimatorSet scalePrev = new android.animation.AnimatorSet();
+            scalePrev.play(scalePrevX).with(scalePrevY);
+            scalePrev.start();
+        });
+
         // Initialize Boss Panel
         bossPanelOverlay = findViewById(R.id.bossPanelOverlay);
         bossInfoPanel = findViewById(R.id.bossInfoPanel);
