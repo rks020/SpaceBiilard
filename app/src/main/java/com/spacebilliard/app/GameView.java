@@ -7797,7 +7797,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     private void spawnClones(Ball parent) {
         for (int i = 0; i < 2; i++) {
-            Ball clone = new Ball(parent.x, parent.y, parent.radius, Color.rgb(255, 100, 0));
+            Ball clone = new Ball(parent.x, parent.y, parent.radius, parent.color);
             float angleOffset = (i == 0) ? 0.3f : -0.3f; // ~17 degrees
             float vx = parent.vx;
             float vy = parent.vy;
