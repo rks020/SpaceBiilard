@@ -9,6 +9,9 @@ import android.graphics.RectF;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.content.SharedPreferences;
+import android.media.AudioAttributes;
+import android.media.SoundPool;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,15 +46,16 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
     // Particles & Physics
     private ParticlePool particlePool = new ParticlePool();
     private List<Particle> activeParticles = new ArrayList<>();
-    private float BASE_MAX_SPEED = 40f;
-    private float TRAIL_SPEED_THRESHOLD = 20f;
+    private float BASE_MAX_SPEED = 15f; // Starts at 15
+    private float TRAIL_SPEED_THRESHOLD = 15f;
 
     // Game State
     private long score = 0;
+    private long highScore = 0;
     private float speedMeter = 100f;
     private float maxSpeedMeter = 100f;
     private int speedLevel = 0;
-    private int maxSpeedLevel = 10;
+    private int maxSpeedLevel = 60; // Max level 60
     private boolean gameOver = false;
 
     // Combo System
@@ -83,18 +87,32 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
     private static final long FRAME_TIME = 1000000000 / TARGET_FPS;
     private long lastFrameTime = System.nanoTime();
 
+    // Screen Shake Effect
+    private float cameraOffsetX = 0f;
+    private float cameraOffsetY = 0f;
+    private long shakeEndTime = 0;
+    private float shakeIntensity = 0f;
+
+    // Sound System
+    private SoundPool soundPool;
+    private int soundElectric, soundWallHit;
+    private boolean soundLoaded = false;
+
     private class Particle {
         float x, y;
+        float vx, vy; // Added velocity
         float radius;
         int alpha;
         int color;
         boolean active;
 
-        public void reset(float x, float y, int color) {
+        public void reset(float x, float y, float vx, float vy, int color) {
             this.x = x;
             this.y = y;
+            this.vx = vx;
+            this.vy = vy;
             this.color = color;
-            this.radius = 15f + (float) Math.random() * 10f;
+            this.radius = 10f + (float) Math.random() * 8f; // Slightly smaller base
             this.alpha = 255;
             this.active = true;
         }
@@ -102,9 +120,14 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         public boolean update() {
             if (!active)
                 return false;
-            alpha -= 15;
-            radius *= 0.9f;
-            if (alpha <= 0) {
+
+            x += vx;
+            y += vy;
+
+            alpha -= 10; // Slower fade
+            radius *= 0.92f;
+
+            if (alpha <= 0 || radius < 0.5f) {
                 active = false;
                 return false;
             }
@@ -126,16 +149,16 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 
     private class ParticlePool {
         private final List<Particle> pool = new ArrayList<>();
-        private final int MAX_POOL_SIZE = 100;
+        private final int MAX_POOL_SIZE = 300; // Increased pool size
 
-        public Particle obtain(float x, float y, int color) {
+        public Particle obtain(float x, float y, float vx, float vy, int color) {
             Particle p;
             if (pool.isEmpty()) {
                 p = new Particle();
             } else {
                 p = pool.remove(pool.size() - 1);
             }
-            p.reset(x, y, color);
+            p.reset(x, y, vx, vy, color);
             return p;
         }
 
@@ -214,14 +237,22 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             if (timeRemaining <= 0) {
                 timeRemaining = 0;
                 gameOver = true;
+                checkHighScore();
             }
         }
 
         // Animate score text scale
         scoreTextScale += (targetScoreScale - scoreTextScale) * 0.1f;
 
+        // Update Screen Shake
+        updateScreenShake();
+
+        // Spawn Portal Particles (Backwards emission)
+        spawnPortalParticles(orangePortalAngle, Color.parseColor("#FFA500"));
+        spawnPortalParticles(bluePortalAngle, Color.parseColor("#00BFFF"));
+
         // Update Particles
-        if (activeParticles.size() < 50) {
+        if (activeParticles.size() < 300) { // Increased update limit
             for (int i = 0; i < activeParticles.size(); i++) {
                 Particle p = activeParticles.get(i);
                 if (!p.update()) {
@@ -256,22 +287,25 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         b.x += b.vx * dt;
         b.y += b.vy * dt;
 
-        // Friction decreases with speed level
-        float frictionFactor = 0.999f - (speedLevel * 0.0001f);
+        // Constant light friction
+        float frictionFactor = 0.9995f;
         b.vx *= Math.pow(frictionFactor, dt);
         b.vy *= Math.pow(frictionFactor, dt);
 
-        // Trail
+        // Trail with dynamic color based on speed level
         float speed = (float) Math.sqrt(b.vx * b.vx + b.vy * b.vy);
         if (speed > TRAIL_SPEED_THRESHOLD && Math.random() > 0.7) {
-            int color = (Math.random() > 0.5) ? Color.RED : Color.parseColor("#FFA500");
-            if (activeParticles.size() < 50) {
-                activeParticles.add(particlePool.obtain(b.x, b.y, color));
+            int color = getTrailColor(speedLevel);
+            if (activeParticles.size() < 200) { // Limit total particles
+                // Static trail (vx=0, vy=0) or slight random movement
+                activeParticles.add(particlePool.obtain(b.x, b.y, 0, 0, color));
             }
         }
 
         // Cap Speed
-        float maxSpeed = BASE_MAX_SPEED + (speedLevel * 8f);
+        // Cap Speed - Increased limit to 60 to allow more acceleration steps
+        float maxSpeed = 60f;
+
         if (speed > maxSpeed) {
             float ratio = maxSpeed / speed;
             b.vx *= ratio;
@@ -306,6 +340,9 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
                 b.vx *= 0.7f;
                 b.vy *= 0.7f;
 
+                // Trigger screen shake
+                triggerScreenShake(15f + speedLevel * 2f);
+
                 if (speedLevel > 0) {
                     speedLevel--;
                 }
@@ -315,6 +352,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
                 if (speedMeter <= 0) {
                     speedMeter = 0;
                     gameOver = true;
+                    checkHighScore();
                 }
 
                 // Reset combo
@@ -325,6 +363,9 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
                 float overlap = (dist + b.radius) - arenaRadius;
                 b.x -= nx * overlap;
                 b.y -= ny * overlap;
+
+                // Play soundWallHit on wall collision
+                playSound(soundWallHit);
             }
         }
     }
@@ -365,10 +406,6 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         float newVx = b.vx * cos - b.vy * sin;
         float newVy = b.vx * sin + b.vy * cos;
 
-        // Speed boost
-        newVx *= 1.8f;
-        newVy *= 1.8f;
-
         if (speedLevel < maxSpeedLevel) {
             speedLevel++;
         }
@@ -393,8 +430,15 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             }
         }
 
+        // Speed boost - Multiplicative for "whoosh" feel
+        newVx *= 1.6f;
+        newVy *= 1.6f;
+
         b.vx = newVx;
         b.vy = newVy;
+
+        // Play Electric Sound
+        playSound(soundElectric);
     }
 
     private void checkCollision(Ball b1, Ball b2) {
@@ -448,6 +492,9 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         canvas.drawRect(0, 0, screenWidth, screenHeight, paint);
         paint.setShader(null);
 
+        // Apply screen shake offset
+        canvas.save();
+        canvas.translate(cameraOffsetX, cameraOffsetY);
         // Draw stars
         paint.setStyle(Paint.Style.FILL);
         for (Star star : stars) {
@@ -534,13 +581,15 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             paint.setColor(Color.RED);
             canvas.drawText("GAME OVER", centerX, centerY - 100, paint);
             paint.setTextSize(50);
-            canvas.drawText("Score: " + score, centerX, centerY - 20, paint);
+            canvas.drawText("Score: " + score, centerX, centerY - 30, paint);
+            paint.setColor(Color.YELLOW);
+            canvas.drawText("Best: " + highScore, centerX, centerY + 50, paint);
 
             // RESTART button (red style)
-            drawRedButton(canvas, centerX - 150, centerY + 40, 300, 80, "RESTART");
+            drawRedButton(canvas, centerX - 150, centerY + 120, 300, 80, "RESTART");
 
             // BACK button below restart
-            drawRedButton(canvas, centerX - 150, centerY + 140, 300, 80, "BACK");
+            drawRedButton(canvas, centerX - 150, centerY + 220, 300, 80, "BACK");
         }
 
         // Balls with glow
@@ -558,6 +607,9 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 
         for (Ball b : targetBalls)
             b.draw(canvas, paint);
+
+        // Restore canvas after screen shake
+        canvas.restore();
 
         holder.unlockCanvasAndPost(canvas);
     }
@@ -700,7 +752,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             float buttonX = centerX - buttonWidth / 2;
 
             // Restart button
-            float restartY = centerY + 40;
+            float restartY = centerY + 120;
             if (tapX >= buttonX && tapX <= buttonX + buttonWidth &&
                     tapY >= restartY && tapY <= restartY + buttonHeight) {
                 loadLevel();
@@ -708,7 +760,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             }
 
             // Back button
-            float backY = centerY + 140;
+            float backY = centerY + 220;
             if (tapX >= buttonX && tapX <= buttonX + buttonWidth &&
                     tapY >= backY && tapY <= backY + buttonHeight) {
                 ((android.app.Activity) getContext()).finish();
@@ -790,6 +842,26 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         centerY = (h - CONTROL_Height) / 2f;
         arenaRadius = (Math.min(screenWidth, (h - CONTROL_Height))) / 2f - 40;
 
+        // Initialize SoundPool
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+
+        soundPool = new SoundPool.Builder()
+                .setMaxStreams(5)
+                .setAudioAttributes(audioAttributes)
+                .build();
+
+        soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> soundLoaded = true);
+
+        try {
+            soundElectric = soundPool.load(getContext(), R.raw.electric_ball, 1);
+            soundWallHit = soundPool.load(getContext(), R.raw.playerballhit, 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         loadLevel();
     }
 
@@ -808,6 +880,10 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
             star.size = 1f + (float) (Math.random() * 2f);
             stars.add(star);
         }
+
+        // Load High Score
+        SharedPreferences prefs = getContext().getSharedPreferences("SpaceBilliard", Context.MODE_PRIVATE);
+        highScore = prefs.getInt("PuzzleHighScore", 0);
 
         // Reset
         score = 0;
@@ -844,10 +920,91 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
         }
     }
 
+    private void checkHighScore() {
+        if (score > highScore) {
+            highScore = score;
+            SharedPreferences prefs = getContext().getSharedPreferences("SpaceBilliard", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt("PuzzleHighScore", (int) highScore); // Casting long to int for simplicity, or use putLong
+            editor.apply();
+        }
+    }
+
+    private void spawnPortalParticles(float angle, int color) {
+        // Only spawn occasionally to avoid clutter
+        if (Math.random() > 0.3)
+            return;
+
+        // Angle in radians
+        float rad = (float) Math.toRadians(angle);
+
+        // Randomize position along the portal arc
+        float arcRandom = (float) (Math.random() - 0.5) * (float) Math.toRadians(portalWidth);
+        float spawnRad = rad + arcRandom;
+
+        float spawnRadius = arenaRadius + 5;
+        float sx = centerX + (float) Math.cos(spawnRad) * spawnRadius;
+        float sy = centerY + (float) Math.sin(spawnRad) * spawnRadius;
+
+        // Velocity OUTWARDS from center
+        float speed = 2f + (float) Math.random() * 3f;
+        float vx = (float) Math.cos(spawnRad) * speed;
+        float vy = (float) Math.sin(spawnRad) * speed;
+
+        if (activeParticles.size() < 300) {
+            activeParticles.add(particlePool.obtain(sx, sy, vx, vy, color));
+        }
+    }
+
+    private void playSound(int soundId) {
+        if (soundLoaded && soundId != 0) {
+            soundPool.play(soundId, 1f, 1f, 0, 0, 1f);
+        }
+    }
+
     public void resume() {
         isPlaying = true;
         lastFrameTime = System.nanoTime();
         gameThread = new Thread(this);
         gameThread.start();
+    }
+
+    // Screen Shake Methods
+    private void triggerScreenShake(float intensity) {
+        shakeIntensity = intensity;
+        shakeEndTime = System.currentTimeMillis() + 300; // 300ms shake duration
+    }
+
+    private void updateScreenShake() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime < shakeEndTime) {
+            // Calculate shake with decay
+            float progress = 1f - ((shakeEndTime - currentTime) / 300f);
+            float currentIntensity = shakeIntensity * (1f - progress);
+
+            // Random offset for shake effect
+            cameraOffsetX = (float) (Math.random() - 0.5) * currentIntensity * 2f;
+            cameraOffsetY = (float) (Math.random() - 0.5) * currentIntensity * 2f;
+        } else {
+            cameraOffsetX = 0f;
+            cameraOffsetY = 0f;
+        }
+    }
+
+    // Trail Color based on Speed Level
+    private int getTrailColor(int level) {
+        if (level <= 2) {
+            // Red to Orange
+            return Math.random() > 0.5 ? Color.RED : Color.parseColor("#FFA500");
+        } else if (level <= 5) {
+            // Yellow to Orange
+            return Math.random() > 0.5 ? Color.YELLOW : Color.parseColor("#FF8C00");
+        } else if (level <= 8) {
+            // Green to Cyan
+            return Math.random() > 0.5 ? Color.GREEN : Color.CYAN;
+        } else {
+            // Blue to Magenta (Ultimate)
+            return Math.random() > 0.5 ? Color.parseColor("#00BFFF") : Color.MAGENTA;
+        }
     }
 }

@@ -2798,7 +2798,7 @@ public class GameView extends SurfaceView implements Runnable {
         // --- WALL COLLISIONS (Geometric Shapes) ---
         // Must run even during drag to keep balls inside new shapes
         int space = ((level - 1) / 10) + 1; // Corrected from 50 to 10 to match draw() logic
-        float damping = 0.9f + (upgradeImpulse > 1 ? (upgradeImpulse - 1) * 0.02f : 0);
+        float damping = Math.min(1.0f, 0.9f + (upgradeImpulse > 1 ? (upgradeImpulse - 1) * 0.02f : 0));
 
         ArrayList<Ball> allBalls = new ArrayList<>();
         if (whiteBall != null)
