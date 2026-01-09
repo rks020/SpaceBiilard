@@ -1600,29 +1600,21 @@ public class GameView extends SurfaceView implements Runnable {
                 lastCoinAwardedLevel = level;
                 lastCoinAwardedStage = stage;
 
-                // android.util.Log.d("GameView", "✅ COINS AWARDED! Level " + level + " Stage "
-                // + stage +
-                // ": " + oldCoins + " -> " + coins);
-
                 saveProgress();
 
                 // Update UI
                 if (mainActivity != null) {
                     mainActivity.runOnUiThread(() -> updateMainActivityPanels());
                 }
-            } else {
-                // android.util.Log.d("GameView", "⚠️ Coins already awarded for Level " + level
-                // + " Stage " + stage);
             }
 
+            // Increment stage
             stage++;
 
+            // Check if all 5 stages completed (stage > 5 means we completed stage 5)
             if (stage > 5) {
+                // All 5 stages of this level completed - advance to next level
                 stage = 1;
-
-                // Log Debug
-                // android.util.Log.d("GameView", "Level Completed! Saving stars for Level: " +
-                // level);
 
                 // Save 3 stars for the completed level
                 android.content.Context ctx = getContext();
@@ -1630,42 +1622,31 @@ public class GameView extends SurfaceView implements Runnable {
                     android.content.SharedPreferences prefs = ctx.getSharedPreferences("SPACE_PROGRESS",
                             android.content.Context.MODE_PRIVATE);
                     String key = "level_" + level + "_stars";
-                    // android.util.Log.d("GameView", "Attempting to save: " + key + " = 3");
-
                     android.content.SharedPreferences.Editor editor = prefs.edit();
                     editor.putInt(key, 3);
-                    boolean success = editor.commit(); // Use commit() instead of apply() for immediate save
-
-                    // android.util.Log.d("GameView", "Save result for " + key + ": " + (success ?
-                    // "SUCCESS" : "FAILED"));
-
-                    // Verify the save by reading it back
-                    int savedStars = prefs.getInt(key, 0);
-                    // android.util.Log.d("GameView", "Verification read: " + key + " = " +
-                    // savedStars);
-                } else {
-                    // android.util.Log.e("GameView", "ERROR: Context is null, cannot save stars!");
+                    editor.commit();
                 }
 
                 // Show "LEVEL COMPLETE" text
                 floatingTexts.add(floatingTextPool.obtain("LEVEL COMPLETE!", centerX, centerY - 100, Color.GREEN));
                 playSound(soundPower); // Victory sound
 
-                // Check for Game Completion (Level 100 finished)
+                // Check for Game Completion BEFORE incrementing level
                 if (level >= 100) {
                     gameCompleted = true;
-                    levelCompleted = false; // Stop the loop
-                    showStageCleared = false; // Wait for final screen
-                    gameStarted = false; // Stop game loop logic
-                    playSound(soundPower); // Victory sound
-                    return; // STOP EXECUTION HERE
+                    levelCompleted = false;
+                    showStageCleared = false;
+                    gameStarted = false;
+                    playSound(soundPower);
+                    return; // STOP EXECUTION - Game finished
                 }
 
                 level++; // Go to next level
+
                 // Quest 21-23, 30: Reach specific levels
                 // Quest 24: Century (100 stages)
                 if (questManager != null) {
-                    questManager.incrementQuestProgress(24, 1); // 100 stages
+                    questManager.incrementQuestProgress(24, 1);
                     if (level >= 10)
                         questManager.incrementQuestProgress(21, level);
                     if (level >= 30)
@@ -1683,7 +1664,6 @@ public class GameView extends SurfaceView implements Runnable {
                     if (space >= 10)
                         questManager.incrementQuestProgress(27, space);
                 }
-                // android.util.Log.d("GameView", "Advancing to Next Level: " + level);
 
                 // Quest tracking: Level completion
                 if (questManager != null) {
@@ -1699,35 +1679,21 @@ public class GameView extends SurfaceView implements Runnable {
 
                 if (level > maxUnlockedLevel) {
                     maxUnlockedLevel = level;
-                    saveProgress(); // This saves 'maxUnlockedLevel' to 'SpaceBilliard' prefs
-                    // android.util.Log.d("GameView", "New Max Unlocked Level: " +
-                    // maxUnlockedLevel);
-
+                    saveProgress();
                     // Show "LEVEL UNLOCKED" text
-                    floatingTexts
-                            .add(floatingTextPool.obtain("LEVEL " + level + " UNLOCKED!", centerX, centerY + 50,
-                                    Color.CYAN));
+                    floatingTexts.add(floatingTextPool.obtain("LEVEL " + level + " UNLOCKED!", centerX, centerY + 50,
+                            Color.CYAN));
                 }
             } else {
-                // Intermediate stage completed (stages 1-4), show stage cleared text
+                // Intermediate stage completed (stages 1-4), continue to next stage
                 int completedStage = stage - 1; // We already incremented, so -1 to get completed stage
-                // android.util.Log.d("GameView",
-                // "⭐ STAGE CLEARED! Level " + level + " Stage " + completedStage + ". Next
-                // Stage: " + stage);
-                // android.util.Log.d("GameView",
-                // "💵 Coin Status: coins=" + coins + ", lastCoinLevel=" + lastCoinAwardedLevel
-                // + ", lastCoinStage=" + lastCoinAwardedStage);
-                floatingTexts
-                        .add(floatingTextPool.obtain("STAGE " + completedStage + " CLEARED!", centerX, centerY,
-                                Color.YELLOW));
+                floatingTexts.add(floatingTextPool.obtain("STAGE " + completedStage + " CLEARED!", centerX, centerY,
+                        Color.YELLOW));
                 playSound(soundCoinCollectV2); // Lighter sound for stage clear
             }
-            // else: Just continue to next stage within same level
 
-            // Check for Game Completion (Level > 500 stages = 100 Levels)
-            if (level > 500)
-
-            {
+            // Check for Game Completion (Safety check for level > 500)
+            if (level > 500) {
                 gameCompleted = true;
                 gameStarted = false;
                 updateUIPanels();
@@ -3170,18 +3136,8 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                     playSound(soundCollision);
 
-                    if (coloredBalls.isEmpty() && pendingColoredBalls == 0 && currentBoss == null
-                            && !showBossDefeated) {
-                        levelCompleted = true;
-                        showStageCleared = true;
-                        if (maxUnlockedLevel > level && level % 10 != 0) { // Only play if just clearing a stage
-                            // playSound(soundCoinCollectV2); // Removed as per request
-                        }
-                        stageClearedTime = System.currentTimeMillis();
-                        for (Ball b : blackBalls)
-                            createImpactBurst(b.x, b.y, Color.BLACK);
-                        blackBalls.clear();
-                    }
+                    // Stage completion is handled in update() method, not here
+                    // This prevents duplicate stage progression
 
                     // Physics bounce
                     float dx = wBall.x - ball.x;
