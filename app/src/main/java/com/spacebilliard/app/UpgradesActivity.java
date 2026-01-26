@@ -37,11 +37,6 @@ public class UpgradesActivity extends Activity {
 
         prefs = getSharedPreferences("SpaceBilliard", MODE_PRIVATE);
 
-        // DEV: Grant 50k coins for testing
-        if (prefs.getInt("coins", 0) < 50000) {
-            prefs.edit().putInt("coins", 50000).apply();
-            Toast.makeText(this, "DEV: Added 50,000 Coins", Toast.LENGTH_SHORT).show();
-        }
         txtCoins = findViewById(R.id.txtCoins);
         updateCoinDisplay();
 

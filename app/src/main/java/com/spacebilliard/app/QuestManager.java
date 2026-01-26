@@ -139,12 +139,14 @@ public class QuestManager {
             // int newProgress = quest.getCurrentProgress();
             // android.util.Log.d("QUEST_DEBUG", "Quest " + questId + ": " + oldProgress + "
             // -> " + newProgress);
+            // -> " + newProgress);
 
             // PERFORMANCE FIX: Do NOT save on every increment (causes lag)
             // Only save if completed
             if (quest.isCompleted()) {
                 saveQuestProgress();
-                // android.util.Log.d("QUEST_DEBUG", "Quest " + questId + " COMPLETED and
+                // android.util.Log.d("QUEST_DEBUG", "Quest " + questId + " COMPLETED and UI
+                // notified");
                 // saved!");
             }
         } else if (quest == null) {

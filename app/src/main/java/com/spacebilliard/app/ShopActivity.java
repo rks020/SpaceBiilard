@@ -25,6 +25,19 @@ import android.widget.TextView;
 import com.spacebilliard.app.ui.NeonButton;
 import com.spacebilliard.app.ui.NeonShopItem;
 
+// AdMob Imports
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.OnUserEarnedRewardListener;
+import com.google.android.gms.ads.rewarded.RewardItem;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.AdError;
+
 public class ShopActivity extends Activity {
 
         private int currentCategory = 0; // 0: SKINS, 1: TRAILS, 2: SIGHTS, 3: EFFECTS
@@ -43,6 +56,11 @@ public class ShopActivity extends Activity {
         private android.media.SoundPool soundPool;
         private int soundHomeButton;
         private int soundBuyButton;
+
+        // AdMob Fields
+        private AdView bannerAd;
+        private RewardedAd rewardedAd;
+        private NeonButton btnFreeCoins;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -71,15 +89,36 @@ public class ShopActivity extends Activity {
                 FrameLayout root = new FrameLayout(this);
                 root.setBackgroundColor(Color.rgb(5, 5, 20)); // Deep space blue
 
+                root.setBackgroundColor(Color.rgb(5, 5, 20)); // Deep space blue
+
+                // 1.5 Banner Ad Setup
+                bannerAd = new AdView(this);
+                bannerAd.setAdUnitId("ca-app-pub-2131815746039092/7645165960"); // Production Banner ID
+                bannerAd.setAdSize(AdSize.BANNER);
+
+                FrameLayout.LayoutParams bannerParams = new FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT);
+                bannerParams.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+                bannerAd.setLayoutParams(bannerParams);
+                root.addView(bannerAd);
+
+                AdRequest adRequest = new AdRequest.Builder().build();
+                bannerAd.loadAd(adRequest);
+
+                // Load Rewarded Ad for Free Coins
+                loadRewardedAd();
+
                 // 2. Main Shop Panel (The one with the neon border)
                 LinearLayout mainPanel = new LinearLayout(this);
                 mainPanel.setOrientation(LinearLayout.VERTICAL);
 
                 FrameLayout.LayoutParams panelParams = new FrameLayout.LayoutParams(
-                                (int) (getResources().getDisplayMetrics().widthPixels * 0.9f),
-                                (int) (getResources().getDisplayMetrics().heightPixels * 0.9f)); // Slightly
-                                                                                                 // taller
-                panelParams.gravity = Gravity.CENTER;
+                                (int) (getResources().getDisplayMetrics().widthPixels * 0.95f),
+                                ViewGroup.LayoutParams.MATCH_PARENT);
+                panelParams.gravity = Gravity.CENTER_HORIZONTAL;
+                panelParams.topMargin = (int) (60 * getResources().getDisplayMetrics().density); // Clear banner
+                panelParams.bottomMargin = (int) (20 * getResources().getDisplayMetrics().density); // Clear nav bar
                 mainPanel.setLayoutParams(panelParams);
 
                 // Custom Background
@@ -173,6 +212,11 @@ public class ShopActivity extends Activity {
 
                 // 8. Footer
                 setupFooter(mainPanel);
+
+                // 8. Footer
+
+                // FREE COINS BUTTON (Bottom Right of Screen, outside main panel)
+                // FREE COINS BUTTON REMOVED
 
                 root.addView(mainPanel);
                 setContentView(root);
@@ -774,6 +818,85 @@ public class ShopActivity extends Activity {
                 footer.addView(buyBtn, btnParams);
                 footer.addView(back, btnParams);
                 parent.addView(footer);
+        }
+
+        private void addFreeCoinsButton(FrameLayout root) {
+                btnFreeCoins = new NeonButton(this, "FREE COINS", Color.YELLOW);
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                                (int) (120 * getResources().getDisplayMetrics().density),
+                                (int) (50 * getResources().getDisplayMetrics().density));
+                params.gravity = Gravity.BOTTOM | Gravity.END;
+                params.setMargins(0, 0, 20, 20);
+                btnFreeCoins.setLayoutParams(params);
+
+                btnFreeCoins.setOnClickListener(v -> showRewardedAd());
+                root.addView(btnFreeCoins);
+        }
+
+        private void loadRewardedAd() {
+                AdRequest adRequest = new AdRequest.Builder().build();
+                RewardedAd.load(this, "ca-app-pub-2131815746039092/7990766420", // Production Rewarded ID
+                                adRequest, new RewardedAdLoadCallback() {
+                                        @Override
+                                        public void onAdFailedToLoad(LoadAdError loadAdError) {
+                                                rewardedAd = null;
+                                                if (btnFreeCoins != null)
+                                                        btnFreeCoins.setText("LOADING...");
+                                        }
+
+                                        @Override
+                                        public void onAdLoaded(RewardedAd ad) {
+                                                rewardedAd = ad;
+                                                if (btnFreeCoins != null)
+                                                        btnFreeCoins.setText("FREE COINS");
+                                        }
+                                });
+        }
+
+        private void showRewardedAd() {
+                if (rewardedAd != null) {
+                        rewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                                @Override
+                                public void onAdDismissedFullScreenContent() {
+                                        rewardedAd = null;
+                                        loadRewardedAd(); // Load next one
+                                }
+
+                                @Override
+                                public void onAdFailedToShowFullScreenContent(AdError adError) {
+                                        rewardedAd = null;
+                                }
+                        });
+
+                        rewardedAd.show(this, new OnUserEarnedRewardListener() {
+                                @Override
+                                public void onUserEarnedReward(RewardItem rewardItem) {
+                                        // Grant Reward
+                                        android.content.SharedPreferences prefs = getSharedPreferences("SpaceBilliard",
+                                                        android.content.Context.MODE_PRIVATE);
+                                        int currentCoins = prefs.getInt("coins", 0);
+                                        int newBalance = currentCoins + 50;
+                                        prefs.edit().putInt("coins", newBalance).apply();
+
+                                        // Update UI
+                                        if (coinText != null) {
+                                                coinText.setText("💰 " + newBalance);
+                                        }
+
+                                        // Sound effect
+                                        if (soundPool != null)
+                                                soundPool.play(soundBuyButton, 1f, 1f, 1, 0, 1f);
+
+                                        // Toast
+                                        android.widget.Toast.makeText(ShopActivity.this, "Received 50 Coins!",
+                                                        android.widget.Toast.LENGTH_SHORT).show();
+                                }
+                        });
+                } else {
+                        android.widget.Toast.makeText(this, "Ad not ready yet", android.widget.Toast.LENGTH_SHORT)
+                                        .show();
+                        loadRewardedAd();
+                }
         }
 
         private void handlePurchase() {

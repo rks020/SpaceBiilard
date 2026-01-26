@@ -297,18 +297,18 @@ public class NeonInfoPanel extends View {
             valuePaint.setColor(themeColor);
         }
 
-        // Removed Coin drawing offset logic
-        float iconX = leftContent; // Reuse variable for layout if needed
-        // canvas.drawText(coinsValue, 0, coinsValue.length(), iconX + 24 * density,
-        // startY + spacing * 2, valuePaint);
-        // Note: Score or other values might use this space, but for Boss Panel
-        // multiline mode, this section isn't used.
-        // For Normal mode, Line 3 might be empty now if we don't draw coins.
-        // Assuming this panel is mainly for Boss Info now or top HUD. If Top HUD, we
-        // need to hide it properly if requested.
-        // But user request specifically mentioned "coin simgesini kaldır" for the Boss
-        // Panel context.
-        // To be safe, I'll comment out the coin drawing entirely for now.
+        // Coin Drawing (Restored)
+        // Position coins on the third line or to the right
+        // For standard "Mission Data", let's put it on a new line or right side
+        // Given spacing, we can put it below Score
+        float coinY = startY + spacing * 2;
+        canvas.drawText("COINS:", 0, 6, leftContent, coinY, textPaint);
+
+        float label3W = textPaint.measureText("COINS:", 0, 6);
+        // Draw value
+        valuePaint.setColor(Color.YELLOW);
+        canvas.drawText(coinsValue, 0, coinsValue.length(), leftContent + label3W + 10, coinY, valuePaint);
+        valuePaint.setColor(themeColor); // Restore
 
         // Reset Paint
         valuePaint.setTextSize(baseTextSize);

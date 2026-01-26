@@ -24,6 +24,10 @@ public class QuestsActivity extends AppCompatActivity {
     private int soundHomeButton;
     private int soundCoinCollect;
 
+    // AdMob
+    private com.google.android.gms.ads.rewarded.RewardedAd rewardedAd;
+    private com.spacebilliard.app.ui.NeonButton btnFreeCoins;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,9 +39,16 @@ public class QuestsActivity extends AppCompatActivity {
         // Setup UI
         tvQuestCount = findViewById(R.id.tvQuestCount);
         rvQuests = findViewById(R.id.rvQuests);
-        Button btnBack = findViewById(R.id.btnBack);
 
-        // Setup RecyclerView
+        Button btnBack = findViewById(R.id.btnBack);
+        btnFreeCoins = findViewById(R.id.btnFreeCoins);
+        btnFreeCoins.setText("WATCH AD (+50 \uD83D\uDCB0)");
+        btnFreeCoins.setThemeColor(android.graphics.Color.YELLOW);
+
+        // Load Ad
+        loadRewardedAd();
+
+        btnFreeCoins.setOnClickListener(v -> showRewardedAd());
         rvQuests.setLayoutManager(new LinearLayoutManager(this));
         List<Quest> quests = questManager.getAllQuests();
         adapter = new QuestAdapter(quests);
@@ -94,5 +105,52 @@ public class QuestsActivity extends AppCompatActivity {
     private void updateQuestCount() {
         int completed = questManager.getCompletedQuestsCount();
         tvQuestCount.setText(completed + "/50");
+    }
+
+    private void loadRewardedAd() {
+        com.google.android.gms.ads.AdRequest adRequest = new com.google.android.gms.ads.AdRequest.Builder().build();
+        com.google.android.gms.ads.rewarded.RewardedAd.load(this, "ca-app-pub-2131815746039092/7990766420", // Production
+                                                                                                            // Rewarded
+                                                                                                            // ID
+                adRequest, new com.google.android.gms.ads.rewarded.RewardedAdLoadCallback() {
+                    @Override
+                    public void onAdFailedToLoad(
+                            @androidx.annotation.NonNull com.google.android.gms.ads.LoadAdError loadAdError) {
+                        rewardedAd = null;
+                        btnFreeCoins.setText("AD LOADING...");
+                        btnFreeCoins.setAlpha(0.5f);
+                    }
+
+                    @Override
+                    public void onAdLoaded(
+                            @androidx.annotation.NonNull com.google.android.gms.ads.rewarded.RewardedAd ad) {
+                        rewardedAd = ad;
+                        btnFreeCoins.setText("WATCH AD (+50 \uD83D\uDCB0)");
+                        btnFreeCoins.setAlpha(1.0f);
+                    }
+                });
+    }
+
+    private void showRewardedAd() {
+        if (rewardedAd != null) {
+            rewardedAd.show(this, rewardItem -> {
+                // Grant Reward
+                SharedPreferences prefs = getSharedPreferences("SpaceBilliard", MODE_PRIVATE);
+                int currentCoins = prefs.getInt("coins", 0);
+                prefs.edit().putInt("coins", currentCoins + 50).apply();
+
+                // Sound & Toast
+                soundPool.play(soundCoinCollect, 1f, 1f, 0, 0, 1f);
+                android.widget.Toast.makeText(this, "RECEIVED 50 COINS!", android.widget.Toast.LENGTH_LONG).show();
+
+                // Reload Ad
+                loadRewardedAd();
+            });
+        } else {
+            android.widget.Toast
+                    .makeText(this, "Ad not ready yet, try again in a moment.", android.widget.Toast.LENGTH_SHORT)
+                    .show();
+            loadRewardedAd();
+        }
     }
 }

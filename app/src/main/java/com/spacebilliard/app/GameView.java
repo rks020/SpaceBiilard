@@ -83,9 +83,9 @@ public class GameView extends SurfaceView implements Runnable {
     private int level = 1;
     private int stage = 1; // Mevcut stage (1-10)
     private long timeLeft = 20000;
-    private int fps = 0;
-    private int frameCounter = 0;
-    private long lastFpsTime = 0;
+    // private int fps = 0;
+    // private int frameCounter = 0;
+    // private long lastFpsTime = 0;
     private long lastTime;
     private int comboCounter = 0;
     // Özel yetenekler
@@ -395,7 +395,7 @@ public class GameView extends SurfaceView implements Runnable {
         maxCombo = prefs.getInt("maxCombo", 0);
         // maxUnlockedLevel'ı yükle (ilerlemeyi kaydet)
         maxUnlockedLevel = prefs.getInt("maxUnlockedLevel", 1);
-        maxUnlockedLevel = 500; // TEST MODE: Unlock all levels
+        // maxUnlockedLevel = 500; // TEST MODE: Unlock all levels
         // Coinleri yükle
         coins = prefs.getInt("coins", 0);
         // TEST MODE: Grant 10,000 coins for testing
@@ -490,6 +490,7 @@ public class GameView extends SurfaceView implements Runnable {
     private int upgradeRegen = 1; // Nano-Repair
     private int upgradeSight = 1; // Quantum Sight
     private int upgradeDodge = 1; // Evasion Protocol
+
     private long lastRegenTime = 0; // For Nano-Repair
     // New Advanced Upgrades
     private int upgradeRailgun = 0; // Starts at 0 (Unlocked via Shop)
@@ -497,18 +498,18 @@ public class GameView extends SurfaceView implements Runnable {
 
     private void loadUpgrades() {
         SharedPreferences prefs = getContext().getSharedPreferences("SpaceBilliard", Context.MODE_PRIVATE);
-        upgradeAim = prefs.getInt("upgrade_aim", 1);
-        upgradeEnergy = prefs.getInt("upgrade_energy", 1);
-        upgradeLuck = prefs.getInt("upgrade_luck", 1);
-        upgradeShield = prefs.getInt("upgrade_shield", 1);
-        upgradeNova = prefs.getInt("upgrade_nova", 1);
-        upgradeHunter = prefs.getInt("upgrade_hunter", 1);
-        upgradeImpulse = prefs.getInt("upgrade_impulse", 1);
-        upgradeMidas = prefs.getInt("upgrade_midas", 1);
-        upgradeCrit = prefs.getInt("upgrade_crit", 1);
-        upgradeRegen = prefs.getInt("upgrade_regen", 1);
-        upgradeSight = prefs.getInt("upgrade_sight_2", 1);
-        upgradeDodge = prefs.getInt("upgrade_dodge", 1);
+        upgradeAim = prefs.getInt("upgrade_aim", 0);
+        upgradeEnergy = prefs.getInt("upgrade_energy", 0);
+        upgradeLuck = prefs.getInt("upgrade_luck", 0);
+        upgradeShield = prefs.getInt("upgrade_shield", 0);
+        upgradeNova = prefs.getInt("upgrade_nova", 0);
+        upgradeHunter = prefs.getInt("upgrade_hunter", 0);
+        upgradeImpulse = prefs.getInt("upgrade_impulse", 0);
+        upgradeMidas = prefs.getInt("upgrade_midas", 0);
+        upgradeCrit = prefs.getInt("upgrade_crit", 0);
+        upgradeRegen = prefs.getInt("upgrade_regen", 0);
+        upgradeSight = prefs.getInt("upgrade_sight_2", 0);
+        upgradeDodge = prefs.getInt("upgrade_dodge", 0);
         upgradeRailgun = prefs.getInt("upgrade_railgun", 0);
         upgradeVampire = prefs.getInt("upgrade_vampire", 0);
     }
@@ -1521,6 +1522,7 @@ public class GameView extends SurfaceView implements Runnable {
         // DEBUG LOGGING - Track condition state (DISABLED - too spammy)
         // if (coloredBalls.size() == 0) {
         // android.util.Log.d("GameView", "All colored balls cleared! pendingBalls=" +
+        // pendingColoredBalls);
         // pendingColoredBalls +
         // ", boss=" + (currentBoss != null ? "EXISTS" : "null") +
         // ", levelCompleted=" + levelCompleted +
@@ -1544,7 +1546,8 @@ public class GameView extends SurfaceView implements Runnable {
             }
             lastCoinAwardedLevel = level;
             lastCoinAwardedStage = stage; // Track stage too
-            // android.util.Log.d("GameView",
+            // android.util.Log.d("GameView", "Pending colored balls: " +
+            // pendingColoredBalls);
             // "✅ COIN AWARDED! Level " + level + " Stage " + stage + " cleared! Coins: " +
             // oldCoins + " -> "
             // + coins);
@@ -1617,14 +1620,23 @@ public class GameView extends SurfaceView implements Runnable {
                 stage = 1;
 
                 // Save 3 stars for the completed level
-                android.content.Context ctx = getContext();
-                if (ctx != null) {
-                    android.content.SharedPreferences prefs = ctx.getSharedPreferences("SPACE_PROGRESS",
+                if (mainActivity != null) {
+                    android.content.SharedPreferences prefs = mainActivity.getSharedPreferences("SPACE_PROGRESS",
                             android.content.Context.MODE_PRIVATE);
                     String key = "level_" + level + "_stars";
                     android.content.SharedPreferences.Editor editor = prefs.edit();
                     editor.putInt(key, 3);
-                    editor.commit();
+                    editor.commit(); // Synchronous save
+
+                    // Also update maxUnlockedLevel immediately here to be safe
+                    int nextLevel = level + 1;
+                    android.content.SharedPreferences mainPrefs = mainActivity.getSharedPreferences("SpaceBilliard",
+                            android.content.Context.MODE_PRIVATE);
+                    if (nextLevel > mainPrefs.getInt("maxUnlockedLevel", 1)) {
+                        mainPrefs.edit().putInt("maxUnlockedLevel", nextLevel).commit();
+                        // Sync local variable
+                        maxUnlockedLevel = nextLevel;
+                    }
                 }
 
                 // Show "LEVEL COMPLETE" text
@@ -3972,20 +3984,22 @@ public class GameView extends SurfaceView implements Runnable {
 
             canvas.restore();
 
-            // FPS Counter
-            frameCounter++;
-            long now = System.currentTimeMillis();
-            if (now - lastFpsTime >= 1000) {
-                fps = frameCounter;
-                frameCounter = 0;
-                lastFpsTime = now;
-            }
-            paint.setColor(Color.GREEN);
-            paint.setTextSize(50);
-            paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            paint.setStyle(Paint.Style.FILL);
-            paint.setTextAlign(Paint.Align.RIGHT);
-            canvas.drawText("FPS: " + fps, screenWidth - 20, screenHeight - 20, paint);
+            // FPS Counter - REMOVED FOR RELEASE
+            /*
+             * frameCounter++;
+             * long now = System.currentTimeMillis();
+             * if (now - lastFpsTime >= 1000) {
+             * fps = frameCounter;
+             * frameCounter = 0;
+             * lastFpsTime = now;
+             * }
+             * paint.setColor(Color.GREEN);
+             * paint.setTextSize(30);
+             * paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+             * paint.setStyle(Paint.Style.FILL);
+             * paint.setTextAlign(Paint.Align.RIGHT);
+             * canvas.drawText("FPS: " + fps, screenWidth - 20, screenHeight - 20, paint);
+             */
 
             holder.unlockCanvasAndPost(canvas);
         }
@@ -6300,11 +6314,12 @@ public class GameView extends SurfaceView implements Runnable {
                             if (selectedLv <= maxUnlockedLevel) {
                                 gameStarted = true;
                                 updateUIPanels();
-                                // Seçilen level'in ilk stage'ini başlat
-                                level = (selectedLv - 1) * 5 + 1;
+                                // Seçilen level'i başlat
+                                level = selectedLv; // Pass strictly the level number (e.g. 2 for Level 2)
                                 score = 0;
                                 lives = 3;
-                                initLevel(level);
+                                initLevel(level); // (This line seems to be in GameView context? LevelSelectActivity
+                                                  // doesn't have initLevel!)
                                 showLevelSelector = false;
                                 playSound(soundLaunch);
                             } else {
@@ -6888,20 +6903,17 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setAlpha(180);
 
         if (selectedTrajectory.equals("laser")) {
-            paint.setAlpha(100);
+            paint.setAlpha(150);
             paint.setStrokeWidth(12);
             paint.setColor(Color.RED);
             canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
             paint.setAlpha(255);
-            paint.setStrokeWidth(8);
-            paint.setColor(Color.RED);
-            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
-            paint.setColor(Color.WHITE);
-            paint.setStrokeWidth(3);
+            paint.setStrokeWidth(6);
+            paint.setColor(Color.WHITE); // Core
             canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
         } else if (selectedTrajectory.equals("electric")) {
             paint.setAlpha(255);
-            paint.setStrokeWidth(5);
+            paint.setStrokeWidth(4);
             paint.setColor(Color.CYAN);
             paint.setStyle(Paint.Style.STROKE);
             cachedTrajectoryPath.reset();
@@ -6916,10 +6928,10 @@ public class GameView extends SurfaceView implements Runnable {
                 float perpY = dx / lineLen;
                 cachedTrajectoryPath.lineTo(px + perpX * offset, py + perpY * offset);
             }
-            paint.setStrokeWidth(10);
+            paint.setStrokeWidth(8);
             paint.setAlpha(80);
             canvas.drawPath(cachedTrajectoryPath, paint);
-            paint.setStrokeWidth(5);
+            paint.setStrokeWidth(3);
             paint.setAlpha(255);
             canvas.drawPath(cachedTrajectoryPath, paint);
         } else if (selectedTrajectory.equals("dots")) {
@@ -6933,7 +6945,7 @@ public class GameView extends SurfaceView implements Runnable {
                 paint.setAlpha(100);
                 canvas.drawCircle(px, py, 9, paint);
                 paint.setAlpha(255);
-                canvas.drawCircle(px, py, 6, paint);
+                canvas.drawCircle(px, py, 5, paint);
             }
         } else if (selectedTrajectory.equals("plasma")) {
             paint.setStyle(Paint.Style.FILL);
@@ -6945,26 +6957,182 @@ public class GameView extends SurfaceView implements Runnable {
                 paint.setColor(Color.MAGENTA);
                 paint.setAlpha((int) (255 * t));
                 canvas.drawCircle(px, py, 8 * t * 1.3f, paint);
-                canvas.drawCircle(px, py, 8 * t, paint);
+                canvas.drawCircle(px, py, 5 * t, paint);
             }
             paint.setAlpha(255);
+        } else if (selectedTrajectory.equals("sniper")) {
+            // Red Line with Ticks
+            paint.setColor(Color.RED);
+            paint.setStrokeWidth(3);
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
+            // Ticks
+            int ticks = (int) (lineLen / 40);
+            float perpX = -dy / lineLen;
+            float perpY = dx / lineLen;
+            for (int i = 1; i < ticks; i++) {
+                float t = (float) i / ticks;
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
+                float tickSize = 10;
+                canvas.drawLine(px - perpX * tickSize, py - perpY * tickSize,
+                        px + perpX * tickSize, py + perpY * tickSize, paint);
+            }
+        } else if (selectedTrajectory.equals("double")) {
+            // Twin Parallel Lines
+            paint.setColor(Color.CYAN);
+            paint.setStrokeWidth(3);
+            float perpX = -dy / lineLen;
+            float perpY = dx / lineLen;
+            float offset = 8;
+            canvas.drawLine(startX + perpX * offset, startY + perpY * offset,
+                    vizEndX + perpX * offset, vizEndY + perpY * offset, paint);
+            canvas.drawLine(startX - perpX * offset, startY - perpY * offset,
+                    vizEndX - perpX * offset, vizEndY - perpY * offset, paint);
+        } else if (selectedTrajectory.equals("rainbow")) {
+            // Rainbow Gradient
+            int[] colors = { Color.RED, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA, Color.RED };
+            Shader shader = new LinearGradient(startX, startY, vizEndX, vizEndY, colors, null, Shader.TileMode.REPEAT);
+            paint.setShader(shader);
+            paint.setStrokeWidth(6);
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
+            paint.setShader(null); // Reset
+        } else if (selectedTrajectory.equals("dashdot")) {
+            paint.setColor(Color.WHITE);
+            paint.setStrokeWidth(5);
+            paint.setPathEffect(new android.graphics.DashPathEffect(new float[] { 40, 20, 5, 20 }, 0));
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
+            paint.setPathEffect(null);
+        } else if (selectedTrajectory.equals("stars")) {
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.YELLOW);
+            int count = (int) (lineLen / 50);
+            for (int i = 0; i <= count; i++) {
+                float t = (float) i / count;
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
+                // Simple Star (Diamond shape for performance)
+                float r = 8;
+                Path starPath = new Path();
+                starPath.moveTo(px, py - r);
+                starPath.lineTo(px + r, py);
+                starPath.lineTo(px, py + r);
+                starPath.lineTo(px - r, py);
+                starPath.close();
+                canvas.drawPath(starPath, paint);
+            }
+        } else if (selectedTrajectory.equals("hearts")) {
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.rgb(255, 105, 180)); // Hot Pink
+            int count = (int) (lineLen / 50);
+            for (int i = 0; i <= count; i++) {
+                float t = (float) i / count;
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
+                float r = 6;
+                canvas.drawCircle(px - r / 2, py, r / 2, paint);
+                canvas.drawCircle(px + r / 2, py, r / 2, paint);
+                Path tri = new Path();
+                tri.moveTo(px - r, py + r / 4);
+                tri.lineTo(px + r, py + r / 4);
+                tri.lineTo(px, py + r * 1.5f);
+                tri.close();
+                canvas.drawPath(tri, paint);
+            }
+        } else if (selectedTrajectory.equals("tech")) {
+            paint.setColor(Color.GREEN);
+            paint.setStrokeWidth(4);
+            int nodes = (int) (lineLen / 60);
+            for (int i = 0; i < nodes; i++) {
+                float t1 = (float) i / nodes;
+                float t2 = (float) (i + 1) / nodes;
+                float p1x = startX + (vizEndX - startX) * t1;
+                float p1y = startY + (vizEndY - startY) * t1;
+                float p2x = startX + (vizEndX - startX) * t2;
+                float p2y = startY + (vizEndY - startY) * t2;
+
+                canvas.drawLine(p1x, p1y, p2x, p2y, paint);
+                // Circuit Node
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawRect(p1x - 4, p1y - 4, p1x + 4, p1y + 4, paint);
+            }
+            canvas.drawLine(startX + (vizEndX - startX) * (nodes == 0 ? 0 : 1),
+                    startY + (vizEndY - startY) * (nodes == 0 ? 0 : 1), vizEndX, vizEndY, paint);
+
+        } else if (selectedTrajectory.equals("snake")) {
+            // Green S-Curve
+            paint.setStrokeWidth(4);
+            paint.setColor(Color.GREEN);
+            paint.setStyle(Paint.Style.STROKE);
+            cachedTrajectoryPath.reset();
+            cachedTrajectoryPath.moveTo(startX, startY);
+            int segs = (int) (lineLen / 15);
+            for (int i = 1; i <= segs; i++) {
+                float t = (float) i / segs;
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
+                float offset = (float) Math.sin(t * Math.PI * 6) * 15; // Higher freq
+                float perpX = -dy / lineLen;
+                float perpY = dx / lineLen;
+                cachedTrajectoryPath.lineTo(px + perpX * offset, py + perpY * offset);
+            }
+            canvas.drawPath(cachedTrajectoryPath, paint);
+
+        } else if (selectedTrajectory.equals("chevron")) {
+            paint.setColor(Color.rgb(255, 140, 0)); // Orange
+            paint.setStrokeWidth(3);
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
+
+            int count = (int) (lineLen / 30);
+            float perpX = -dy / lineLen;
+            float perpY = dx / lineLen;
+            paint.setStrokeWidth(4);
+            for (int i = 0; i < count; i++) {
+                float t = (float) i / count;
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
+                // Draw V shape pointing forward
+                // Rotate logic roughly:
+                // We want V pointing to (dx, dy)
+                // Left wing: -perp + back
+                float backX = -dx / lineLen * 8;
+                float backY = -dy / lineLen * 8;
+                float sideX = perpX * 8;
+                float sideY = perpY * 8;
+
+                canvas.drawLine(px, py, px + backX + sideX, py + backY + sideY, paint);
+                canvas.drawLine(px, py, px + backX - sideX, py + backY - sideY, paint);
+            }
+
+        } else if (selectedTrajectory.equals("fire")) {
+            paint.setColor(Color.rgb(255, 69, 0)); // Red-Orange
+            paint.setStrokeWidth(4);
+            cachedTrajectoryPath.reset();
+            cachedTrajectoryPath.moveTo(startX, startY);
+            int segs = (int) (lineLen / 10);
+            for (int i = 1; i <= segs; i++) {
+                float t = (float) i / segs;
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
+                // Random jitter
+                float jitter = (float) ((Math.random() - 0.5) * 15);
+                float perpX = -dy / lineLen;
+                float perpY = dx / lineLen;
+                cachedTrajectoryPath.lineTo(px + perpX * jitter, py + perpY * jitter);
+            }
+            canvas.drawPath(cachedTrajectoryPath, paint);
+
         } else if (selectedTrajectory.equals("arrow")) {
             paint.setAlpha(255);
-            paint.setStrokeWidth(12);
+            paint.setStrokeWidth(5);
             paint.setColor(Color.GREEN);
-            paint.setAlpha(100);
             canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
-            paint.setStrokeWidth(6);
-            paint.setAlpha(255);
-            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
-            paint.setStyle(Paint.Style.FILL);
+
+            // Arrows along path
             int arrows = 3;
-            // Simplified arrow heads
             for (int i = 1; i <= arrows; i++) {
                 float t = (float) i / arrows;
                 float ax = startX + (vizEndX - startX) * t;
                 float ay = startY + (vizEndY - startY) * t;
-                // Just dots for now to save space or could re-add triangles
                 canvas.drawCircle(ax, ay, 5, paint);
             }
         } else if (selectedTrajectory.equals("wave")) {
@@ -6985,8 +7153,38 @@ public class GameView extends SurfaceView implements Runnable {
                 cachedTrajectoryPath.lineTo(px + perpX * offset, py + perpY * offset);
             }
             canvas.drawPath(cachedTrajectoryPath, paint);
+
+        } else if (selectedTrajectory.equals("grid")) {
+            paint.setColor(Color.WHITE);
+            paint.setStrokeWidth(2);
+            paint.setAlpha(150);
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
+            // Cross lines
+            int segs = (int) (lineLen / 40);
+            float perpX = -dy / lineLen;
+            float perpY = dx / lineLen;
+            for (int i = 1; i < segs; i++) {
+                float t = (float) i / segs;
+                float px = startX + (vizEndX - startX) * t;
+                float py = startY + (vizEndY - startY) * t;
+                canvas.drawLine(px - perpX * 20, py - perpY * 20, px + perpX * 20, py + perpY * 20, paint);
+            }
+
+        } else if (selectedTrajectory.equals("pulse")) {
+            paint.setColor(Color.RED);
+            float pulse = (float) (10 + Math.sin(System.currentTimeMillis() * 0.01) * 5);
+            paint.setStrokeWidth(pulse);
+            paint.setAlpha(180);
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
+            paint.setStrokeWidth(4);
+            paint.setColor(Color.WHITE);
+            canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
+
         } else {
             // Default dashed
+            paint.setColor(Color.WHITE);
+            paint.setAlpha(255);
+            paint.setStrokeWidth(5);
             paint.setPathEffect(new android.graphics.DashPathEffect(new float[] { 20, 20 }, 0));
             canvas.drawLine(startX, startY, vizEndX, vizEndY, paint);
             paint.setPathEffect(null);

@@ -118,7 +118,7 @@ public class MainActivity extends Activity {
 
         // Banner Ad at top
         bannerAd = new AdView(this);
-        bannerAd.setAdUnitId("ca-app-pub-3940256099942544/6300978111"); // Test banner ID
+        bannerAd.setAdUnitId("ca-app-pub-2131815746039092/7645165960"); // Production Banner ID
         bannerAd.setAdSize(AdSize.BANNER);
 
         FrameLayout.LayoutParams bannerParams = new FrameLayout.LayoutParams(
@@ -276,7 +276,7 @@ public class MainActivity extends Activity {
     // Load rewarded ad
     private void loadRewardedAd() {
         AdRequest adRequest = new AdRequest.Builder().build();
-        RewardedAd.load(this, "ca-app-pub-3940256099942544/5224354917", // Test rewarded ID
+        RewardedAd.load(this, "ca-app-pub-2131815746039092/7990766420", // Production Rewarded ID
                 adRequest, new RewardedAdLoadCallback() {
                     @Override
                     public void onAdLoaded(RewardedAd ad) {

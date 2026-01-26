@@ -10,6 +10,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.content.SharedPreferences;
 
+// AdMob
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import android.widget.FrameLayout;
+import android.view.ViewGroup;
+import android.view.Gravity;
+
 public class MainMenuActivity extends Activity {
 
     private android.animation.ObjectAnimator jupiterRotation;
@@ -25,6 +34,13 @@ public class MainMenuActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_main_menu);
+
+        // Initialize AdMob (Entry point)
+        MobileAds.initialize(this, initializationStatus -> {
+        });
+
+        // Add Banner Ad
+        setupBannerAd();
 
         // Listeners for buttons
         /*
@@ -174,5 +190,35 @@ public class MainMenuActivity extends Activity {
         if (jupiterRotation != null) {
             jupiterRotation.pause();
         }
+    }
+
+    private void setupBannerAd() {
+        AdView bannerAd = new AdView(this);
+        bannerAd.setAdUnitId("ca-app-pub-2131815746039092/7645165960"); // Production Banner ID
+        bannerAd.setAdSize(AdSize.BANNER);
+
+        // Access the root layout. Since activity_main_menu uses a RelativeLayout or
+        // similar as root,
+        // we might need to add it programmatically or depend on ID.
+        // Safer approach: Wrap content in a FrameLayout or add to existing root if it's
+        // a ViewGroup.
+
+        ViewGroup root = findViewById(android.R.id.content);
+        // Note: android.R.id.content gives the FrameLayout holding the layout.
+
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL; // Top of screen
+
+        // If there's top UI, we might overlap. Let's check if we should put it at FULL
+        // TOP.
+        // Given the menu design, TOP is usually safer or BOTTOM if there are buttons.
+        // Let's stick to TOP for consistent visibility.
+
+        root.addView(bannerAd, params);
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        bannerAd.loadAd(adRequest);
     }
 }
